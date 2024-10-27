@@ -1,0 +1,8 @@
+<svg width="25" height="26" viewBox="0 0 25 26" fill="none" xmlns="http://www.w3.org/2000/svg">
+<circle cx="11" cy="14.4" r="9.55" transform="rotate(-90 11 14.4)" stroke="white" stroke-width="2.9"/>
+<circle cx="17.4" cy="7.60001" r="6" transform="rotate(-90 17.4 7.60001)" stroke="#00A3FF" stroke-width="3.2"/>
+<mask id="path-3-inside-1_6_2" fill="white">
+<path d="M8.00366 3.81598C10.8107 3.0213 13.8185 3.37428 16.3653 4.79725L14.9623 7.30837C13.0815 6.2575 10.8602 5.99683 8.7872 6.5837L8.00366 3.81598Z"/>
+</mask>
+<path d="M8.00366 3.81598C10.8107 3.0213 13.8185 3.37428 16.3653 4.79725L14.9623 7.30837C13.0815 6.2575 10.8602 5.99683 8.7872 6.5837L8.00366 3.81598Z" stroke="white" stroke-width="5.8" mask="url(#path-3-inside-1_6_2)"/>
+</svg>
