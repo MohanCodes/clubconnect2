@@ -1,13 +1,13 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
-import { useParams, useRouter } from 'next/navigation';
+import Image from 'next/image';
+import Link from 'next/link';
+import { useRouter } from 'next/router';
 import { FaEnvelope, FaCalendarAlt, FaClock, FaMapMarkerAlt, FaUserGraduate, FaDollarSign, FaEdit, FaSave, FaPlus, FaTrash, FaTwitter, FaInstagram, FaFacebook, FaLinkedin, FaYoutube, FaDiscord, FaGithub, FaTiktok, FaGlobe, FaUser, FaLink } from 'react-icons/fa';
 import Navbar from '@/components/Navbar';
 import { db } from '@/firebase/firebase';
-import { doc, getDoc, setDoc, collection, query, where, getDocs } from 'firebase/firestore';
-import Link from 'next/link';
-import Image from 'next/image';
+import { doc, setDoc, getDoc } from 'firebase/firestore';
 
 interface Advisor {
   name: string;
@@ -39,126 +39,105 @@ interface ClubInfo {
   links: ClubLink[];
 }
 
-const BiologyClubPage: React.FC = () => {
+const EditClubPage: React.FC = () => {
   const [isEditing, setIsEditing] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [newLink, setNewLink] = useState({ url: '', platform: '' });
   const [isUploading, setIsUploading] = useState(false);
-  const [clubInfo, setClubInfo] = useState<ClubInfo | null>(null);
-  const [newTag, setNewTag] = useState("");
-  const [isComplete, setIsComplete] = useState(false);
-  const router = useRouter();
+  const [clubInfo, setClubInfo] = useState<ClubInfo>({
+    name: "",
+    tags: [],
+    description: "",
+    length: "",
+    meetingTimes: "",
+    meetingSite: "",
+    eligibility: "",
+    costs: "",
+    advisors: [],
+    studentLeads: [],
+    links: [],
+  });
 
-  const params = useParams();
+  const [newTag, setNewTag] = useState("");
+  const router = useRouter();
+  const { slug } = router.query;
 
   useEffect(() => {
-    const fetchClubData = async () => {
-      const clubSlug = params.slug as string;
-      if (clubSlug) {
-        // Try to fetch from 'clubs' collection first
-        const clubDocRef = doc(db, 'clubs', clubSlug);
-        let clubDoc = await getDoc(clubDocRef);
+    if (slug) {
+      const [club, school] = (slug as string).split("-");
+      fetchClubInfo(club, school);
+    }
+  }, [slug]);
 
-        if (clubDoc.exists()) {
-          setClubInfo(clubDoc.data() as ClubInfo);
-        } else {
-          // If not found in 'clubs', try 'dashclubs'
-          const [name, school] = clubSlug.split('-');
-          const dashClubsRef = collection(db, 'dashclubs');
-          const q = query(
-            dashClubsRef, 
-            where('name', '==', name),
-            where('school', '==', school)
-          );
-          const querySnapshot = await getDocs(q);
-
-          if (!querySnapshot.empty) {
-            setClubInfo(querySnapshot.docs[0].data() as ClubInfo);
-          } else {
-            console.error('Club not found in either collection');
-            // Handle the case when the club is not found
-          }
+  const fetchClubInfo = async (club: string, school: string) => {
+    try {
+      const clubDocRef = doc(db, 'clubs', `${club}-${school}`);
+      const clubDoc = await getDoc(clubDocRef);
+      if (clubDoc.exists()) {
+        setClubInfo(clubDoc.data() as ClubInfo);
+      } else {
+        const dashClubDocRef = doc(db, 'dashclubs', `${club}-${school}`);
+        const dashClubDoc = await getDoc(dashClubDocRef);
+        if (dashClubDoc.exists()) {
+          setClubInfo(dashClubDoc.data() as ClubInfo);
         }
       }
-    };
-
-    fetchClubData();
-  }, [params.slug]);
-
-  const clubImages = [
-    "https://images.pexels.com/photos/256262/pexels-photo-256262.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2",
-    "https://images.pexels.com/photos/356040/pexels-photo-356040.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2",
-    "https://images.pexels.com/photos/2280571/pexels-photo-2280571.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2",
-    "https://images.pexels.com/photos/3825527/pexels-photo-3825527.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2",
-  ];
+    } catch (error) {
+      console.error('Error fetching club data:', error);
+    }
+  };
 
   const handleEdit = () => setIsEditing(true);
   const handleSave = () => setIsEditing(false);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>, field: keyof ClubInfo) => {
-    if (clubInfo) {
-      setClubInfo({ ...clubInfo, [field]: e.target.value });
-    }
+    setClubInfo({ ...clubInfo, [field]: e.target.value });
   };
 
   const handleAddTag = () => {
-    if (newTag && clubInfo && !clubInfo.tags.includes(newTag)) {
+    if (newTag && !clubInfo.tags.includes(newTag)) {
       setClubInfo({ ...clubInfo, tags: [...clubInfo.tags, newTag] });
       setNewTag("");
     }
   };
 
   const handleRemoveTag = (index: number) => {
-    if (clubInfo) {
-      const updatedTags = clubInfo.tags.filter((_, i) => i !== index);
-      setClubInfo({ ...clubInfo, tags: updatedTags });
-    }
+    const updatedTags = clubInfo.tags.filter((_, i) => i !== index);
+    setClubInfo({ ...clubInfo, tags: updatedTags });
   };
 
   const handleAdvisorChange = (index: number, field: keyof Advisor, value: string) => {
-    if (clubInfo) {
-      const updatedAdvisors = [...clubInfo.advisors];
-      updatedAdvisors[index] = { ...updatedAdvisors[index], [field]: value };
-      setClubInfo({ ...clubInfo, advisors: updatedAdvisors });
-    }
+    const updatedAdvisors = [...clubInfo.advisors];
+    updatedAdvisors[index] = { ...updatedAdvisors[index], [field]: value };
+    setClubInfo({ ...clubInfo, advisors: updatedAdvisors });
   };
 
   const handleAddAdvisor = () => {
-    if (clubInfo) {
-      setClubInfo({ ...clubInfo, advisors: [...clubInfo.advisors, { name: "", email: "" }] });
-    }
+    setClubInfo({ ...clubInfo, advisors: [...clubInfo.advisors, { name: "", email: "" }] });
   };
 
   const handleRemoveAdvisor = (index: number) => {
-    if (clubInfo) {
-      const updatedAdvisors = clubInfo.advisors.filter((_, i) => i !== index);
-      setClubInfo({ ...clubInfo, advisors: updatedAdvisors });
-    }
+    const updatedAdvisors = clubInfo.advisors.filter((_, i) => i !== index);
+    setClubInfo({ ...clubInfo, advisors: updatedAdvisors });
   };
 
   const handleStudentLeadChange = (index: number, field: keyof StudentLead, value: string) => {
-    if (clubInfo) {
-      const updatedLeads = [...clubInfo.studentLeads];
-      updatedLeads[index] = { ...updatedLeads[index], [field]: value };
-      setClubInfo({ ...clubInfo, studentLeads: updatedLeads });
-    }
+    const updatedLeads = [...clubInfo.studentLeads];
+    updatedLeads[index] = { ...updatedLeads[index], [field]: value };
+    setClubInfo({ ...clubInfo, studentLeads: updatedLeads });
   };
 
   const handleAddStudentLead = () => {
-    if (clubInfo) {
-      setClubInfo({ ...clubInfo, studentLeads: [...clubInfo.studentLeads, { name: "", role: "", imgSrc: "https://via.placeholder.com/50" }] });
-    }
+    setClubInfo({ ...clubInfo, studentLeads: [...clubInfo.studentLeads, { name: "", role: "", imgSrc: "https://via.placeholder.com/50" }] });
   };
 
   const handleRemoveStudentLead = (index: number) => {
-    if (clubInfo) {
-      const updatedLeads = clubInfo.studentLeads.filter((_, i) => i !== index);
-      setClubInfo({ ...clubInfo, studentLeads: updatedLeads });
-    }
+    const updatedLeads = clubInfo.studentLeads.filter((_, i) => i !== index);
+    setClubInfo({ ...clubInfo, studentLeads: updatedLeads });
   };
 
   const handleAddLink = () => {
-    if (newLink.url && newLink.platform && clubInfo) {
+    if (newLink.url && newLink.platform) {
       setClubInfo({ ...clubInfo, links: [...clubInfo.links, newLink] });
       setNewLink({ url: '', platform: '' });
       setIsModalOpen(false);
@@ -166,24 +145,18 @@ const BiologyClubPage: React.FC = () => {
   };
 
   const handleRemoveLink = (index: number) => {
-    if (clubInfo) {
-      const updatedLinks = clubInfo.links.filter((_, i) => i !== index);
-      setClubInfo({ ...clubInfo, links: updatedLinks });
-    }
+    const updatedLinks = clubInfo.links.filter((_, i) => i !== index);
+    setClubInfo({ ...clubInfo, links: updatedLinks });
   };
 
   const handleUpload = async () => {
     setIsUploading(true);
     try {
-      const clubSlug = params.slug as string;
-      const collectionName = isComplete ? 'clubs' : 'dashclubs';
-      const clubDocRef = doc(db, collectionName, clubSlug);
+      const clubDocRef = doc(db, 'clubs', clubInfo.name);
       await setDoc(clubDocRef, clubInfo);
       console.log('Club data uploaded successfully');
-      // Optionally, you can show a success message to the user here
     } catch (error) {
       console.error('Error uploading club data:', error);
-      // Optionally, you can show an error message to the user here
     } finally {
       setIsUploading(false);
     }
@@ -205,53 +178,38 @@ const BiologyClubPage: React.FC = () => {
     }
   };
 
-  if (!clubInfo) {
-    return <div className="text-center mt-10 text-white">Loading...</div>;
-  }
-
   return (
     <div className="bg-cblack min-h-screen">
       <Navbar />
       <main className="container mx-auto px-4 py-8">
-      <div className="flex justify-between items-center mb-4">
-      {isEditing ? (
-        <input
-          type="text"
-          value={clubInfo.name}
-          onChange={(e) => handleChange(e, 'name')}
-          className="text-4xl font-bold text-white bg-transparent border-b border-azul"
-        />
-      ) : (
-        <h1 className="text-4xl font-bold text-white">{clubInfo.name}</h1>
-      )}
-      <div className='space-x-4'>
-        <button
-          onClick={isEditing ? handleSave : handleEdit}
-          className="bg-azul text-white text-sm px-4 py-2 rounded-full"
-        >
-          {isEditing ? <p>Save Page</p> : <p>Edit Page</p>}
-        </button>
-        <button
-          onClick={handleUpload}
-          className="bg-azul text-white text-sm px-4 py-2 rounded-full"
-          disabled={isUploading}
-        >
-          {isUploading ? <p>Uploading...</p> : <p>Upload Page</p>}
-        </button>
-        <button
-          onClick={() => setIsComplete(!isComplete)}
-          className="bg-yellow-500 text-black text-sm px-4 py-2 rounded-full"
-        >
-          {isComplete ? 'Mark as Incomplete' : 'Mark as Complete'}
-        </button>
-      </div>
-    </div>
-    <div className="mb-4">
-      <span className={`text-sm font-medium px-3 py-1 rounded-full ${isComplete ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'}`}>
-        {isComplete ? 'Complete' : 'Incomplete'}
-      </span>
-    </div>
-  
+        <div className="flex justify-between items-center mb-4">
+          {isEditing ? (
+            <input
+              type="text"
+              value={clubInfo.name}
+              onChange={(e) => handleChange(e, 'name')}
+              className="text-4xl font-bold text-white bg-transparent border-b border-azul"
+            />
+          ) : (
+            <h1 className="text-4xl font-bold text-white">{clubInfo.name}</h1>
+          )}
+        <div className='space-x-4'>
+          <button
+            onClick={isEditing ? handleSave : handleEdit}
+            className="bg-azul text-white text-sm px-4 py-2 rounded-full"
+          >
+            {isEditing ? <p>Save Page</p> :<p>Edit Page</p>}
+          </button>
+          <button
+            onClick={handleUpload}
+            className="bg-azul text-white text-sm px-4 py-2 rounded-full"
+            disabled={isUploading}
+          >
+            {isUploading ? <p>Uploading...</p> : <p>Upload Page</p>}
+          </button>
+        </div>
+        </div>
+
         <div className="flex flex-wrap gap-2 mb-6">
           {clubInfo.tags.map((tag, index) => (
             <span key={index} className="bg-blue-100 text-azul text-sm font-medium px-3 py-1 rounded-full">
@@ -276,7 +234,7 @@ const BiologyClubPage: React.FC = () => {
             </div>
           )}
         </div>
-  
+
         <div className="flex flex-col md:flex-row gap-8">
           <div className="md:w-2/3">
             {isEditing ? (
@@ -288,7 +246,7 @@ const BiologyClubPage: React.FC = () => {
             ) : (
               <p className="text-grey mb-4">{clubInfo.description}</p>
             )}
-  
+
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-grey mb-8">
               <div className="flex items-center">
                 <FaCalendarAlt className="mr-2 text-azul" />
@@ -356,7 +314,7 @@ const BiologyClubPage: React.FC = () => {
                 )}
               </div>
             </div>
-  
+
             <div className="mb-8">
               <h2 className="text-2xl font-bold text-white mb-2">Advisors</h2>
               {clubInfo.advisors.map((advisor, index) => (
@@ -400,7 +358,7 @@ const BiologyClubPage: React.FC = () => {
                 </button>
               )}
             </div>
-  
+
             <div className="mb-8">
               <h2 className="text-2xl font-bold text-white mb-2">Student Leads</h2>
               {clubInfo.studentLeads.map((lead, index) => (
@@ -420,22 +378,12 @@ const BiologyClubPage: React.FC = () => {
                         onChange={(e) => handleStudentLeadChange(index, 'name', e.target.value)}
                         placeholder='Student Name'
                         className="bg-gray-800 text-white p-1 rounded mr-2"
-                      />
-                      <input
-                        type="text"
-                        value={lead.role}
-                        onChange={(e) => handleStudentLeadChange(index, 'role', e.target.value)}
-                        placeholder='Student Role'
-                        className="bg-gray-800 text-white p-1 rounded mr-2"
-                      />
-                      <button onClick={() => handleRemoveStudentLead(index)} className="text-red-500">
-                        <FaTrash />
-                      </button>
-                    </>
-                  ) : (
-                    <span className="text-grey">{lead.name} - {lead.role}</span>
-                  )}
-                </div>
+                        />
+                        </>
+                      ) : (
+                        <span className="text-grey">{lead.name} - {lead.role}</span>
+                      )}
+                    </div>
               ))}
               {isEditing && (
                 <button onClick={handleAddStudentLead} className="bg-green-500 text-white px-2 py-1 rounded flex flex-row items-center">
@@ -443,7 +391,7 @@ const BiologyClubPage: React.FC = () => {
                 </button>
               )}
             </div>
-  
+
             <div className="mb-8">
               <h2 className="text-2xl font-bold text-white mb-2">Links</h2>
               {clubInfo.links.map((link, index) => (
@@ -465,7 +413,7 @@ const BiologyClubPage: React.FC = () => {
                 </button>
               )}
             </div>
-  
+
             <div className="mt-8">
               <h2 className="text-2xl font-bold text-white mb-2">More Information</h2>
               <p className="text-grey">
@@ -476,14 +424,14 @@ const BiologyClubPage: React.FC = () => {
               </p>
             </div>
           </div>
-  
+
           <div className="md:w-1/3">
             <div className="grid grid-cols-2 gap-4">
-              {clubImages.map((src, index) => (
+              {clubInfo.images?.map((src, index) => (
                 <div key={index} className="relative h-48">
                   <Image
                     src={src}
-                    alt={`Biology Club activity ${index + 1}`}
+                    alt={`Club activity ${index + 1}`}
                     layout="fill"
                     objectFit="cover"
                     className="rounded-lg"
@@ -494,7 +442,7 @@ const BiologyClubPage: React.FC = () => {
           </div>
         </div>
       </main>
-  
+
       {isModalOpen && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
           <div className="bg-white p-6 rounded-lg">
@@ -539,4 +487,4 @@ const BiologyClubPage: React.FC = () => {
   );
 };
 
-export default BiologyClubPage;
+export default EditClubPage;
