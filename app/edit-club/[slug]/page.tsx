@@ -37,6 +37,7 @@ interface ClubInfo {
   advisors: Advisor[];
   studentLeads: StudentLead[];
   links: ClubLink[];
+  images: string[]; // Added images property
 }
 
 const EditClubPage: React.FC = () => {
@@ -56,6 +57,7 @@ const EditClubPage: React.FC = () => {
     advisors: [],
     studentLeads: [],
     links: [],
+    images: [], // Initialize images property
   });
 
   const [newTag, setNewTag] = useState("");
@@ -427,7 +429,7 @@ const EditClubPage: React.FC = () => {
 
           <div className="md:w-1/3">
             <div className="grid grid-cols-2 gap-4">
-              {clubInfo.images?.map((src, index) => (
+              {clubInfo.images?.map((src: string, index: number) => (
                 <div key={index} className="relative h-48">
                   <Image
                     src={src}
