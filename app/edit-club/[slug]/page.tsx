@@ -155,7 +155,7 @@ const EditClubPage = () => {
   const handleUpload = async () => {
     setIsUploading(true);
     try {
-      const clubDocRef = doc(db, 'clubs', clubInfo.name);
+      const clubDocRef = doc(db, 'clubs', `${clubInfo.name}-${clubInfo.school}`);
       await setDoc(clubDocRef, clubInfo);
       console.log('Club data uploaded successfully');
     } catch (error) {
@@ -434,9 +434,6 @@ const EditClubPage = () => {
                         placeholder='Student Email'
                         className="bg-gray-800 text-white p-1 rounded mr-2"
                       />
-                      <button onClick={() => handleRemoveStudentLead(index)} className="text-red-500">
-                        <FaTrash />
-                      </button>
                     </>
                   ) : (
                     <>
