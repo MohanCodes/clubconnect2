@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import { FaPlus, FaTimes, FaExclamationTriangle } from 'react-icons/fa';
 import Navbar from '@/components/Navbar';
 import { auth, db } from '@/firebase/firebase';
-import { collection, getDocs, query, where, addDoc, serverTimestamp } from 'firebase/firestore';
+import { collection, getDocs, query, where, addDoc, serverTimestamp, setDoc, doc } from 'firebase/firestore';
 import { onAuthStateChanged } from 'firebase/auth';
 import Tile from '@/components/Tile'
 
@@ -69,12 +69,15 @@ const Dashboard: React.FC = () => {
           where('school', '==', newClubSchool)
         );
         const clubSnapshot = await getDocs(clubQuery);
-
+  
         if (!clubSnapshot.empty) {
           setError('A club with this name already exists at this school.');
           return;
         }
-
+  
+        // Create the document ID
+        const docId = `${newClubName.replace(/\s+/g, '-')}-${newClubSchool.replace(/\s+/g, '-')}`.toLowerCase();
+  
         const newClub = {
           name: newClubName,
           school: newClubSchool,
@@ -83,10 +86,11 @@ const Dashboard: React.FC = () => {
           creatorName: user.displayName || 'Anonymous',
         };
         
-        const docRef = await addDoc(clubsRef, newClub);
+        // Use setDoc instead of addDoc to specify the document ID
+        await setDoc(doc(clubsRef, docId), newClub);
         
         // Update local state
-        setClubs(prevClubs => [...prevClubs, { ...newClub, id: docRef.id, createdAt: new Date() }]);
+        setClubs(prevClubs => [...prevClubs, { ...newClub, id: docId, createdAt: new Date() }]);
         
         // Close modal and reset form
         setIsModalOpen(false);
@@ -95,8 +99,7 @@ const Dashboard: React.FC = () => {
         setError('');
         
         // Navigate to edit page
-        const slug = `${newClubName.replace(/\s+/g, '-')}-${newClubSchool.replace(/\s+/g, '-')}`.toLowerCase();
-        router.push(`/edit-club/${encodeURIComponent(slug)}`);
+        router.push(`/edit-club/${encodeURIComponent(docId)}`);
       } catch (error) {
         console.error("Error creating club:", error);
         setError('An error occurred while creating the club. Please try again.');
