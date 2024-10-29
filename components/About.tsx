@@ -27,7 +27,7 @@ const AboutPage: React.FC = () => {
         <section className="max-w-2xl text-center">
           <h2 className="text-2xl font-semibold mb-4">Join Us</h2>
           <p className="text-lg text-gray-300">
-            Whether you're looking to make new friends, develop new skills, or just have fun, ClubConnect is here for you. Join us today and be part of something great!
+            Whether you&apos;re looking to make new friends, develop new skills, or just have fun, ClubConnect is here for you. Join us today and be part of something great!
           </p>
         </section>
       </main>

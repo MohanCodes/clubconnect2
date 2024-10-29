@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter, useParams } from 'next/navigation';
-import { FaEnvelope, FaTimes, FaCalendarAlt, FaClock, FaMapMarkerAlt, FaUserGraduate, FaDollarSign, FaPlus, FaTrash, FaTwitter, FaInstagram, FaFacebook, FaLinkedin, FaYoutube, FaDiscord, FaGithub, FaTiktok, FaGlobe, FaUser, FaLink } from 'react-icons/fa';
+import { FaEnvelope, FaTimes, FaCalendarAlt, FaClock, FaMapMarkerAlt, FaUserGraduate, FaDollarSign, FaPlus, FaTrash, FaTwitter, FaInstagram, FaFacebook, FaLinkedin, FaYoutube, FaDiscord, FaGithub, FaTiktok, FaGlobe, FaUser, FaLink, FaCircle, FaCircleNotch } from 'react-icons/fa';
 import Navbar from '@/components/Navbar';
 import { db, storage } from '@/firebase/firebase';
 import { doc, collection, setDoc, getDocs, updateDoc, arrayUnion, arrayRemove, deleteDoc } from 'firebase/firestore';
@@ -52,6 +52,7 @@ const EditClubPage = () => {
   const [newLink, setNewLink] = useState({ url: '', platform: '' });
   const [isUploading, setIsUploading] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
 
   const [clubInfo, setClubInfo] = useState<ClubInfo>({
     id: "",
@@ -81,6 +82,7 @@ const EditClubPage = () => {
   }, [slug]);
   
   const fetchClubInfo = async () => {
+    setIsLoading(true);
     try {
       const clubsCollectionRef = collection(db, 'clubs');
       const clubsSnapshot = await getDocs(clubsCollectionRef);
@@ -93,7 +95,7 @@ const EditClubPage = () => {
           advisors: data.advisors || [],
           studentLeads: data.studentLeads || [],
           links: data.links || [],
-          images: data.images || [] // Ensure images is always an array
+          images: data.images || []
         } as ClubInfo;
       });
       const matchingClub = clubsData.find(club => club.id === slug);
@@ -104,6 +106,8 @@ const EditClubPage = () => {
       }
     } catch (error) {
       console.error('Error fetching club data:', error);
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -244,7 +248,7 @@ const EditClubPage = () => {
       const clubDocRef = doc(db, 'clubs', `${clubInfo.name}-${clubInfo.school}`);
       await deleteDoc(clubDocRef);
       console.log('Club deleted successfully');
-      router.push('/clubs'); // Redirect to the clubs list page
+      router.push('/dashboard'); // Redirect to the clubs list page
     } catch (error) {
       console.error('Error deleting club:', error);
     }
@@ -318,8 +322,16 @@ const EditClubPage = () => {
     <div className="bg-cblack min-h-screen">
       <Navbar />
       <main className="container mx-auto px-4 py-8">
+      {isLoading && (
+        <div className="fixed inset-0 bg-black backdrop-blur bg-opacity-75 flex items-center justify-center z-50">
+          <div className="bg-white p-6 rounded-lg flex flex-col items-center">
+            <FaCircleNotch className="animate-spin h-16 w-16 text-azul" />
+            <p className="mt-4 text-azul font-semibold">Loading club data...</p>
+          </div>
+        </div>
+      )}
       {isDeleteModalOpen && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
+        <div className="fixed inset-0 bg-black backdrop-blur bg-opacity-50 flex items-center justify-center">
           <div className="bg-white p-6 rounded-lg w-96">
             <div className="flex justify-between items-center mb-4">
               <h2 className="text-2xl font-bold">Delete Club</h2>
@@ -349,7 +361,7 @@ const EditClubPage = () => {
         </div>
       )}
         <div className="flex justify-between items-center mb-4">
-          <h1 className="text-4xl font-bold text-white">{clubInfo.name}</h1>
+          <h1 className="text-4xl font-bold text-white">{clubInfo.name == "" ? 'Enter Club Name Here' : clubInfo.name}</h1>
           <div className='space-x-4'>
             <button
               onClick={isEditing ? handleSave : handleEdit}
@@ -375,33 +387,37 @@ const EditClubPage = () => {
         </div>
 
         <div className="flex flex-wrap gap-2 mb-6">
-          {(clubInfo.tags || []).map((tag, index) => (
-            <span key={index} className="bg-blue-100 text-azul text-sm font-medium px-3 py-1 rounded-full">
-              {tag}
-              {isEditing && (
-                <button onClick={() => handleRemoveTag(index)} className="ml-2 text-red-500">×</button>
-              )}
-            </span>
-          ))}
-          {isEditing && (
-            <div className="flex items-center">
-              <input
-                type="text"
-                value={newTag}
-                onChange={(e) => setNewTag(e.target.value)}
-                placeholder="Add a new tag"
-                className="bg-gray-800 text-white p-1 rounded"
-              />
-              <button onClick={handleAddTag} className="bg-green-500 text-white px-2 py-1 rounded ml-2">
-                Add
-              </button>
-            </div>
-          )}
-          <div className="mt-1 ml-8">
-              <p className={`text-${clubInfo.isComplete ? 'white' : 'red-500'}`}>
-                {clubInfo.isComplete ? 'Club information is complete!' : 'Club information is incomplete, and won\'t be shown until all fields have been filled.'}
-              </p>
-            </div>
+          <div className="flex-grow">
+            {(clubInfo.tags || []).map((tag, index) => (
+              <span key={index} className="inline-block bg-blue-100 text-azul text-sm font-medium px-3 py-1 rounded-full mr-2 mb-2">
+                {tag}
+                {isEditing && (
+                  <button onClick={() => handleRemoveTag(index)} className="ml-2 text-red-500">×</button>
+                )}
+              </span>
+            ))}
+            {isEditing && (
+              <div className="flex items-center mt-2">
+                <input
+                  type="text"
+                  value={newTag}
+                  onChange={(e) => setNewTag(e.target.value)}
+                  placeholder="Add a new tag"
+                  className="bg-gray-800 text-white p-1 rounded"
+                />
+                <button onClick={handleAddTag} className="bg-green-500 text-white px-2 py-1 rounded ml-2">
+                  Add
+                </button>
+              </div>
+            )}
+          </div>
+          <div className="flex-shrink-0 w-1/3 text-right">
+            <p className={`text-${clubInfo.isComplete ? 'white' : 'red-500'} ${clubInfo.isComplete ? '' : 'whitespace-normal'}`}>
+              {clubInfo.isComplete 
+                ? 'Club information is complete!' 
+                : 'Club information is incomplete, and won\'t be shown on the main page until all fields have been filled.'}
+            </p>
+          </div>
         </div>
 
         <div className="flex flex-col md:flex-row gap-8">
