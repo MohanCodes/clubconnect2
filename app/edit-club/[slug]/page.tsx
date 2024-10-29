@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { useRouter } from 'next/router';
+import { useRouter, useParams } from 'next/navigation';
 import { FaEnvelope, FaCalendarAlt, FaClock, FaMapMarkerAlt, FaUserGraduate, FaDollarSign, FaEdit, FaSave, FaPlus, FaTrash, FaTwitter, FaInstagram, FaFacebook, FaLinkedin, FaYoutube, FaDiscord, FaGithub, FaTiktok, FaGlobe, FaUser, FaLink } from 'react-icons/fa';
 import Navbar from '@/components/Navbar';
 import { db } from '@/firebase/firebase';
@@ -40,7 +40,9 @@ interface ClubInfo {
   images: string[]; // Added images property
 }
 
-const EditClubPage: React.FC = () => {
+const EditClubPage = () => {
+  const params = useParams();
+  const slug = params.slug;
   const [isEditing, setIsEditing] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [newLink, setNewLink] = useState({ url: '', platform: '' });
@@ -62,7 +64,6 @@ const EditClubPage: React.FC = () => {
 
   const [newTag, setNewTag] = useState("");
   const router = useRouter();
-  const { slug } = router.query;
 
   useEffect(() => {
     if (slug) {
