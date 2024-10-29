@@ -27,6 +27,7 @@ interface ClubLink {
 
 interface ClubInfo {
   name: string;
+  school: string,
   tags: string[];
   description: string;
   length: string;
@@ -49,6 +50,7 @@ const EditClubPage = () => {
   const [isUploading, setIsUploading] = useState(false);
   const [clubInfo, setClubInfo] = useState<ClubInfo>({
     name: "",
+    school: "",
     tags: [],
     description: "",
     length: "",
