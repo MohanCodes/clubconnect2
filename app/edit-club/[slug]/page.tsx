@@ -381,12 +381,19 @@ const EditClubPage = () => {
                         onChange={(e) => handleStudentLeadChange(index, 'name', e.target.value)}
                         placeholder='Student Name'
                         className="bg-gray-800 text-white p-1 rounded mr-2"
-                        />
-                        </>
-                      ) : (
-                        <span className="text-grey">{lead.name} - {lead.role}</span>
-                      )}
-                    </div>
+                      />
+                      <input
+                        type="text"
+                        value={lead.role}
+                        onChange={(e) => handleStudentLeadChange(index, 'role', e.target.value)}
+                        placeholder='Student Role'
+                        className="bg-gray-800 text-white p-1 rounded mr-2"
+                      />
+                    </>
+                  ) : (
+                    <span className="text-grey">{lead.name} - {lead.role}</span>
+                  )}
+                </div>
               ))}
               {isEditing && (
                 <button onClick={handleAddStudentLead} className="bg-green-500 text-white px-2 py-1 rounded flex flex-row items-center">
