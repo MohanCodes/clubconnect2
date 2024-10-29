@@ -16,6 +16,7 @@ interface DashClub {
   creatorId: string;
   createdAt: Date;
   creatorName: string;
+  isComplete: boolean;
 }
 
 const Dashboard: React.FC = () => {
@@ -84,6 +85,7 @@ const Dashboard: React.FC = () => {
           creatorId: user.uid,
           createdAt: serverTimestamp(),
           creatorName: user.displayName || 'Anonymous',
+          isComplete: false,
         };
         
         // Use setDoc instead of addDoc to specify the document ID

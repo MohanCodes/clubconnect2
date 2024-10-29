@@ -4,10 +4,10 @@ import React, { useState, useEffect } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter, useParams } from 'next/navigation';
-import { FaEnvelope, FaCalendarAlt, FaClock, FaMapMarkerAlt, FaUserGraduate, FaDollarSign, FaEdit, FaSave, FaPlus, FaTrash, FaTwitter, FaInstagram, FaFacebook, FaLinkedin, FaYoutube, FaDiscord, FaGithub, FaTiktok, FaGlobe, FaUser, FaLink } from 'react-icons/fa';
+import { FaEnvelope, FaTimes, FaCalendarAlt, FaClock, FaMapMarkerAlt, FaUserGraduate, FaDollarSign, FaEdit, FaSave, FaPlus, FaTrash, FaTwitter, FaInstagram, FaFacebook, FaLinkedin, FaYoutube, FaDiscord, FaGithub, FaTiktok, FaGlobe, FaUser, FaLink } from 'react-icons/fa';
 import Navbar from '@/components/Navbar';
 import { db, storage } from '@/firebase/firebase';
-import { doc, setDoc, getDoc, updateDoc, arrayUnion, arrayRemove } from 'firebase/firestore';
+import { doc, collection, setDoc, getDocs, updateDoc, arrayUnion, arrayRemove, deleteDoc } from 'firebase/firestore';
 import { ref, uploadBytes, getDownloadURL, deleteObject } from 'firebase/storage';
 
 interface Advisor {
@@ -27,6 +27,7 @@ interface ClubLink {
 }
 
 interface ClubInfo {
+  id: string;
   name: string;
   school: string,
   tags: string[];
@@ -49,7 +50,10 @@ const EditClubPage = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [newLink, setNewLink] = useState({ url: '', platform: '' });
   const [isUploading, setIsUploading] = useState(false);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+
   const [clubInfo, setClubInfo] = useState<ClubInfo>({
+    id: "",
     name: "",
     school: "",
     tags: [],
@@ -62,7 +66,7 @@ const EditClubPage = () => {
     advisors: [],
     studentLeads: [],
     links: [],
-    images: [], // Initialize images property
+    images: [],
   });
 
   const [newTag, setNewTag] = useState("");
@@ -70,17 +74,20 @@ const EditClubPage = () => {
 
   useEffect(() => {
     if (slug) {
-      const [club, school] = (slug as string).split("-");
-      fetchClubInfo(club, school);
+      fetchClubInfo();
     }
   }, [slug]);
-
-  const fetchClubInfo = async (club: string, school: string) => {
+  
+  const fetchClubInfo = async () => {
     try {
-      const clubDocRef = doc(db, 'clubs', `${club}-${school}`);
-      const clubDoc = await getDoc(clubDocRef);
-      if (clubDoc.exists()) {
-        setClubInfo(clubDoc.data() as ClubInfo);
+      const clubsCollectionRef = collection(db, 'clubs');
+      const clubsSnapshot = await getDocs(clubsCollectionRef);
+      const clubsData = clubsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as ClubInfo));
+      const matchingClub = clubsData.find(club => club.id === slug);
+      if (matchingClub) {
+        setClubInfo(matchingClub);
+      } else {
+        console.error('Club not found');
       }
     } catch (error) {
       console.error('Error fetching club data:', error);
@@ -155,12 +162,24 @@ const EditClubPage = () => {
     setIsUploading(true);
     try {
       const clubDocRef = doc(db, 'clubs', `${clubInfo.name}-${clubInfo.school}`);
-      await updateDoc(clubDocRef, clubInfo);
+      const clubData = Object.assign({}, clubInfo);
+      await setDoc(clubDocRef, clubData);
       console.log('Club data uploaded successfully');
     } catch (error) {
       console.error('Error uploading club data:', error);
     } finally {
       setIsUploading(false);
+    }
+  };
+
+  const handleDeleteClub = async () => {
+    try {
+      const clubDocRef = doc(db, 'clubs', `${clubInfo.name}-${clubInfo.school}`);
+      await deleteDoc(clubDocRef);
+      console.log('Club deleted successfully');
+      router.push('/clubs'); // Redirect to the clubs list page
+    } catch (error) {
+      console.error('Error deleting club:', error);
     }
   };
 
@@ -183,11 +202,11 @@ const EditClubPage = () => {
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
       const file = e.target.files[0];
-      const storageRef = ref(storage, `clubs/${clubInfo.name}-${clubInfo.school}/${file.name}`);
+      const storageRef = ref(storage, `clubs/${clubInfo.id}/${file.name}`);
       try {
         await uploadBytes(storageRef, file);
         const downloadURL = await getDownloadURL(storageRef);
-        const clubDocRef = doc(db, 'clubs', `${clubInfo.name}-${clubInfo.school}`);
+        const clubDocRef = doc(db, 'clubs', clubInfo.id);
         await updateDoc(clubDocRef, {
           images: arrayUnion(downloadURL)
         });
@@ -200,12 +219,12 @@ const EditClubPage = () => {
       }
     }
   };
-
+  
   const handleImageDelete = async (url: string) => {
-    const storageRef = ref(storage, `clubs/${clubInfo.name}-${clubInfo.school}/${url.split('/').pop()}`);
+    const storageRef = ref(storage, `clubs/${clubInfo.id}/${url.split('/').pop()}`);
     try {
       await deleteObject(storageRef);
-      const clubDocRef = doc(db, 'clubs', `${clubInfo.name}-${clubInfo.school}`);
+      const clubDocRef = doc(db, 'clubs', clubInfo.id);
       await updateDoc(clubDocRef, {
         images: arrayRemove(url)
       });
@@ -222,27 +241,63 @@ const EditClubPage = () => {
     <div className="bg-cblack min-h-screen">
       <Navbar />
       <main className="container mx-auto px-4 py-8">
+      {isDeleteModalOpen && (
+  <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
+    <div className="bg-white p-6 rounded-lg w-96">
+      <div className="flex justify-between items-center mb-4">
+        <h2 className="text-2xl font-bold">Delete Club</h2>
+        <button onClick={() => setIsDeleteModalOpen(false)} className="text-gray-500 hover:text-gray-700">
+          <FaTimes size={24} />
+        </button>
+      </div>
+      <p className="mb-4">Are you sure you want to delete this club? This action cannot be undone.</p>
+      <div className="flex justify-end space-x-4">
+        <button
+          onClick={() => setIsDeleteModalOpen(false)}
+          className="bg-gray-300 text-black px-4 py-2 rounded hover:bg-gray-400"
+        >
+          Cancel
+        </button>
+        <button
+          onClick={() => {
+            handleDeleteClub();
+            setIsDeleteModalOpen(false);
+          }}
+          className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600"
+        >
+          Delete
+        </button>
+      </div>
+    </div>
+  </div>
+)}
         <div className="flex justify-between items-center mb-4">
           <h1 className="text-4xl font-bold text-white">{clubInfo.name}</h1>
-        <div className='space-x-4'>
-          <button
-            onClick={isEditing ? handleSave : handleEdit}
-            className="bg-azul text-white text-sm px-4 py-2 rounded-full"
-          >
-            {isEditing ? <p>Save Page</p> :<p>Edit Page</p>}
-          </button>
-          <button
-            onClick={handleUpload}
-            className="bg-azul text-white text-sm px-4 py-2 rounded-full"
-            disabled={isUploading}
-          >
-            {isUploading ? <p>Uploading...</p> : <p>Upload Page</p>}
-          </button>
-        </div>
+          <div className='space-x-4'>
+            <button
+              onClick={isEditing ? handleSave : handleEdit}
+              className="bg-azul text-white text-sm px-4 py-2 rounded-full"
+            >
+              {isEditing ? <p>Save Page</p> : <p>Edit Page</p>}
+            </button>
+            <button
+              onClick={handleUpload}
+              className="bg-azul text-white text-sm px-4 py-2 rounded-full"
+              disabled={isUploading}
+            >
+              {isUploading ? <p>Uploading...</p> : <p>Upload Page</p>}
+            </button>
+            <button
+              onClick={() => setIsDeleteModalOpen(true)}
+              className="bg-red-500 text-white text-sm px-4 py-2 rounded-full"
+            >
+              Delete Club
+            </button>
+          </div>
         </div>
 
         <div className="flex flex-wrap gap-2 mb-6">
-          {clubInfo.tags.map((tag, index) => (
+          {(clubInfo.tags || []).map((tag, index) => (
             <span key={index} className="bg-blue-100 text-azul text-sm font-medium px-3 py-1 rounded-full">
               {tag}
               {isEditing && (
@@ -354,39 +409,21 @@ const EditClubPage = () => {
 
             <div className="mb-8">
               <h2 className="text-2xl font-bold text-white mb-2">Advisors</h2>
-              {clubInfo.advisors.map((advisor, index) => (
-                <div key={index} className="mb-2">
-                  {isEditing ? (
-                    <>
-                      <input
-                        type="text"
-                        value={advisor.name}
-                        onChange={(e) => handleAdvisorChange(index, 'name', e.target.value)}
-                        className="bg-gray-800 text-white p-1 rounded mr-2"
-                        placeholder="Advisor Name"
-                      />
-                      <input
-                        type="email"
-                        value={advisor.email}
-                        onChange={(e) => handleAdvisorChange(index, 'email', e.target.value)}
-                        className="bg-gray-800 text-white p-1 rounded mr-2"
-                        placeholder="Advisor Email"
-                      />
-                      <button onClick={() => handleRemoveAdvisor(index)} className="text-red-500">
-                        <FaTrash />
-                      </button>
-                    </>
-                  ) : (
-                    <>
-                      <p className="text-grey">{advisor.name}</p>
-                      <Link href={`mailto:${advisor.email}`} className="text-azul hover:underline">
-                        <span className="flex items-center">
-                          <FaEnvelope className="mr-2" />
-                          {advisor.email}
-                        </span>
-                      </Link>
-                    </>
-                  )}
+              {(clubInfo.advisors || []).map((advisor, index) => (
+                <div key={index}>
+                  <input
+                    type="text"
+                    value={advisor.name}
+                    onChange={(e) => handleAdvisorChange(index, 'name', e.target.value)}
+                    placeholder="Advisor Name"
+                  />
+                  <input
+                    type="email"
+                    value={advisor.email}
+                    onChange={(e) => handleAdvisorChange(index, 'email', e.target.value)}
+                    placeholder="Advisor Email"
+                  />
+                  <button onClick={() => handleRemoveAdvisor(index)}>Remove Advisor</button>
                 </div>
               ))}
               {isEditing && (
@@ -398,43 +435,21 @@ const EditClubPage = () => {
 
             <div className="mb-8">
               <h2 className="text-2xl font-bold text-white mb-2">Student Leads</h2>
-              {clubInfo.studentLeads.map((lead, index) => (
-                <div key={index} className="mb-2">
-                  {isEditing ? (
-                    <>
-                      <input
-                        type="text"
-                        value={lead.name}
-                        onChange={(e) => handleStudentLeadChange(index, 'name', e.target.value)}
-                        placeholder='Student Name'
-                        className="bg-gray-800 text-white p-1 rounded mr-2"
-                      />
-                      <input
-                        type="text"
-                        value={lead.role}
-                        onChange={(e) => handleStudentLeadChange(index, 'role', e.target.value)}
-                        placeholder='Student Role'
-                        className="bg-gray-800 text-white p-1 rounded mr-2"
-                      />
-                      <input
-                        type="email"
-                        value={lead.email}
-                        onChange={(e) => handleStudentLeadChange(index, 'email', e.target.value)}
-                        placeholder='Student Email'
-                        className="bg-gray-800 text-white p-1 rounded mr-2"
-                      />
-                    </>
-                  ) : (
-                    <>
-                      <p className="text-grey">{lead.name} - {lead.role}</p>
-                      <Link href={`mailto:${lead.email}`} className="text-azul hover:underline">
-                        <span className="flex items-center">
-                          <FaEnvelope className="mr-2" />
-                          {lead.email}
-                        </span>
-                      </Link>
-                    </>
-                  )}
+              {(clubInfo.studentLeads || []).map((lead, index) => (
+                <div key={index}>
+                  <input
+                    type="text"
+                    value={lead.name}
+                    onChange={(e) => handleStudentLeadChange(index, 'name', e.target.value)}
+                    placeholder="Student Lead Name"
+                  />
+                  <input
+                    type="email"
+                    value={lead.email}
+                    onChange={(e) => handleStudentLeadChange(index, 'email', e.target.value)}
+                    placeholder="Student Lead Email"
+                  />
+                  <button onClick={() => handleRemoveStudentLead(index)}>Remove Student Lead</button>
                 </div>
               ))}
               {isEditing && (
@@ -446,7 +461,7 @@ const EditClubPage = () => {
 
             <div className="mb-8">
               <h2 className="text-2xl font-bold text-white mb-2">Links</h2>
-              {clubInfo.links.map((link, index) => (
+              {(clubInfo.links || []).map((link, index) => (
                 <div key={index} className="flex items-center mb-2">
                   <a href={link.url} target="_blank" rel="noopener noreferrer" className="text-azul hover:underline flex items-center">
                     {getPlatformIcon(link.platform)}
