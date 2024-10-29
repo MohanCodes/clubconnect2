@@ -12,7 +12,7 @@ export default function About() {
             About <span className='text-azul'>ClubConnect</span>
           </h1>
           <p className="text-xl mb-6 text-center text-grey">
-            ClubConnect is your gateway to the vibrant club community in the west metro area. We're dedicated to helping students discover, connect with, and engage in local clubs and organizations.
+            ClubConnect is your gateway to the vibrant club community in the west metro area. We&apos;re dedicated to helping students discover, connect with, and engage in local clubs and organizations.
           </p>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8 text-left">
             <div>
@@ -34,7 +34,7 @@ export default function About() {
           <div className="mt-12">
             <h2 className="text-2xl font-semibold text-azul mb-4">Get Involved</h2>
             <p className="text-grey mb-6">
-              Whether you're looking to join a club or promote your own, ClubConnect is here to help. Join our community today!
+              Whether you&apos;re looking to join a club or promote your own, ClubConnect is here to help. Join our community today!
             </p>
             <button className="px-7 py-3 rounded-full bg-azul text-white hover:opacity-70">
               Join ClubConnect

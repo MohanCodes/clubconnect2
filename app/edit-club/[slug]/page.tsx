@@ -28,6 +28,7 @@ interface ClubLink {
 
 interface ClubInfo {
   id: string;
+  isComplete: boolean,
   name: string;
   school: string,
   tags: string[];
@@ -46,7 +47,7 @@ interface ClubInfo {
 const EditClubPage = () => {
   const params = useParams();
   const slug = params.slug;
-  const [isEditing, setIsEditing] = useState(false);
+  const [isEditing, setIsEditing] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [newLink, setNewLink] = useState({ url: '', platform: '' });
   const [isUploading, setIsUploading] = useState(false);
@@ -54,6 +55,7 @@ const EditClubPage = () => {
 
   const [clubInfo, setClubInfo] = useState<ClubInfo>({
     id: "",
+    isComplete: false,
     name: "",
     school: "",
     tags: [],
@@ -82,7 +84,18 @@ const EditClubPage = () => {
     try {
       const clubsCollectionRef = collection(db, 'clubs');
       const clubsSnapshot = await getDocs(clubsCollectionRef);
-      const clubsData = clubsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as ClubInfo));
+      const clubsData = clubsSnapshot.docs.map(doc => {
+        const data = doc.data();
+        return {
+          id: doc.id,
+          ...data,
+          tags: data.tags || [],
+          advisors: data.advisors || [],
+          studentLeads: data.studentLeads || [],
+          links: data.links || [],
+          images: data.images || [] // Ensure images is always an array
+        } as ClubInfo;
+      });
       const matchingClub = clubsData.find(club => club.id === slug);
       if (matchingClub) {
         setClubInfo(matchingClub);
@@ -94,35 +107,72 @@ const EditClubPage = () => {
     }
   };
 
+  const checkCompletion = (info: ClubInfo): boolean => {
+    const requiredFields: (keyof ClubInfo)[] = [
+      'name', 'school', 'description', 'length', 'meetingTimes', 
+      'meetingSite', 'eligibility', 'costs'
+    ];
+    
+    const isAllFieldsFilled = requiredFields.every(field => 
+      info[field] !== undefined && info[field] !== ''
+    );
+    
+    const hasAdvisor = info.advisors.length > 0 && 
+      info.advisors.every(advisor => advisor.name !== '' && advisor.email !== '');
+    
+    const hasStudentLead = info.studentLeads.length > 0 && 
+      info.studentLeads.every(lead => lead.name !== '' && lead.role !== '' && lead.email !== '');
+    
+    const hasLink = info.links.length > 0;
+    
+    return isAllFieldsFilled && hasAdvisor && hasStudentLead && hasLink;
+  };
+
   const handleEdit = () => setIsEditing(true);
   const handleSave = () => setIsEditing(false);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>, field: keyof ClubInfo) => {
     if (field !== 'name' && field !== 'school') {
-      setClubInfo({ ...clubInfo, [field]: e.target.value });
+      const updatedClubInfo = { ...clubInfo, [field]: e.target.value };
+      setClubInfo({
+        ...updatedClubInfo,
+        isComplete: checkCompletion(updatedClubInfo)
+      });
     }
   };
 
   const handleAddTag = () => {
-    if (newTag && !clubInfo.tags.includes(newTag)) {
-      setClubInfo({ ...clubInfo, tags: [...clubInfo.tags, newTag] });
+    if (newTag && !clubInfo.tags?.includes(newTag)) {
+      setClubInfo(prevState => ({
+        ...prevState,
+        tags: [...(prevState.tags || []), newTag]
+      }));
       setNewTag("");
     }
   };
 
   const handleRemoveTag = (index: number) => {
-    const updatedTags = clubInfo.tags.filter((_, i) => i !== index);
-    setClubInfo({ ...clubInfo, tags: updatedTags });
+    setClubInfo(prevState => ({
+      ...prevState,
+      tags: (prevState.tags || []).filter((_, i) => i !== index)
+    }));
   };
 
   const handleAdvisorChange = (index: number, field: keyof Advisor, value: string) => {
     const updatedAdvisors = [...clubInfo.advisors];
     updatedAdvisors[index] = { ...updatedAdvisors[index], [field]: value };
-    setClubInfo({ ...clubInfo, advisors: updatedAdvisors });
+    const updatedClubInfo = { ...clubInfo, advisors: updatedAdvisors };
+    setClubInfo({
+      ...updatedClubInfo,
+      isComplete: checkCompletion(updatedClubInfo)
+    });
   };
 
   const handleAddAdvisor = () => {
-    setClubInfo({ ...clubInfo, advisors: [...clubInfo.advisors, { name: "", email: "" }] });
+    setClubInfo(prevState => ({
+      ...prevState,
+      advisors: [...(prevState.advisors || []), { name: "", email: "" }]
+    }));
   };
 
   const handleRemoveAdvisor = (index: number) => {
@@ -133,11 +183,18 @@ const EditClubPage = () => {
   const handleStudentLeadChange = (index: number, field: keyof StudentLead, value: string) => {
     const updatedLeads = [...clubInfo.studentLeads];
     updatedLeads[index] = { ...updatedLeads[index], [field]: value };
-    setClubInfo({ ...clubInfo, studentLeads: updatedLeads });
+    const updatedClubInfo = { ...clubInfo, studentLeads: updatedLeads };
+    setClubInfo({
+      ...updatedClubInfo,
+      isComplete: checkCompletion(updatedClubInfo)
+    });
   };
 
   const handleAddStudentLead = () => {
-    setClubInfo({ ...clubInfo, studentLeads: [...clubInfo.studentLeads, { name: "", role: "", email: "" }] });
+    setClubInfo(prevState => ({
+      ...prevState,
+      studentLeads: [...(prevState.studentLeads || []), { name: "", role: "", email: "" }]
+    }));
   };
 
   const handleRemoveStudentLead = (index: number) => {
@@ -147,7 +204,14 @@ const EditClubPage = () => {
 
   const handleAddLink = () => {
     if (newLink.url && newLink.platform) {
-      setClubInfo({ ...clubInfo, links: [...clubInfo.links, newLink] });
+      const updatedClubInfo = {
+        ...clubInfo,
+        links: [...clubInfo.links, newLink]
+      };
+      setClubInfo({
+        ...updatedClubInfo,
+        isComplete: checkCompletion(updatedClubInfo)
+      });
       setNewLink({ url: '', platform: '' });
       setIsModalOpen(false);
     }
@@ -161,8 +225,11 @@ const EditClubPage = () => {
   const handleUpload = async () => {
     setIsUploading(true);
     try {
-      const clubDocRef = doc(db, 'clubs', `${clubInfo.name}-${clubInfo.school}`);
-      const clubData = Object.assign({}, clubInfo);
+      const clubDocRef = doc(db, 'clubs', clubInfo.id);
+      const clubData = {
+        ...clubInfo,
+        isComplete: checkCompletion(clubInfo)
+      };
       await setDoc(clubDocRef, clubData);
       console.log('Club data uploaded successfully');
     } catch (error) {
@@ -212,7 +279,7 @@ const EditClubPage = () => {
         });
         setClubInfo(prevState => ({
           ...prevState,
-          images: [...prevState.images, downloadURL]
+          images: [...(prevState.images || []), downloadURL]
         }));
       } catch (error) {
         console.error('Error uploading image:', error);
@@ -221,19 +288,29 @@ const EditClubPage = () => {
   };
   
   const handleImageDelete = async (url: string) => {
-    const storageRef = ref(storage, `clubs/${clubInfo.id}/${url.split('/').pop()}`);
     try {
-      await deleteObject(storageRef);
+      // Create a reference to the file using the full URL
+      const imageRef = ref(storage, url);
+  
+      // Delete the file from Firebase Storage
+      await deleteObject(imageRef);
+  
+      // Update Firestore document
       const clubDocRef = doc(db, 'clubs', clubInfo.id);
       await updateDoc(clubDocRef, {
         images: arrayRemove(url)
       });
+  
+      // Update local state
       setClubInfo(prevState => ({
         ...prevState,
         images: prevState.images.filter(image => image !== url)
       }));
+  
+      console.log('Image deleted successfully');
     } catch (error) {
       console.error('Error deleting image:', error);
+      // You might want to show an error message to the user here
     }
   };
 
@@ -242,35 +319,35 @@ const EditClubPage = () => {
       <Navbar />
       <main className="container mx-auto px-4 py-8">
       {isDeleteModalOpen && (
-  <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
-    <div className="bg-white p-6 rounded-lg w-96">
-      <div className="flex justify-between items-center mb-4">
-        <h2 className="text-2xl font-bold">Delete Club</h2>
-        <button onClick={() => setIsDeleteModalOpen(false)} className="text-gray-500 hover:text-gray-700">
-          <FaTimes size={24} />
-        </button>
-      </div>
-      <p className="mb-4">Are you sure you want to delete this club? This action cannot be undone.</p>
-      <div className="flex justify-end space-x-4">
-        <button
-          onClick={() => setIsDeleteModalOpen(false)}
-          className="bg-gray-300 text-black px-4 py-2 rounded hover:bg-gray-400"
-        >
-          Cancel
-        </button>
-        <button
-          onClick={() => {
-            handleDeleteClub();
-            setIsDeleteModalOpen(false);
-          }}
-          className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600"
-        >
-          Delete
-        </button>
-      </div>
-    </div>
-  </div>
-)}
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
+          <div className="bg-white p-6 rounded-lg w-96">
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="text-2xl font-bold">Delete Club</h2>
+              <button onClick={() => setIsDeleteModalOpen(false)} className="text-gray-500 hover:text-gray-700">
+                <FaTimes size={24} />
+              </button>
+            </div>
+            <p className="mb-4">Are you sure you want to delete this club? This action cannot be undone.</p>
+            <div className="flex justify-end space-x-4">
+              <button
+                onClick={() => setIsDeleteModalOpen(false)}
+                className="bg-gray-300 text-black px-4 py-2 rounded hover:bg-gray-400"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={() => {
+                  handleDeleteClub();
+                  setIsDeleteModalOpen(false);
+                }}
+                className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600"
+              >
+                Delete
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
         <div className="flex justify-between items-center mb-4">
           <h1 className="text-4xl font-bold text-white">{clubInfo.name}</h1>
           <div className='space-x-4'>
@@ -278,7 +355,7 @@ const EditClubPage = () => {
               onClick={isEditing ? handleSave : handleEdit}
               className="bg-azul text-white text-sm px-4 py-2 rounded-full"
             >
-              {isEditing ? <p>Save Page</p> : <p>Edit Page</p>}
+              {isEditing ? <p>Render Page</p> : <p>Edit Page</p>}
             </button>
             <button
               onClick={handleUpload}
@@ -294,6 +371,7 @@ const EditClubPage = () => {
               Delete Club
             </button>
           </div>
+            
         </div>
 
         <div className="flex flex-wrap gap-2 mb-6">
@@ -319,6 +397,11 @@ const EditClubPage = () => {
               </button>
             </div>
           )}
+          <div className="mt-1 ml-8">
+              <p className={`text-${clubInfo.isComplete ? 'white' : 'red-500'}`}>
+                {clubInfo.isComplete ? 'Club information is complete!' : 'Club information is incomplete, and won\'t be shown until all fields have been filled.'}
+              </p>
+            </div>
         </div>
 
         <div className="flex flex-col md:flex-row gap-8">
@@ -410,20 +493,38 @@ const EditClubPage = () => {
             <div className="mb-8">
               <h2 className="text-2xl font-bold text-white mb-2">Advisors</h2>
               {(clubInfo.advisors || []).map((advisor, index) => (
-                <div key={index}>
-                  <input
-                    type="text"
-                    value={advisor.name}
-                    onChange={(e) => handleAdvisorChange(index, 'name', e.target.value)}
-                    placeholder="Advisor Name"
-                  />
-                  <input
-                    type="email"
-                    value={advisor.email}
-                    onChange={(e) => handleAdvisorChange(index, 'email', e.target.value)}
-                    placeholder="Advisor Email"
-                  />
-                  <button onClick={() => handleRemoveAdvisor(index)}>Remove Advisor</button>
+                <div key={index} className="mb-2">
+                  {isEditing ? (
+                    <>
+                      <input
+                        type="text"
+                        value={advisor.name}
+                        onChange={(e) => handleAdvisorChange(index, 'name', e.target.value)}
+                        className="bg-gray-800 text-white p-1 rounded mr-2"
+                        placeholder="Advisor Name"
+                      />
+                      <input
+                        type="email"
+                        value={advisor.email}
+                        onChange={(e) => handleAdvisorChange(index, 'email', e.target.value)}
+                        className="bg-gray-800 text-white p-1 rounded mr-2"
+                        placeholder="Advisor Email"
+                      />
+                      <button onClick={() => handleRemoveAdvisor(index)} className="text-red-500">
+                        <FaTrash />
+                      </button>
+                    </>
+                  ) : (
+                    <>
+                      <p className="text-grey">{advisor.name}</p>
+                      <Link href={`mailto:${advisor.email}`} className="text-azul hover:underline">
+                        <span className="flex items-center">
+                          <FaEnvelope className="mr-2" />
+                          {advisor.email}
+                        </span>
+                      </Link>
+                    </>
+                  )}
                 </div>
               ))}
               {isEditing && (
@@ -436,20 +537,45 @@ const EditClubPage = () => {
             <div className="mb-8">
               <h2 className="text-2xl font-bold text-white mb-2">Student Leads</h2>
               {(clubInfo.studentLeads || []).map((lead, index) => (
-                <div key={index}>
-                  <input
-                    type="text"
-                    value={lead.name}
-                    onChange={(e) => handleStudentLeadChange(index, 'name', e.target.value)}
-                    placeholder="Student Lead Name"
-                  />
-                  <input
-                    type="email"
-                    value={lead.email}
-                    onChange={(e) => handleStudentLeadChange(index, 'email', e.target.value)}
-                    placeholder="Student Lead Email"
-                  />
-                  <button onClick={() => handleRemoveStudentLead(index)}>Remove Student Lead</button>
+                <div key={index} className="mb-2">
+                  {isEditing ? (
+                    <>
+                      <input
+                        type="text"
+                        value={lead.name}
+                        onChange={(e) => handleStudentLeadChange(index, 'name', e.target.value)}
+                        className="bg-gray-800 text-white p-1 rounded mr-2"
+                        placeholder="Student Name"
+                      />
+                      <input
+                        type="text"
+                        value={lead.role}
+                        onChange={(e) => handleStudentLeadChange(index, 'role', e.target.value)}
+                        className="bg-gray-800 text-white p-1 rounded mr-2"
+                        placeholder="Student Role"
+                      />
+                      <input
+                        type="email"
+                        value={lead.email}
+                        onChange={(e) => handleStudentLeadChange(index, 'email', e.target.value)}
+                        className="bg-gray-800 text-white p-1 rounded mr-2"
+                        placeholder="Student Email"
+                      />
+                      <button onClick={() => handleRemoveStudentLead(index)} className="text-red-500">
+                        <FaTrash />
+                      </button>
+                    </>
+                  ) : (
+                    <>
+                      <p className="text-grey">{lead.name} - {lead.role}</p>
+                      <Link href={`mailto:${lead.email}`} className="text-azul hover:underline">
+                        <span className="flex items-center">
+                          <FaEnvelope className="mr-2" />
+                          {lead.email}
+                        </span>
+                      </Link>
+                    </>
+                  )}
                 </div>
               ))}
               {isEditing && (
@@ -493,35 +619,37 @@ const EditClubPage = () => {
           </div>
 
           <div className="md:w-1/3">
-            <div className="grid grid-cols-2 gap-4">
-              {clubInfo.images?.map((src: string, index: number) => (
-                <div key={index} className="relative h-48">
-                  <Image
-                    src={src}
-                    alt={`Club activity ${index + 1}`}
-                    layout="fill"
-                    objectFit="cover"
-                    className="rounded-lg"
-                  />
+          <div className="grid grid-cols-2 gap-4">
+            {clubInfo.images?.map((src: string, index: number) => (
+              <div key={index} className="relative h-48">
+                <Image
+                  src={src}
+                  alt={`Club activity ${index + 1}`}
+                  layout="fill"
+                  objectFit="cover"
+                  className="rounded-lg"
+                />
+                {isEditing && ( // Only show the trash can when in edit mode
                   <button
                     onClick={() => handleImageDelete(src)}
                     className="absolute top-2 right-2 bg-red-500 text-white p-1 rounded-full"
                   >
                     <FaTrash />
                   </button>
-                </div>
-              ))}
-              {isEditing && (
-                <div className="relative h-48 flex items-center justify-center border-2 border-dashed border-gray-400 rounded-lg">
-                  <input
-                    type="file"
-                    onChange={handleImageUpload}
-                    className="absolute inset-0 opacity-0 cursor-pointer"
-                  />
-                  <FaPlus className="text-gray-400" />
-                </div>
-              )}
-            </div>
+                )}
+              </div>
+            ))}
+            {isEditing && ( // Show upload area only in edit mode
+              <div className="relative h-48 flex items-center justify-center border-2 border-dashed border-gray-400 rounded-lg">
+                <input
+                  type="file"
+                  onChange={handleImageUpload}
+                  className="absolute inset-0 opacity-0 cursor-pointer"
+                />
+                <FaPlus className="text-gray-400" />
+              </div>
+            )}
+          </div>
           </div>
         </div>
       </main>

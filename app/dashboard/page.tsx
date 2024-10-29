@@ -49,7 +49,8 @@ const Dashboard: React.FC = () => {
       const querySnapshot = await getDocs(q);
       const clubsData = querySnapshot.docs.map(doc => ({
         id: doc.id,
-        ...doc.data()
+        ...doc.data(),
+        isComplete: doc.data().isComplete || false // Ensure isComplete is included
       } as DashClub));
       setClubs(clubsData);
     } catch (error) {
@@ -84,7 +85,7 @@ const Dashboard: React.FC = () => {
           school: newClubSchool,
           creatorId: user.uid,
           createdAt: serverTimestamp(),
-          creatorName: user.displayName || 'Anonymous',
+          creatorName: user.displayName,
           isComplete: false,
         };
         
@@ -135,10 +136,12 @@ const Dashboard: React.FC = () => {
                   tags={[]}
                   links={[]}
                 />
-                <div className="absolute top-0 right-0 bg-yellow-500 text-black p-2 rounded-bl-lg flex items-center">
-                  <FaExclamationTriangle className="mr-2" />
-                  <span className="text-sm">Incomplete</span>
-                </div>
+                {!club.isComplete && (
+                  <div className="absolute top-0 right-0 bg-yellow-500 text-black p-2 rounded-bl-lg flex items-center">
+                    <FaExclamationTriangle className="mr-2" />
+                    <span className="text-sm">Incomplete</span>
+                  </div>
+                )}
                 <button 
                   onClick={() => {
                     const slug = `${club.name.replace(/\s+/g, '-')}-${club.school.replace(/\s+/g, '-')}`.toLowerCase();
@@ -146,7 +149,7 @@ const Dashboard: React.FC = () => {
                   }}
                   className="absolute bottom-0 left-0 right-0 bg-azul text-white p-2 text-center"
                 >
-                  Click to Update
+                  {club.isComplete ? 'View/Edit Club' : 'Complete Club Info'}
                 </button>
               </div>
             ))}
