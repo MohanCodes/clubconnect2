@@ -155,7 +155,7 @@ const EditClubPage = () => {
     setIsUploading(true);
     try {
       const clubDocRef = doc(db, 'clubs', `${clubInfo.name}-${clubInfo.school}`);
-      await setDoc(clubDocRef, clubInfo);
+      await updateDoc(clubDocRef, clubInfo);
       console.log('Club data uploaded successfully');
     } catch (error) {
       console.error('Error uploading club data:', error);
