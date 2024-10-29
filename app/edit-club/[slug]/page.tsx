@@ -1,14 +1,12 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
-import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter, useParams } from 'next/navigation';
 import { FaEnvelope, FaCalendarAlt, FaClock, FaMapMarkerAlt, FaUserGraduate, FaDollarSign, FaEdit, FaSave, FaPlus, FaTrash, FaTwitter, FaInstagram, FaFacebook, FaLinkedin, FaYoutube, FaDiscord, FaGithub, FaTiktok, FaGlobe, FaUser, FaLink } from 'react-icons/fa';
 import Navbar from '@/components/Navbar';
-import { db, storage } from '@/firebase/firebase';
+import { db } from '@/firebase/firebase';
 import { doc, setDoc, getDoc } from 'firebase/firestore';
-import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 
 interface Advisor {
   name: string;
@@ -38,7 +36,6 @@ interface ClubInfo {
   advisors: Advisor[];
   studentLeads: StudentLead[];
   links: ClubLink[];
-  images: string[];
 }
 
 const EditClubPage = () => {
@@ -60,12 +57,9 @@ const EditClubPage = () => {
     advisors: [],
     studentLeads: [],
     links: [],
-    images: [],
   });
 
   const [newTag, setNewTag] = useState("");
-  const [newImage, setNewImage] = useState<File | null>(null);
-  const [newLeadImage, setNewLeadImage] = useState<File | null>(null);
   const router = useRouter();
 
   useEffect(() => {
@@ -155,31 +149,6 @@ const EditClubPage = () => {
     setClubInfo({ ...clubInfo, links: updatedLinks });
   };
 
-  const handleImageUpload = async (file: File) => {
-    const storageRef = ref(storage, `clubImages/${file.name}`);
-    await uploadBytes(storageRef, file);
-    const downloadURL = await getDownloadURL(storageRef);
-    return downloadURL;
-  };
-
-  const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      setIsUploading(true);
-      try {
-        const imageUrl = await handleImageUpload(file);
-        setClubInfo({ ...clubInfo, images: [...clubInfo.images, imageUrl] });
-        const clubDocRef = doc(db, 'clubs', clubInfo.name);
-        await setDoc(clubDocRef, clubInfo);
-        console.log('Image uploaded successfully');
-      } catch (error) {
-        console.error('Error uploading image:', error);
-      } finally {
-        setIsUploading(false);
-      }
-    }
-  };
-
   const getPlatformIcon = (platform: string) => {
     switch (platform) {
       case 'twitter': return <FaTwitter />;
@@ -218,15 +187,6 @@ const EditClubPage = () => {
           >
             {isEditing ? <p>Save Page</p> :<p>Edit Page</p>}
           </button>
-          <label className="bg-azul text-white text-sm px-4 py-2 rounded-full cursor-pointer">
-            {isUploading ? <p>Uploading...</p> : <p>Upload Image</p>}
-            <input
-              type="file"
-              onChange={handleUpload}
-              className="hidden"
-              disabled={isUploading}
-            />
-          </label>
         </div>
         </div>
 
@@ -383,13 +343,6 @@ const EditClubPage = () => {
               <h2 className="text-2xl font-bold text-white mb-2">Student Leads</h2>
               {clubInfo.studentLeads.map((lead, index) => (
                 <div key={index} className="flex items-center mb-2">
-                  <Image
-                    src={lead.imgSrc}
-                    alt={`${lead.name}'s profile`}
-                    width={50}
-                    height={50}
-                    className="rounded-full mr-3"
-                  />
                   {isEditing ? (
                     <>
                       <input
@@ -399,28 +352,6 @@ const EditClubPage = () => {
                         placeholder='Student Name'
                         className="bg-gray-800 text-white p-1 rounded mr-2"
                         />
-                        <input
-                          type="file"
-                          onChange={(e) => setNewLeadImage(e.target.files ? e.target.files[0] : null)}
-                          className="mb-2"
-                        />
-                        <button
-                          onClick={async () => {
-                            if (newLeadImage) {
-                              const leadImageUrl = await handleImageUpload(newLeadImage);
-                              const updatedLeads = clubInfo.studentLeads.map((lead, i) => {
-                                if (i === index) {
-                                  return { ...lead, imgSrc: leadImageUrl };
-                                }
-                                return lead;
-                              });
-                              setClubInfo({ ...clubInfo, studentLeads: updatedLeads });
-                            }
-                          }}
-                          className="bg-green-500 text-white px-2 py-1 rounded"
-                        >
-                          Upload Image
-                        </button>
                         <button onClick={() => handleRemoveStudentLead(index)} className="text-red-500 ml-2">
                           <FaTrash />
                         </button>
@@ -467,50 +398,6 @@ const EditClubPage = () => {
                   contact Mr. Dobson
                 </Link>.
               </p>
-            </div>
-          </div>
-
-          <div className="md:w-1/3">
-            <div className="grid grid-cols-2 gap-4">
-              {clubInfo.images?.map((src: string, index: number) => (
-                <div key={index} className="relative h-48">
-                  <Image
-                    src={src}
-                    alt={`Club activity ${index + 1}`}
-                    layout="fill"
-                    objectFit="cover"
-                    className="rounded-lg"
-                  />
-                  {isEditing && (
-                    <button onClick={() => {
-                      const updatedImages = clubInfo.images.filter((_, i) => i !== index);
-                      setClubInfo({ ...clubInfo, images: updatedImages });
-                    }} className="absolute top-2 right-2 text-red-500">
-                      <FaTrash />
-                    </button>
-                  )}
-                </div>
-              ))}
-              {isEditing && (
-                <div className="flex flex-col items-center">
-                  <input
-                    type="file"
-                    onChange={(e) => setNewImage(e.target.files ? e.target.files[0] : null)}
-                    className="mb-2"
-                  />
-                  <button
-                    onClick={async () => {
-                      if (newImage) {
-                        const imageUrl = await handleImageUpload(newImage);
-                        setClubInfo({ ...clubInfo, images: [...clubInfo.images, imageUrl] });
-                      }
-                    }}
-                    className="bg-green-500 text-white px-2 py-1 rounded"
-                  >
-                    Upload Image
-                  </button>
-                </div>
-              )}
             </div>
           </div>
         </div>
