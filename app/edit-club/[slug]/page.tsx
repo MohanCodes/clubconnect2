@@ -97,7 +97,9 @@ const EditClubPage = () => {
   const handleSave = () => setIsEditing(false);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>, field: keyof ClubInfo) => {
-    setClubInfo({ ...clubInfo, [field]: e.target.value });
+    if (field !== 'name' && field !== 'school') {
+      setClubInfo({ ...clubInfo, [field]: e.target.value });
+    }
   };
 
   const handleAddTag = () => {
@@ -227,17 +229,7 @@ const EditClubPage = () => {
       <Navbar />
       <main className="container mx-auto px-4 py-8">
         <div className="flex justify-between items-center mb-4">
-          {isEditing ? (
-            <input
-              type="text"
-              value={clubInfo.name}
-              onChange={(e) => handleChange(e, 'name')}
-              className="text-4xl font-bold text-white bg-transparent border-b border-azul"
-              placeholder="Club Name"
-            />
-          ) : (
-            <h1 className="text-4xl font-bold text-white">{clubInfo.name}</h1>
-          )}
+          <h1 className="text-4xl font-bold text-white">{clubInfo.name}</h1>
         <div className='space-x-4'>
           <button
             onClick={isEditing ? handleSave : handleEdit}
