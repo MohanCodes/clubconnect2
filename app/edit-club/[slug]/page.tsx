@@ -182,7 +182,7 @@ const EditClubPage = () => {
     }
   };
 
-  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>, leadIndex?: number) => {
     if (e.target.files && e.target.files[0]) {
       const file = e.target.files[0];
       const storageRef = ref(storage, `clubs/${clubInfo.name}/${file.name}`);
@@ -190,31 +190,55 @@ const EditClubPage = () => {
         await uploadBytes(storageRef, file);
         const downloadURL = await getDownloadURL(storageRef);
         const clubDocRef = doc(db, 'clubs', clubInfo.name);
-        await updateDoc(clubDocRef, {
-          images: arrayUnion(downloadURL)
-        });
-        setClubInfo(prevState => ({
-          ...prevState,
-          images: [...prevState.images, downloadURL]
-        }));
+        if (leadIndex !== undefined) {
+          const updatedLeads = [...clubInfo.studentLeads];
+          updatedLeads[leadIndex] = { ...updatedLeads[leadIndex], imgSrc: downloadURL };
+          await updateDoc(clubDocRef, {
+            studentLeads: updatedLeads
+          });
+          setClubInfo(prevState => ({
+            ...prevState,
+            studentLeads: updatedLeads
+          }));
+        } else {
+          await updateDoc(clubDocRef, {
+            images: arrayUnion(downloadURL)
+          });
+          setClubInfo(prevState => ({
+            ...prevState,
+            images: [...prevState.images, downloadURL]
+          }));
+        }
       } catch (error) {
         console.error('Error uploading image:', error);
       }
     }
   };
 
-  const handleImageDelete = async (url: string) => {
+  const handleImageDelete = async (url: string, leadIndex?: number) => {
     const storageRef = ref(storage, url);
     try {
       await deleteObject(storageRef);
       const clubDocRef = doc(db, 'clubs', clubInfo.name);
-      await updateDoc(clubDocRef, {
-        images: arrayRemove(url)
-      });
-      setClubInfo(prevState => ({
-        ...prevState,
-        images: prevState.images.filter(image => image !== url)
-      }));
+      if (leadIndex !== undefined) {
+        const updatedLeads = [...clubInfo.studentLeads];
+        updatedLeads[leadIndex] = { ...updatedLeads[leadIndex], imgSrc: "https://via.placeholder.com/50" };
+        await updateDoc(clubDocRef, {
+          studentLeads: updatedLeads
+        });
+        setClubInfo(prevState => ({
+          ...prevState,
+          studentLeads: updatedLeads
+        }));
+      } else {
+        await updateDoc(clubDocRef, {
+          images: arrayRemove(url)
+        });
+        setClubInfo(prevState => ({
+          ...prevState,
+          images: prevState.images.filter(image => image !== url)
+        }));
+      }
     } catch (error) {
       console.error('Error deleting image:', error);
     }
@@ -405,13 +429,30 @@ const EditClubPage = () => {
               <h2 className="text-2xl font-bold text-white mb-2">Student Leads</h2>
               {clubInfo.studentLeads.map((lead, index) => (
                 <div key={index} className="flex items-center mb-2">
-                  <Image
-                    src={lead.imgSrc}
-                    alt={`${lead.name}'s profile`}
-                    width={50}
-                    height={50}
-                    className="rounded-full mr-3"
-                  />
+                  <div className="relative">
+                    <Image
+                      src={lead.imgSrc}
+                      alt={`${lead.name}'s profile`}
+                      width={50}
+                      height={50}
+                      className="rounded-full mr-3 cursor-pointer"
+                      onClick={() => document.getElementById(`lead-image-upload-${index}`)?.click()}
+                    />
+                    {isEditing && (
+                      <button
+                        onClick={() => handleImageDelete(lead.imgSrc, index)}
+                        className="absolute top-0 right-0 bg-red-500 text-white p-1 rounded-full"
+                      >
+                        <FaTrash />
+                      </button>
+                    )}
+                    <input
+                      type="file"
+                      id={`lead-image-upload-${index}`}
+                      onChange={(e) => handleImageUpload(e, index)}
+                      className="hidden"
+                    />
+                  </div>
                   {isEditing ? (
                     <>
                       <input
