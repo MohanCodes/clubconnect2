@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
+import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter, useParams } from 'next/navigation';
 import { FaEnvelope, FaCalendarAlt, FaClock, FaMapMarkerAlt, FaUserGraduate, FaDollarSign, FaEdit, FaSave, FaPlus, FaTrash, FaTwitter, FaInstagram, FaFacebook, FaLinkedin, FaYoutube, FaDiscord, FaGithub, FaTiktok, FaGlobe, FaUser, FaLink } from 'react-icons/fa';
@@ -186,7 +187,7 @@ const EditClubPage = () => {
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
       const file = e.target.files[0];
-      const storageRef = ref(storage, `clubs/${clubInfo.name}/${file.name}`);
+      const storageRef = ref(storage, `clubs/${clubInfo.name}-${clubInfo.school}/${file.name}`);
       try {
         await uploadBytes(storageRef, file);
         const downloadURL = await getDownloadURL(storageRef);
@@ -205,7 +206,7 @@ const EditClubPage = () => {
   };
 
   const handleImageDelete = async (url: string) => {
-    const storageRef = ref(storage, url);
+    const storageRef = ref(storage, `clubs/${clubInfo.name}-${clubInfo.school}/${url.split('/').pop()}`);
     try {
       await deleteObject(storageRef);
       const clubDocRef = doc(db, 'clubs', clubInfo.name);
@@ -494,10 +495,12 @@ const EditClubPage = () => {
             <div className="grid grid-cols-2 gap-4">
               {clubInfo.images?.map((src: string, index: number) => (
                 <div key={index} className="relative h-48">
-                  <img
+                  <Image
                     src={src}
                     alt={`Club activity ${index + 1}`}
-                    className="object-cover w-full h-full rounded-lg"
+                    layout="fill"
+                    objectFit="cover"
+                    className="rounded-lg"
                   />
                   <button
                     onClick={() => handleImageDelete(src)}
