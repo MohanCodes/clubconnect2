@@ -89,10 +89,11 @@ const Dashboard: React.FC = () => {
           school: newClubSchool,
           creatorId: user.uid,
           createdAt: serverTimestamp(),
-          creatorName: user.displayName || 'Anonymous'
+          creatorName: user.displayName || 'Anonymous',
+          dashclub: true // P81ae
         };
         
-        const docRef = await addDoc(dashClubsRef, newClub);
+        const docRef = await addDoc(clubsRef, newClub); // Pe0f6
         
         // Update local state
         setClubs(prevClubs => [...prevClubs, { ...newClub, id: docRef.id, createdAt: new Date() }]);
