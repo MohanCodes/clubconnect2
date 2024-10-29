@@ -191,7 +191,7 @@ const EditClubPage = () => {
       try {
         await uploadBytes(storageRef, file);
         const downloadURL = await getDownloadURL(storageRef);
-        const clubDocRef = doc(db, 'clubs', clubInfo.name);
+        const clubDocRef = doc(db, 'clubs', `${clubInfo.name}-${clubInfo.school}`);
         await updateDoc(clubDocRef, {
           images: arrayUnion(downloadURL)
         });
@@ -209,7 +209,7 @@ const EditClubPage = () => {
     const storageRef = ref(storage, `clubs/${clubInfo.name}-${clubInfo.school}/${url.split('/').pop()}`);
     try {
       await deleteObject(storageRef);
-      const clubDocRef = doc(db, 'clubs', clubInfo.name);
+      const clubDocRef = doc(db, 'clubs', `${clubInfo.name}-${clubInfo.school}`);
       await updateDoc(clubDocRef, {
         images: arrayRemove(url)
       });
