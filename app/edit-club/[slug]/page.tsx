@@ -162,32 +162,21 @@ const EditClubPage = () => {
     return downloadURL;
   };
 
-  const handleUpload = async () => {
-    setIsUploading(true);
-    try {
-      if (newImage) {
-        const imageUrl = await handleImageUpload(newImage);
+  const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setIsUploading(true);
+      try {
+        const imageUrl = await handleImageUpload(file);
         setClubInfo({ ...clubInfo, images: [...clubInfo.images, imageUrl] });
+        const clubDocRef = doc(db, 'clubs', clubInfo.name);
+        await setDoc(clubDocRef, clubInfo);
+        console.log('Image uploaded successfully');
+      } catch (error) {
+        console.error('Error uploading image:', error);
+      } finally {
+        setIsUploading(false);
       }
-
-      if (newLeadImage) {
-        const leadImageUrl = await handleImageUpload(newLeadImage);
-        const updatedLeads = clubInfo.studentLeads.map((lead, index) => {
-          if (index === clubInfo.studentLeads.length - 1) {
-            return { ...lead, imgSrc: leadImageUrl };
-          }
-          return lead;
-        });
-        setClubInfo({ ...clubInfo, studentLeads: updatedLeads });
-      }
-
-      const clubDocRef = doc(db, 'clubs', clubInfo.name);
-      await setDoc(clubDocRef, clubInfo);
-      console.log('Club data uploaded successfully');
-    } catch (error) {
-      console.error('Error uploading club data:', error);
-    } finally {
-      setIsUploading(false);
     }
   };
 
@@ -229,13 +218,15 @@ const EditClubPage = () => {
           >
             {isEditing ? <p>Save Page</p> :<p>Edit Page</p>}
           </button>
-          <button
-            onClick={handleUpload}
-            className="bg-azul text-white text-sm px-4 py-2 rounded-full"
-            disabled={isUploading}
-          >
-            {isUploading ? <p>Uploading...</p> : <p>Upload Page</p>}
-          </button>
+          <label className="bg-azul text-white text-sm px-4 py-2 rounded-full cursor-pointer">
+            {isUploading ? <p>Uploading...</p> : <p>Upload Image</p>}
+            <input
+              type="file"
+              onChange={handleUpload}
+              className="hidden"
+              disabled={isUploading}
+            />
+          </label>
         </div>
         </div>
 
