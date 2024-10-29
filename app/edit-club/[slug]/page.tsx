@@ -1,7 +1,6 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
-import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter, useParams } from 'next/navigation';
 import { FaEnvelope, FaCalendarAlt, FaClock, FaMapMarkerAlt, FaUserGraduate, FaDollarSign, FaEdit, FaSave, FaPlus, FaTrash, FaTwitter, FaInstagram, FaFacebook, FaLinkedin, FaYoutube, FaDiscord, FaGithub, FaTiktok, FaGlobe, FaUser, FaLink } from 'react-icons/fa';
@@ -18,7 +17,7 @@ interface Advisor {
 interface StudentLead {
   name: string;
   role: string;
-  imgSrc: string;
+  email: string;
 }
 
 interface ClubLink {
@@ -132,7 +131,7 @@ const EditClubPage = () => {
   };
 
   const handleAddStudentLead = () => {
-    setClubInfo({ ...clubInfo, studentLeads: [...clubInfo.studentLeads, { name: "", role: "", imgSrc: "https://via.placeholder.com/50" }] });
+    setClubInfo({ ...clubInfo, studentLeads: [...clubInfo.studentLeads, { name: "", role: "", email: "" }] });
   };
 
   const handleRemoveStudentLead = (index: number) => {
@@ -404,14 +403,7 @@ const EditClubPage = () => {
             <div className="mb-8">
               <h2 className="text-2xl font-bold text-white mb-2">Student Leads</h2>
               {clubInfo.studentLeads.map((lead, index) => (
-                <div key={index} className="flex items-center mb-2">
-                  <Image
-                    src={lead.imgSrc}
-                    alt={`${lead.name}'s profile`}
-                    width={50}
-                    height={50}
-                    className="rounded-full mr-3"
-                  />
+                <div key={index} className="mb-2">
                   {isEditing ? (
                     <>
                       <input
@@ -428,9 +420,24 @@ const EditClubPage = () => {
                         placeholder='Student Role'
                         className="bg-gray-800 text-white p-1 rounded mr-2"
                       />
+                      <input
+                        type="email"
+                        value={lead.email}
+                        onChange={(e) => handleStudentLeadChange(index, 'email', e.target.value)}
+                        placeholder='Student Email'
+                        className="bg-gray-800 text-white p-1 rounded mr-2"
+                      />
                     </>
                   ) : (
-                    <span className="text-grey">{lead.name} - {lead.role}</span>
+                    <>
+                      <p className="text-grey">{lead.name} - {lead.role}</p>
+                      <Link href={`mailto:${lead.email}`} className="text-azul hover:underline">
+                        <span className="flex items-center">
+                          <FaEnvelope className="mr-2" />
+                          {lead.email}
+                        </span>
+                      </Link>
+                    </>
                   )}
                 </div>
               ))}
@@ -478,12 +485,10 @@ const EditClubPage = () => {
             <div className="grid grid-cols-2 gap-4">
               {clubInfo.images?.map((src: string, index: number) => (
                 <div key={index} className="relative h-48">
-                  <Image
+                  <img
                     src={src}
                     alt={`Club activity ${index + 1}`}
-                    layout="fill"
-                    objectFit="cover"
-                    className="rounded-lg"
+                    className="object-cover w-full h-full rounded-lg"
                   />
                   <button
                     onClick={() => handleImageDelete(src)}
