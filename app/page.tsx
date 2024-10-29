@@ -1,5 +1,3 @@
-import Image from 'next/image'
-import Link from 'next/link'
 import Tile from '@/components/Tile'
 import Navbar from '@/components/Navbar'
 
