@@ -408,11 +408,36 @@ const EditClubPage = () => {
                         placeholder='Student Name'
                         className="bg-gray-800 text-white p-1 rounded mr-2"
                         />
-                        </>
-                      ) : (
-                        <span className="text-grey">{lead.name} - {lead.role}</span>
-                      )}
-                    </div>
+                        <input
+                          type="file"
+                          onChange={(e) => setNewLeadImage(e.target.files ? e.target.files[0] : null)}
+                          className="mb-2"
+                        />
+                        <button
+                          onClick={async () => {
+                            if (newLeadImage) {
+                              const leadImageUrl = await handleImageUpload(newLeadImage);
+                              const updatedLeads = clubInfo.studentLeads.map((lead, i) => {
+                                if (i === index) {
+                                  return { ...lead, imgSrc: leadImageUrl };
+                                }
+                                return lead;
+                              });
+                              setClubInfo({ ...clubInfo, studentLeads: updatedLeads });
+                            }
+                          }}
+                          className="bg-green-500 text-white px-2 py-1 rounded"
+                        >
+                          Upload Image
+                        </button>
+                        <button onClick={() => handleRemoveStudentLead(index)} className="text-red-500 ml-2">
+                          <FaTrash />
+                        </button>
+                    </>
+                  ) : (
+                    <span className="text-grey">{lead.name} - {lead.role}</span>
+                  )}
+                </div>
               ))}
               {isEditing && (
                 <button onClick={handleAddStudentLead} className="bg-green-500 text-white px-2 py-1 rounded flex flex-row items-center">
@@ -465,6 +490,14 @@ const EditClubPage = () => {
                     objectFit="cover"
                     className="rounded-lg"
                   />
+                  {isEditing && (
+                    <button onClick={() => {
+                      const updatedImages = clubInfo.images.filter((_, i) => i !== index);
+                      setClubInfo({ ...clubInfo, images: updatedImages });
+                    }} className="absolute top-2 right-2 text-red-500">
+                      <FaTrash />
+                    </button>
+                  )}
                 </div>
               ))}
               {isEditing && (
