@@ -6,8 +6,9 @@ import Link from 'next/link';
 import { useRouter, useParams } from 'next/navigation';
 import { FaEnvelope, FaCalendarAlt, FaClock, FaMapMarkerAlt, FaUserGraduate, FaDollarSign, FaEdit, FaSave, FaPlus, FaTrash, FaTwitter, FaInstagram, FaFacebook, FaLinkedin, FaYoutube, FaDiscord, FaGithub, FaTiktok, FaGlobe, FaUser, FaLink } from 'react-icons/fa';
 import Navbar from '@/components/Navbar';
-import { db } from '@/firebase/firebase';
+import { db, storage } from '@/firebase/firebase';
 import { doc, setDoc, getDoc } from 'firebase/firestore';
+import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 
 interface Advisor {
   name: string;
@@ -37,7 +38,7 @@ interface ClubInfo {
   advisors: Advisor[];
   studentLeads: StudentLead[];
   links: ClubLink[];
-  images: string[]; // Added images property
+  images: string[];
 }
 
 const EditClubPage = () => {
@@ -59,10 +60,12 @@ const EditClubPage = () => {
     advisors: [],
     studentLeads: [],
     links: [],
-    images: [], // Initialize images property
+    images: [],
   });
 
   const [newTag, setNewTag] = useState("");
+  const [newImage, setNewImage] = useState<File | null>(null);
+  const [newLeadImage, setNewLeadImage] = useState<File | null>(null);
   const router = useRouter();
 
   useEffect(() => {
@@ -152,9 +155,32 @@ const EditClubPage = () => {
     setClubInfo({ ...clubInfo, links: updatedLinks });
   };
 
+  const handleImageUpload = async (file: File) => {
+    const storageRef = ref(storage, `clubImages/${file.name}`);
+    await uploadBytes(storageRef, file);
+    const downloadURL = await getDownloadURL(storageRef);
+    return downloadURL;
+  };
+
   const handleUpload = async () => {
     setIsUploading(true);
     try {
+      if (newImage) {
+        const imageUrl = await handleImageUpload(newImage);
+        setClubInfo({ ...clubInfo, images: [...clubInfo.images, imageUrl] });
+      }
+
+      if (newLeadImage) {
+        const leadImageUrl = await handleImageUpload(newLeadImage);
+        const updatedLeads = clubInfo.studentLeads.map((lead, index) => {
+          if (index === clubInfo.studentLeads.length - 1) {
+            return { ...lead, imgSrc: leadImageUrl };
+          }
+          return lead;
+        });
+        setClubInfo({ ...clubInfo, studentLeads: updatedLeads });
+      }
+
       const clubDocRef = doc(db, 'clubs', clubInfo.name);
       await setDoc(clubDocRef, clubInfo);
       console.log('Club data uploaded successfully');
@@ -441,6 +467,26 @@ const EditClubPage = () => {
                   />
                 </div>
               ))}
+              {isEditing && (
+                <div className="flex flex-col items-center">
+                  <input
+                    type="file"
+                    onChange={(e) => setNewImage(e.target.files ? e.target.files[0] : null)}
+                    className="mb-2"
+                  />
+                  <button
+                    onClick={async () => {
+                      if (newImage) {
+                        const imageUrl = await handleImageUpload(newImage);
+                        setClubInfo({ ...clubInfo, images: [...clubInfo.images, imageUrl] });
+                      }
+                    }}
+                    className="bg-green-500 text-white px-2 py-1 rounded"
+                  >
+                    Upload Image
+                  </button>
+                </div>
+              )}
             </div>
           </div>
         </div>
