@@ -230,6 +230,7 @@ const EditClubPage = () => {
               value={clubInfo.name}
               onChange={(e) => handleChange(e, 'name')}
               className="text-4xl font-bold text-white bg-transparent border-b border-azul"
+              placeholder="Club Name"
             />
           ) : (
             <h1 className="text-4xl font-bold text-white">{clubInfo.name}</h1>
@@ -283,6 +284,7 @@ const EditClubPage = () => {
                 value={clubInfo.description}
                 onChange={(e) => handleChange(e, 'description')}
                 className="w-full h-40 p-2 text-grey bg-gray-800 rounded mb-4"
+                placeholder="Club Description"
               />
             ) : (
               <p className="text-grey mb-4">{clubInfo.description}</p>
@@ -297,6 +299,7 @@ const EditClubPage = () => {
                     value={clubInfo.length}
                     onChange={(e) => handleChange(e, 'length')}
                     className="bg-gray-800 text-white p-1 rounded"
+                    placeholder="Club Length"
                   />
                 ) : (
                   <span>{clubInfo.length}</span>
@@ -310,6 +313,7 @@ const EditClubPage = () => {
                     value={clubInfo.meetingTimes}
                     onChange={(e) => handleChange(e, 'meetingTimes')}
                     className="bg-gray-800 text-white p-1 rounded"
+                    placeholder="Meeting Times"
                   />
                 ) : (
                   <span>{clubInfo.meetingTimes}</span>
@@ -323,6 +327,7 @@ const EditClubPage = () => {
                     value={clubInfo.meetingSite}
                     onChange={(e) => handleChange(e, 'meetingSite')}
                     className="bg-gray-800 text-white p-1 rounded"
+                    placeholder="Meeting Site"
                   />
                 ) : (
                   <span>{clubInfo.meetingSite}</span>
@@ -336,6 +341,7 @@ const EditClubPage = () => {
                     value={clubInfo.eligibility}
                     onChange={(e) => handleChange(e, 'eligibility')}
                     className="bg-gray-800 text-white p-1 rounded"
+                    placeholder="Eligibility"
                   />
                 ) : (
                   <span>{clubInfo.eligibility}</span>
@@ -349,6 +355,7 @@ const EditClubPage = () => {
                     value={clubInfo.costs}
                     onChange={(e) => handleChange(e, 'costs')}
                     className="bg-gray-800 text-white p-1 rounded"
+                    placeholder="Costs"
                   />
                 ) : (
                   <span>{clubInfo.costs}</span>
