@@ -6,8 +6,9 @@ import Link from 'next/link';
 import { useRouter, useParams } from 'next/navigation';
 import { FaEnvelope, FaCalendarAlt, FaClock, FaMapMarkerAlt, FaUserGraduate, FaDollarSign, FaEdit, FaSave, FaPlus, FaTrash, FaTwitter, FaInstagram, FaFacebook, FaLinkedin, FaYoutube, FaDiscord, FaGithub, FaTiktok, FaGlobe, FaUser, FaLink } from 'react-icons/fa';
 import Navbar from '@/components/Navbar';
-import { db } from '@/firebase/firebase';
-import { doc, setDoc, getDoc } from 'firebase/firestore';
+import { db, storage } from '@/firebase/firebase';
+import { doc, setDoc, getDoc, updateDoc, arrayUnion, arrayRemove } from 'firebase/firestore';
+import { ref, uploadBytes, getDownloadURL, deleteObject } from 'firebase/storage';
 
 interface Advisor {
   name: string;
@@ -178,6 +179,44 @@ const EditClubPage = () => {
       case 'website': return <FaGlobe />;
       case 'personal': return <FaUser />;
       default: return <FaLink />;
+    }
+  };
+
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      const file = e.target.files[0];
+      const storageRef = ref(storage, `clubs/${clubInfo.name}/${file.name}`);
+      try {
+        await uploadBytes(storageRef, file);
+        const downloadURL = await getDownloadURL(storageRef);
+        const clubDocRef = doc(db, 'clubs', clubInfo.name);
+        await updateDoc(clubDocRef, {
+          images: arrayUnion(downloadURL)
+        });
+        setClubInfo(prevState => ({
+          ...prevState,
+          images: [...prevState.images, downloadURL]
+        }));
+      } catch (error) {
+        console.error('Error uploading image:', error);
+      }
+    }
+  };
+
+  const handleImageDelete = async (url: string) => {
+    const storageRef = ref(storage, url);
+    try {
+      await deleteObject(storageRef);
+      const clubDocRef = doc(db, 'clubs', clubInfo.name);
+      await updateDoc(clubDocRef, {
+        images: arrayRemove(url)
+      });
+      setClubInfo(prevState => ({
+        ...prevState,
+        images: prevState.images.filter(image => image !== url)
+      }));
+    } catch (error) {
+      console.error('Error deleting image:', error);
     }
   };
 
@@ -446,8 +485,24 @@ const EditClubPage = () => {
                     objectFit="cover"
                     className="rounded-lg"
                   />
+                  <button
+                    onClick={() => handleImageDelete(src)}
+                    className="absolute top-2 right-2 bg-red-500 text-white p-1 rounded-full"
+                  >
+                    <FaTrash />
+                  </button>
                 </div>
               ))}
+              {isEditing && (
+                <div className="relative h-48 flex items-center justify-center border-2 border-dashed border-gray-400 rounded-lg">
+                  <input
+                    type="file"
+                    onChange={handleImageUpload}
+                    className="absolute inset-0 opacity-0 cursor-pointer"
+                  />
+                  <FaPlus className="text-gray-400" />
+                </div>
+              )}
             </div>
           </div>
         </div>
