@@ -6,8 +6,9 @@ import Link from 'next/link';
 import { useRouter, useParams } from 'next/navigation';
 import { FaEnvelope, FaCalendarAlt, FaClock, FaMapMarkerAlt, FaUserGraduate, FaDollarSign, FaEdit, FaSave, FaPlus, FaTrash, FaTwitter, FaInstagram, FaFacebook, FaLinkedin, FaYoutube, FaDiscord, FaGithub, FaTiktok, FaGlobe, FaUser, FaLink } from 'react-icons/fa';
 import Navbar from '@/components/Navbar';
-import { db } from '@/firebase/firebase';
+import { db, storage } from '@/firebase/firebase';
 import { doc, setDoc, getDoc } from 'firebase/firestore';
+import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 
 interface Advisor {
   name: string;
@@ -18,6 +19,7 @@ interface StudentLead {
   name: string;
   role: string;
   imgSrc: string;
+  imgFile?: File;
 }
 
 interface ClubLink {
@@ -37,7 +39,7 @@ interface ClubInfo {
   advisors: Advisor[];
   studentLeads: StudentLead[];
   links: ClubLink[];
-  images: string[]; // Added images property
+  images: string[];
 }
 
 const EditClubPage = () => {
@@ -59,7 +61,7 @@ const EditClubPage = () => {
     advisors: [],
     studentLeads: [],
     links: [],
-    images: [], // Initialize images property
+    images: [],
   });
 
   const [newTag, setNewTag] = useState("");
@@ -124,14 +126,14 @@ const EditClubPage = () => {
     setClubInfo({ ...clubInfo, advisors: updatedAdvisors });
   };
 
-  const handleStudentLeadChange = (index: number, field: keyof StudentLead, value: string) => {
+  const handleStudentLeadChange = (index: number, field: keyof StudentLead, value: string | File) => {
     const updatedLeads = [...clubInfo.studentLeads];
     updatedLeads[index] = { ...updatedLeads[index], [field]: value };
     setClubInfo({ ...clubInfo, studentLeads: updatedLeads });
   };
 
   const handleAddStudentLead = () => {
-    setClubInfo({ ...clubInfo, studentLeads: [...clubInfo.studentLeads, { name: "", role: "", imgSrc: "https://via.placeholder.com/50" }] });
+    setClubInfo({ ...clubInfo, studentLeads: [...clubInfo.studentLeads, { name: "", role: "", imgSrc: "https://via.placeholder.com/50", imgFile: undefined }] });
   };
 
   const handleRemoveStudentLead = (index: number) => {
@@ -152,11 +154,42 @@ const EditClubPage = () => {
     setClubInfo({ ...clubInfo, links: updatedLinks });
   };
 
+  const handleImageUpload = async (file: File, path: string) => {
+    const storageRef = ref(storage, path);
+    await uploadBytes(storageRef, file);
+    return await getDownloadURL(storageRef);
+  };
+
   const handleUpload = async () => {
     setIsUploading(true);
     try {
       const clubDocRef = doc(db, 'clubs', clubInfo.name);
-      await setDoc(clubDocRef, clubInfo);
+
+      // Upload student lead images
+      const updatedStudentLeads = await Promise.all(clubInfo.studentLeads.map(async (lead) => {
+        if (lead.imgFile) {
+          const imgSrc = await handleImageUpload(lead.imgFile, `studentLeads/${lead.name}`);
+          return { ...lead, imgSrc };
+        }
+        return lead;
+      }));
+
+      // Upload club images
+      const updatedImages = await Promise.all(clubInfo.images.map(async (image, index) => {
+        if (typeof image === 'object') {
+          const imgSrc = await handleImageUpload(image, `clubs/${clubInfo.name}/image${index}`);
+          return imgSrc;
+        }
+        return image;
+      }));
+
+      const updatedClubInfo = {
+        ...clubInfo,
+        studentLeads: updatedStudentLeads,
+        images: updatedImages,
+      };
+
+      await setDoc(clubDocRef, updatedClubInfo);
       console.log('Club data uploaded successfully');
     } catch (error) {
       console.error('Error uploading club data:', error);
@@ -381,12 +414,27 @@ const EditClubPage = () => {
                         onChange={(e) => handleStudentLeadChange(index, 'name', e.target.value)}
                         placeholder='Student Name'
                         className="bg-gray-800 text-white p-1 rounded mr-2"
-                        />
-                        </>
-                      ) : (
-                        <span className="text-grey">{lead.name} - {lead.role}</span>
-                      )}
-                    </div>
+                      />
+                      <input
+                        type="text"
+                        value={lead.role}
+                        onChange={(e) => handleStudentLeadChange(index, 'role', e.target.value)}
+                        placeholder='Student Role'
+                        className="bg-gray-800 text-white p-1 rounded mr-2"
+                      />
+                      <input
+                        type="file"
+                        onChange={(e) => handleStudentLeadChange(index, 'imgFile', e.target.files?.[0] || '')}
+                        className="bg-gray-800 text-white p-1 rounded mr-2"
+                      />
+                      <button onClick={() => handleRemoveStudentLead(index)} className="text-red-500">
+                        <FaTrash />
+                      </button>
+                    </>
+                  ) : (
+                    <span className="text-grey">{lead.name} - {lead.role}</span>
+                  )}
+                </div>
               ))}
               {isEditing && (
                 <button onClick={handleAddStudentLead} className="bg-green-500 text-white px-2 py-1 rounded flex flex-row items-center">
