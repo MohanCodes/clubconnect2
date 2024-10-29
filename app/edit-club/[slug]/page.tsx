@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
+import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter, useParams } from 'next/navigation';
 import { FaEnvelope, FaCalendarAlt, FaClock, FaMapMarkerAlt, FaUserGraduate, FaDollarSign, FaEdit, FaSave, FaPlus, FaTrash, FaTwitter, FaInstagram, FaFacebook, FaLinkedin, FaYoutube, FaDiscord, FaGithub, FaTiktok, FaGlobe, FaUser, FaLink } from 'react-icons/fa';
@@ -36,6 +37,7 @@ interface ClubInfo {
   advisors: Advisor[];
   studentLeads: StudentLead[];
   links: ClubLink[];
+  images: string[]; // Added images property
 }
 
 const EditClubPage = () => {
@@ -57,6 +59,7 @@ const EditClubPage = () => {
     advisors: [],
     studentLeads: [],
     links: [],
+    images: [], // Initialize images property
   });
 
   const [newTag, setNewTag] = useState("");
@@ -149,6 +152,19 @@ const EditClubPage = () => {
     setClubInfo({ ...clubInfo, links: updatedLinks });
   };
 
+  const handleUpload = async () => {
+    setIsUploading(true);
+    try {
+      const clubDocRef = doc(db, 'clubs', clubInfo.name);
+      await setDoc(clubDocRef, clubInfo);
+      console.log('Club data uploaded successfully');
+    } catch (error) {
+      console.error('Error uploading club data:', error);
+    } finally {
+      setIsUploading(false);
+    }
+  };
+
   const getPlatformIcon = (platform: string) => {
     switch (platform) {
       case 'twitter': return <FaTwitter />;
@@ -186,6 +202,13 @@ const EditClubPage = () => {
             className="bg-azul text-white text-sm px-4 py-2 rounded-full"
           >
             {isEditing ? <p>Save Page</p> :<p>Edit Page</p>}
+          </button>
+          <button
+            onClick={handleUpload}
+            className="bg-azul text-white text-sm px-4 py-2 rounded-full"
+            disabled={isUploading}
+          >
+            {isUploading ? <p>Uploading...</p> : <p>Upload Page</p>}
           </button>
         </div>
         </div>
@@ -343,6 +366,13 @@ const EditClubPage = () => {
               <h2 className="text-2xl font-bold text-white mb-2">Student Leads</h2>
               {clubInfo.studentLeads.map((lead, index) => (
                 <div key={index} className="flex items-center mb-2">
+                  <Image
+                    src={lead.imgSrc}
+                    alt={`${lead.name}'s profile`}
+                    width={50}
+                    height={50}
+                    className="rounded-full mr-3"
+                  />
                   {isEditing ? (
                     <>
                       <input
@@ -352,14 +382,11 @@ const EditClubPage = () => {
                         placeholder='Student Name'
                         className="bg-gray-800 text-white p-1 rounded mr-2"
                         />
-                        <button onClick={() => handleRemoveStudentLead(index)} className="text-red-500 ml-2">
-                          <FaTrash />
-                        </button>
-                    </>
-                  ) : (
-                    <span className="text-grey">{lead.name} - {lead.role}</span>
-                  )}
-                </div>
+                        </>
+                      ) : (
+                        <span className="text-grey">{lead.name} - {lead.role}</span>
+                      )}
+                    </div>
               ))}
               {isEditing && (
                 <button onClick={handleAddStudentLead} className="bg-green-500 text-white px-2 py-1 rounded flex flex-row items-center">
@@ -398,6 +425,22 @@ const EditClubPage = () => {
                   contact Mr. Dobson
                 </Link>.
               </p>
+            </div>
+          </div>
+
+          <div className="md:w-1/3">
+            <div className="grid grid-cols-2 gap-4">
+              {clubInfo.images?.map((src: string, index: number) => (
+                <div key={index} className="relative h-48">
+                  <Image
+                    src={src}
+                    alt={`Club activity ${index + 1}`}
+                    layout="fill"
+                    objectFit="cover"
+                    className="rounded-lg"
+                  />
+                </div>
+              ))}
             </div>
           </div>
         </div>
