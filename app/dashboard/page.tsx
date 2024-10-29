@@ -43,7 +43,7 @@ const Dashboard: React.FC = () => {
 
   const fetchClubs = async (userId: string) => {
     try {
-      const clubsRef = collection(db, 'dashclubs');
+      const clubsRef = collection(db, 'clubs');
       const q = query(clubsRef, where('creatorId', '==', userId));
       const querySnapshot = await getDocs(q);
       const clubsData = querySnapshot.docs.map(doc => ({
@@ -61,15 +61,6 @@ const Dashboard: React.FC = () => {
   const handleCreateClub = async () => {
     if (newClubName && newClubSchool && user) {
       try {
-        // Check if the club already exists in dashclubs
-        const dashClubsRef = collection(db, 'dashclubs');
-        const dashClubQuery = query(
-          dashClubsRef, 
-          where('name', '==', newClubName),
-          where('school', '==', newClubSchool)
-        );
-        const dashClubSnapshot = await getDocs(dashClubQuery);
-
         // Check if the club already exists in clubs
         const clubsRef = collection(db, 'clubs');
         const clubQuery = query(
@@ -79,7 +70,7 @@ const Dashboard: React.FC = () => {
         );
         const clubSnapshot = await getDocs(clubQuery);
 
-        if (!dashClubSnapshot.empty || !clubSnapshot.empty) {
+        if (!clubSnapshot.empty) {
           setError('A club with this name already exists at this school.');
           return;
         }
@@ -90,10 +81,9 @@ const Dashboard: React.FC = () => {
           creatorId: user.uid,
           createdAt: serverTimestamp(),
           creatorName: user.displayName || 'Anonymous',
-          dashclub: true // P81ae
         };
         
-        const docRef = await addDoc(clubsRef, newClub); // Pe0f6
+        const docRef = await addDoc(clubsRef, newClub);
         
         // Update local state
         setClubs(prevClubs => [...prevClubs, { ...newClub, id: docRef.id, createdAt: new Date() }]);

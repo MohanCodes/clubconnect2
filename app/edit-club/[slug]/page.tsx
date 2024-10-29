@@ -81,12 +81,6 @@ const EditClubPage = () => {
       const clubDoc = await getDoc(clubDocRef);
       if (clubDoc.exists()) {
         setClubInfo(clubDoc.data() as ClubInfo);
-      } else {
-        const dashClubDocRef = doc(db, 'dashclubs', `${club}-${school}`);
-        const dashClubDoc = await getDoc(dashClubDocRef);
-        if (dashClubDoc.exists()) {
-          setClubInfo(dashClubDoc.data() as ClubInfo);
-        }
       }
     } catch (error) {
       console.error('Error fetching club data:', error);
