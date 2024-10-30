@@ -6,9 +6,11 @@ import Link from 'next/link';
 import { useRouter, useParams } from 'next/navigation';
 import { FaEnvelope, FaTimes, FaCalendarAlt, FaClock, FaMapMarkerAlt, FaUserGraduate, FaDollarSign, FaPlus, FaTrash, FaTwitter, FaInstagram, FaFacebook, FaLinkedin, FaYoutube, FaDiscord, FaGithub, FaTiktok, FaGlobe, FaUser, FaLink, FaCircleNotch } from 'react-icons/fa';
 import Navbar from '@/components/Navbar';
-import { db, storage } from '@/firebase/firebase';
+import { auth, db, storage } from '@/firebase/firebase';
 import { doc, collection, setDoc, getDocs, updateDoc, arrayUnion, arrayRemove, deleteDoc } from 'firebase/firestore';
 import { ref, uploadBytes, getDownloadURL, deleteObject } from 'firebase/storage';
+import { onAuthStateChanged } from 'firebase/auth';
+
 
 interface Advisor {
   name: string;
@@ -47,12 +49,13 @@ interface ClubInfo {
 const EditClubPage = () => {
   const params = useParams();
   const slug = params.slug;
+  const [user, setUser] = useState<any>(null);
+  const [isLoading, setIsLoading] = useState(true);
   const [isEditing, setIsEditing] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [newLink, setNewLink] = useState({ url: '', platform: '' });
   const [isUploading, setIsUploading] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
 
   const [clubInfo, setClubInfo] = useState<ClubInfo>({
     id: "",
@@ -76,10 +79,17 @@ const EditClubPage = () => {
   const router = useRouter();
 
   useEffect(() => {
-    if (slug) {
-      fetchClubInfo();
-    }
-  }, [slug]);
+    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+      setUser(currentUser);
+      if (!currentUser) {
+        router.push('/signin'); // Redirect to sign-in if not authenticated
+      } else {
+        fetchClubInfo(); // Fetch club info if authenticated
+      }
+    });
+
+    return () => unsubscribe();
+  }, [router]);
   
   const fetchClubInfo = async () => {
     setIsLoading(true);
@@ -317,6 +327,10 @@ const EditClubPage = () => {
       // You might want to show an error message to the user here
     }
   };
+
+  if (!user) {
+    return null; // Prevent rendering if user is not authenticated
+  }
 
   return (
     <div className="bg-cblack min-h-screen">

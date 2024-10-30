@@ -124,7 +124,8 @@ const Dashboard: React.FC = () => {
       <main className="container mx-auto px-4 py-8">
         <h1 className="text-3xl font-bold text-white mb-6">Your Clubs</h1>
         {clubs.length === 0 ? (
-          <p className="text-gray-300">You haven&apos;t created any clubs yet.</p>
+          <p className="text-gray-300 w-2/3">You haven&apos;t created any clubs yet.<br />
+          Note that only groups that have either sucessfully gone through the student group application process or a club affliated with your school body should create a club.</p>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {clubs.map((club) => (
