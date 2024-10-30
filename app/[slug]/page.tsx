@@ -52,12 +52,16 @@ const ClubPage = () => {
     const fetchClubInfo = async () => {
       setIsLoading(true);
       try {
-        const clubDocRef = doc(db, 'clubs', slug);
-        const clubDoc = await getDoc(clubDocRef);
-        if (clubDoc.exists()) {
-          setClubInfo(clubDoc.data() as ClubInfo);
+        if (typeof slug === 'string') {
+          const clubDocRef = doc(db, 'clubs', slug);
+          const clubDoc = await getDoc(clubDocRef);
+          if (clubDoc.exists()) {
+            setClubInfo(clubDoc.data() as ClubInfo);
+          } else {
+            console.error('Club not found');
+          }
         } else {
-          console.error('Club not found');
+          console.error('Invalid slug');
         }
       } catch (error) {
         console.error('Error fetching club data:', error);
