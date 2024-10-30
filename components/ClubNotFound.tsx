@@ -1,7 +1,5 @@
 "use client";
 
-import Link from 'next/link';
-
 const ClubNotFound: React.FC = () => {
   return (
     <div className="bg-cblack min-h-screen flex flex-col items-center justify-center text-center">

@@ -80,19 +80,6 @@ const EditClubPage = () => {
   const [newTag, setNewTag] = useState("");
   const router = useRouter();
 
-  useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
-      setUser(currentUser);
-      if (!currentUser) {
-        router.push('/signin'); // Redirect to sign-in if not authenticated
-      } else {
-        fetchClubInfo(); // Fetch club info if authenticated
-      }
-    });
-
-    return () => unsubscribe();
-  }, [router]);
-  
   const fetchClubInfo = useCallback(async () => {
     setIsLoading(true);
     try {
@@ -122,6 +109,19 @@ const EditClubPage = () => {
       setIsLoading(false);
     }
   }, [slug]);
+  
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+      setUser(currentUser);
+      if (!currentUser) {
+        router.push('/signin');
+      } else {
+        fetchClubInfo();
+      }
+    });
+  
+    return () => unsubscribe();
+  }, [router, fetchClubInfo]);
 
   const checkCompletion = (info: ClubInfo): boolean => {
     const requiredFields: (keyof ClubInfo)[] = [

@@ -116,11 +116,6 @@ const BiologyClubPage: React.FC = () => {
     setClubInfo({ ...clubInfo, studentLeads: [...clubInfo.studentLeads, { name: "", role: "", imgSrc: "https://via.placeholder.com/50" }] });
   };
 
-  const handleRemoveStudentLead = (index: number) => {
-    const updatedLeads = clubInfo.studentLeads.filter((_, i) => i !== index);
-    setClubInfo({ ...clubInfo, studentLeads: updatedLeads });
-  };
-
   const handleAddLink = () => {
     if (newLink.url && newLink.platform) {
       setClubInfo({ ...clubInfo, links: [...clubInfo.links, newLink] });
