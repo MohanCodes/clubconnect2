@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from 'react';
-import { signInWithEmailAndPassword, signInWithPopup } from 'firebase/auth';
+import { signInWithEmailAndPassword, signInWithPopup, User } from 'firebase/auth';
 import { doc, setDoc, getDoc } from 'firebase/firestore';
 import { auth, googleProvider, db } from '../../firebase/firebase'; // Adjust path as needed
 import Link from 'next/link';
@@ -16,7 +16,7 @@ export default function Signin() {
   const [error, setError] = useState('');
   const router = useRouter();
 
-  const updateUserData = async (user: any) => {
+  const updateUserData = async (user: User) => {
     const userRef = doc(db, 'users', user.uid);
     const userSnap = await getDoc(userRef);
 
@@ -45,7 +45,7 @@ export default function Signin() {
       console.error('Error signing in:', error);
     }
   };
-
+  
   const handleGoogleSignIn = async () => {
     try {
       const result = await signInWithPopup(auth, googleProvider);

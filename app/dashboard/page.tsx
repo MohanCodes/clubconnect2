@@ -9,6 +9,11 @@ import { collection, getDocs, query, where, serverTimestamp, setDoc, doc } from 
 import { onAuthStateChanged } from 'firebase/auth';
 import Tile from '@/components/Tile'
 
+interface User {
+  uid: string;
+  displayName: string | null;
+}
+
 interface DashClub {
   id: string;
   name: string;
@@ -22,7 +27,7 @@ interface DashClub {
 const Dashboard: React.FC = () => {
   const [clubs, setClubs] = useState<DashClub[]>([]);
   const [loading, setLoading] = useState(true);
-  const [user, setUser] = useState<any>(null);
+  const [user, setUser] = useState<User | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [newClubName, setNewClubName] = useState('');
   const [newClubSchool, setNewClubSchool] = useState('');
@@ -31,11 +36,17 @@ const Dashboard: React.FC = () => {
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
-      setUser(currentUser);
-      if (!currentUser) {
-        router.push('/signin');
-      } else {
+      if (currentUser) {
+        const typedUser: User = {
+          uid: currentUser.uid,
+          displayName: currentUser.displayName,
+          // Add other properties as needed
+        };
+        setUser(typedUser);
         fetchClubs(currentUser.uid);
+      } else {
+        setUser(null);
+        router.push('/signin');
       }
     });
 
@@ -85,7 +96,7 @@ const Dashboard: React.FC = () => {
           school: newClubSchool,
           creatorId: user.uid,
           createdAt: serverTimestamp(),
-          creatorName: user.displayName,
+          creatorName: user.displayName || 'Unknown', // Handle potential null
           isComplete: false,
         };
         

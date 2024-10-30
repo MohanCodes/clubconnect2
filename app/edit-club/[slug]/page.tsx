@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter, useParams } from 'next/navigation';
@@ -10,7 +10,9 @@ import { auth, db, storage } from '@/firebase/firebase';
 import { doc, collection, setDoc, getDocs, updateDoc, arrayUnion, arrayRemove, deleteDoc } from 'firebase/firestore';
 import { ref, uploadBytes, getDownloadURL, deleteObject } from 'firebase/storage';
 import { onAuthStateChanged } from 'firebase/auth';
+import { User as FirebaseUser } from 'firebase/auth';
 
+type User = Pick<FirebaseUser, 'uid' | 'email' | 'displayName'>;
 
 interface Advisor {
   name: string;
@@ -49,7 +51,7 @@ interface ClubInfo {
 const EditClubPage = () => {
   const params = useParams();
   const slug = params.slug;
-  const [user, setUser] = useState<any>(null);
+  const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isEditing, setIsEditing] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -91,7 +93,7 @@ const EditClubPage = () => {
     return () => unsubscribe();
   }, [router]);
   
-  const fetchClubInfo = async () => {
+  const fetchClubInfo = useCallback(async () => {
     setIsLoading(true);
     try {
       const clubsCollectionRef = collection(db, 'clubs');
@@ -119,7 +121,7 @@ const EditClubPage = () => {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [slug]);
 
   const checkCompletion = (info: ClubInfo): boolean => {
     const requiredFields: (keyof ClubInfo)[] = [

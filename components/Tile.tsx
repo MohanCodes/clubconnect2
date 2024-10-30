@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import Image from 'next/image'
 import React from 'react';
 import {
   FaTwitter,
@@ -53,13 +54,13 @@ const Tile: React.FC<TileProps> = ({ icon, clubName, description, tags, links })
     <div className="rounded-lg p-9 transition-shadow duration-300 bg-[#2A2A2A]">
       {/* Icon and Club Name */}
       <div className="flex items-center mb-4">
-        <img src={icon} alt="Club Icon" className="h-10 w-10 mr-4" />
+        <Image src={icon} alt="Club Icon" width={40} height={40} className="mr-4" />
         <h2 className="text-2xl font-semibold text-white">{clubName}</h2>
       </div>
 
       {/* Club Description */}
       <p className="text-grey mb-4 text-left">
-        {description}
+        {description.length > 150 ? `${description.slice(0, 150)}...` : description}
       </p>
 
       {/* Horizontal Line */}

@@ -10,7 +10,7 @@ const ClubNotFound: React.FC = () => {
           Club <span className="text-azul">Not Found</span>
         </div>
         <p className="text-xl mt-6 text-grey max-w-lg">
-          We couldn't find the club you're looking for. It may have been removed or doesn't exist.
+          We couldn&apos;t find the club you&apos;re looking for. It may have been removed or doesn&apos;t exist.
         </p>
         <div className="mt-10 flex space-x-4">
           <button 
