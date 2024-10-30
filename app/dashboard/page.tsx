@@ -146,15 +146,11 @@ const Dashboard: React.FC = () => {
                 <button 
                   onClick={() => {
                     const slug = `${club.name.replace(/\s+/g, '-')}-${club.school.replace(/\s+/g, '-')}`.toLowerCase();
-                    if (club.isComplete) {
-                      router.push(`/club/${encodeURIComponent(slug)}`);
-                    } else {
-                      router.push(`/edit-club/${encodeURIComponent(slug)}`);
-                    }
+                    router.push(`/edit-club/${encodeURIComponent(slug)}`);
                   }}
                   className="absolute bottom-0 left-0 right-0 bg-azul text-white p-2 text-center"
                 >
-                  {club.isComplete ? 'View Club' : 'Complete Club Info'}
+                  {club.isComplete ? 'View/Edit Club' : 'Complete Club Info'}
                 </button>
               </div>
             ))}
