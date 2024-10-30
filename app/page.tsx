@@ -5,6 +5,7 @@ import { collection, getDocs, query, where } from 'firebase/firestore';
 import { db } from '@/firebase/firebase'; // Adjust the path as necessary
 import Tile from '@/components/Tile';
 import Navbar from '@/components/Navbar';
+import Link from 'next/link';
 
 interface DisplayClub {
   id: string;
@@ -54,14 +55,16 @@ const Home: React.FC = () => {
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 p-6 max-w-full">
           {clubs.map(club => (
-            <Tile
-              key={club.id}
-              icon={club.icon || "circles.svg"} // Use a default icon if none is provided
-              clubName={club.name}
-              description={club.description}
-              tags={club.tags}
-              links={club.links}
-            />
+            <Link href={`/club/${club.id}`} key={club.id}>
+              <Tile
+                key={club.id}
+                icon={club.icon || "circles.svg"} // Use a default icon if none is provided
+                clubName={club.name}
+                description={club.description}
+                tags={club.tags}
+                links={club.links}
+              />
+            </Link>
           ))}
         </div>
       </main>

@@ -1,3 +1,4 @@
+import Link from 'next/link';
 import React from 'react';
 import {
   FaTwitter,
@@ -78,7 +79,7 @@ const Tile: React.FC<TileProps> = ({ icon, clubName, description, tags, links })
         {/* Links - Only show the first three */}
         <div className="flex flex-row gap-4 self-center">
           {links.slice(0, 3).map((link, index) => (
-            <a
+            <Link
               key={index}
               href={link.url}
               className="flex items-center text-azul hover:text-blue-300"
@@ -86,7 +87,7 @@ const Tile: React.FC<TileProps> = ({ icon, clubName, description, tags, links })
               rel="noopener noreferrer"
             >
               {renderIcon(link.platform)}
-            </a>
+            </Link>
           ))}
         </div>
       </div>

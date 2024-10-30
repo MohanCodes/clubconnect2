@@ -4,10 +4,11 @@ import React, { useState, useEffect } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
-import { FaEnvelope, FaCalendarAlt, FaClock, FaMapMarkerAlt, FaUserGraduate, FaDollarSign, FaTwitter, FaInstagram, FaFacebook, FaLinkedin, FaYoutube, FaDiscord, FaGithub, FaTiktok, FaGlobe, FaUser, FaLink } from 'react-icons/fa';
+import { FaEnvelope, FaCalendarAlt, FaClock, FaMapMarkerAlt, FaUserGraduate, FaDollarSign, FaTwitter, FaInstagram, FaFacebook, FaLinkedin, FaYoutube, FaDiscord, FaGithub, FaTiktok, FaGlobe, FaUser, FaLink, FaCircleNotch } from 'react-icons/fa';
 import Navbar from '@/components/Navbar';
 import { db } from '@/firebase/firebase';
 import { doc, getDoc } from 'firebase/firestore';
+import ClubNotFound from '@/components/ClubNotFound';
 
 interface Advisor {
   name: string;
@@ -55,8 +56,18 @@ const ClubPage = () => {
         if (typeof slug === 'string') {
           const clubDocRef = doc(db, 'clubs', slug);
           const clubDoc = await getDoc(clubDocRef);
+          
           if (clubDoc.exists()) {
-            setClubInfo(clubDoc.data() as ClubInfo);
+            const clubData = clubDoc.data();
+            
+            // Check if the club document has isComplete set to true
+            if (clubData.isComplete === true) {
+              setClubInfo(clubData as ClubInfo);
+            } else {
+              console.log('Club data is not complete');
+              // You might want to set some state here to indicate incomplete data
+              // For example: setIsIncomplete(true);
+            }
           } else {
             console.error('Club not found');
           }
@@ -69,7 +80,7 @@ const ClubPage = () => {
         setIsLoading(false);
       }
     };
-
+  
     fetchClubInfo();
   }, [slug]);
 
@@ -90,11 +101,23 @@ const ClubPage = () => {
   };
 
   if (isLoading) {
-    return <div className="text-center mt-10 text-white">Loading...</div>;
+    return (
+    <div className="fixed inset-0 bg-cblack flex items-center justify-center z-50">
+      <div className="bg-white p-6 rounded-lg flex flex-col items-center">
+        <FaCircleNotch className="animate-spin h-16 w-16 text-azul" />
+        <p className="mt-4 text-azul font-semibold">Loading club data...</p>
+      </div>
+    </div>
+    );
   }
 
   if (!clubInfo) {
-    return <div className="text-center mt-10 text-white">Club not found</div>;
+    return (
+    <div>
+      <Navbar />
+      <ClubNotFound />
+    </div>
+  );
   }
 
   return (
