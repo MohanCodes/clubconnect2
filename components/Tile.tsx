@@ -1,4 +1,5 @@
 import React from 'react';
+import Link from 'next/link';
 import {
   FaTwitter,
   FaInstagram,
@@ -17,9 +18,10 @@ interface TileProps {
   description: string;
   tags: string[];
   links: { platform: string; url: string; }[];
+  isComplete: boolean;
 }
 
-const Tile: React.FC<TileProps> = ({ icon, clubName, description, tags, links }) => {
+const Tile: React.FC<TileProps> = ({ icon, clubName, description, tags, links, isComplete }) => {
   // Function to render the correct icon based on the platform name
   const renderIcon = (platform: string) => {
     switch (platform.toLowerCase()) {
@@ -48,7 +50,7 @@ const Tile: React.FC<TileProps> = ({ icon, clubName, description, tags, links })
     }
   };
 
-  return (
+  const tileContent = (
     <div className="rounded-lg p-9 transition-shadow duration-300 bg-[#2A2A2A]">
       {/* Icon and Club Name */}
       <div className="flex items-center mb-4">
@@ -91,6 +93,14 @@ const Tile: React.FC<TileProps> = ({ icon, clubName, description, tags, links })
         </div>
       </div>
     </div>
+  );
+
+  return isComplete ? (
+    <Link href={`/club/${clubName.toLowerCase().replace(/\s+/g, '-')}`}>
+      {tileContent}
+    </Link>
+  ) : (
+    tileContent
   );
 };
 
