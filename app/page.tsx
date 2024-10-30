@@ -61,7 +61,6 @@ const Home: React.FC = () => {
               description={club.description}
               tags={club.tags}
               links={club.links}
-              isComplete={club.isComplete} // Pass the isComplete property to each tile
             />
           ))}
         </div>
