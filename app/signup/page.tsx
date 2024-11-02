@@ -66,7 +66,7 @@ export default function Signup() {
   return (
     <div className="bg-cblack min-h-screen">
       <Navbar />
-      <main className="flex min-h-screen flex-col items-center justify-center bg-cblack text-center -mt-20">
+      <main className="flex min-h-screen flex-col items-center justify-center bg-cblack text-center">
         <div className="max-w-md w-full bg-white rounded-xl shadow-xl overflow-hidden">
           <div className="bg-azul p-6 text-center relative">
             <div className="absolute inset-0 flex justify-center mt-8">

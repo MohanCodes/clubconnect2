@@ -30,7 +30,7 @@ const schoolDistricts = [
   { name: "Wayzata", colors: ["Blue", "Gold"] },
   { name: "Minnetonka", colors: ["Blue", "White"] },
   { name: "Edina", colors: ["Maroon", "Gold"] },
-  { name: "Hopkins School District", colors: ["Green", "Gold"] },
+  { name: "Hopkins", colors: ["Green", "Gold"] },
   { name: "St. Louis Park", colors: ["Blue", "Yellow"] },
   { name: "Osseo", colors: ["Blue", "White"] },
   { name: "Robbinsdale", colors: ["Red", "White"] },

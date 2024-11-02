@@ -4,4 +4,19 @@
 
 body {
     font-family: var(--font-sora);
-  }
+}
+
+.search-container {
+  transition: all 0.3s ease;
+  z-index: 10;
+}
+
+.search-container.sticky {
+  position: fixed;
+  top: 60px; /* Adjust this value to match your navbar height */
+  left: 0;
+  right: 0;
+  background-color: #000; /* Adjust to match your background */
+  padding: 10px 0;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}

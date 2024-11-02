@@ -5,7 +5,7 @@ import Image from 'next/image';
 import { useEffect, useState } from 'react';
 import { auth } from '@/firebase/firebase';
 import { signOut, User } from 'firebase/auth';
-import { FaTimes } from 'react-icons/fa';
+import { FaTimes, FaBars } from 'react-icons/fa';
 
 const Navbar: React.FC = () => {
   const [user, setUser] = useState<User | null>(null);
@@ -49,7 +49,7 @@ const Navbar: React.FC = () => {
           onClick={() => setIsOpen(!isOpen)} 
           className="lg:hidden text-white"
         >
-          {isOpen ? 'Close' : 'Menu'}
+          {isOpen ? <FaTimes size={32} /> : <FaBars size={30} />}
         </button>
 
         <div 
@@ -63,7 +63,7 @@ const Navbar: React.FC = () => {
               onClick={() => setIsOpen(false)}
               className="absolute top-8 right-5 text-white text-md"
             >
-              Close
+              <FaTimes size={32} />
             </button>
           )}
 

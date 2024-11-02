@@ -2,7 +2,7 @@
 
 const UnderDevelopment: React.FC = () => {
   return (
-    <div className="bg-cblack min-h-screen flex flex-col items-center justify-center text-center">
+    <div className="bg-cblack min-h-screen flex flex-col items-center justify-center text-center -mt-20">
       <div className="flex flex-col items-center justify-center text-white">
         <div className="text-5xl font-semibold">
           Page Under <span className="text-azul">Development</span>
