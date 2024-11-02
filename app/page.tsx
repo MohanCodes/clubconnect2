@@ -71,7 +71,7 @@ const Home: React.FC = () => {
       try {
         const userDoc = await getDoc(doc(db, 'users', user.uid));
         const userData = userDoc.data();
-        if (userData.upvotedClubs && userData.upvotedClubs.includes(clubId)) {
+        if (userData?.upvotedClubs && userData.upvotedClubs.includes(clubId)) {
           console.log("Club already upvoted by this user.");
           return;
         }
