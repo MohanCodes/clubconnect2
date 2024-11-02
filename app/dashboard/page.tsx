@@ -100,8 +100,9 @@ const Dashboard: React.FC = () => {
 
         if (user) {
             try {
-                const newClubRef = doc(collection(db, 'clubs'));
-                await setDoc(newClubRef, {
+                const newClubRef = collection(db, 'clubs');
+                const docId = `${newClubName.replace(/\s+/g, '-')}-${newClubSchool.replace(/\s+/g, '-')}`.toLowerCase();
+                await setDoc(doc(newClubRef, docId), {
                     name: newClubName,
                     school: newClubSchool,
                     creatorId: user.uid,
