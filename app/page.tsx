@@ -23,8 +23,32 @@ const Home: React.FC = () => {
   const [clubs, setClubs] = useState<DisplayClub[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [user, setUser] = useState<any>(null);
-  const [upvotedClubs, setUpvotedClubs] = useState<string[]>([]);
+  const [upvotedClubs, setUpvotedClubs] = useState<string[]>([])
+  const [isUpvoteLoading, setIsUpvoteLoading] = useState<{ [key: string]: boolean }>({});;
+  const [selectedTag, setSelectedTag] = useState<string | null>(null);
   const router = useRouter();
+
+  const tags = [
+    "Wayzata",
+    "Minnetonka",
+    "Edina",
+    "Hopkins",
+    "St-Louis-Park",
+    "Osseo",
+    "Robbinsdale",
+    "Anoka-Hennepin"
+  ];
+
+  const schoolColors: { [key: string]: { bg: string; text: string } } = {
+    'wayzata': { bg: 'bg-yellow-400', text: 'text-blue-500' },
+    'minnetonka': { bg: 'bg-blue-600', text: 'text-white' },
+    'edina': { bg: 'bg-green-700', text: 'text-white' },
+    'hopkins': { bg: 'bg-gray-200', text: 'text-blue-500' },
+    'st-louis-park': { bg: 'bg-orange-500', text: 'text-black' },
+    'osseo': { bg: 'bg-orange-600', text: 'text-white' },
+    'robbinsdale': { bg: 'bg-cyan-600', text: 'text-white' },
+    'anoka-hennepin': { bg: 'bg-blue-900', text: 'text-white' },
+  };
 
   const handleClubClick = (clubId: string) => {
     router.push(`/club/${clubId}`);
@@ -119,20 +143,29 @@ const Home: React.FC = () => {
     }
   };
 
-  const handleUpvoteClick = (e: React.MouseEvent, clubId: string) => {
-    e.stopPropagation(); // Prevent the click from bubbling up to the parent
-    if (upvotedClubs.includes(clubId)) {
-      handleRemoveUpvote(clubId);
-    } else {
-      handleUpvoteClub(clubId);
+  const handleUpvoteClick = async (e: React.MouseEvent, clubId: string) => {
+    e.stopPropagation();
+    setIsUpvoteLoading(prev => ({ ...prev, [clubId]: true }));
+    try {
+      if (upvotedClubs.includes(clubId)) {
+        await handleRemoveUpvote(clubId);
+      } else {
+        await handleUpvoteClub(clubId);
+      }
+    } finally {
+      setIsUpvoteLoading(prev => ({ ...prev, [clubId]: false }));
     }
   };
 
-  const filteredClubs = clubs.filter(club => 
-    club.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    club.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    club.tags.some(tag => tag.toLowerCase().includes(searchQuery.toLowerCase()))
-  );
+  const filteredClubs = clubs.filter(club => {
+    const matchesSearchQuery = club.name.toLowerCase().includes(searchQuery.toLowerCase()) || club.description.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesTag = selectedTag ? club.tags.includes(selectedTag) : true;
+    return matchesSearchQuery && matchesTag;
+  });
+
+  const handleTagClick = (tag: string) => {
+    setSelectedTag(tag);
+  };
 
   return (
     <div className="bg-cblack">
@@ -154,6 +187,18 @@ const Home: React.FC = () => {
               className="px-5 py-3 rounded-full border-none outline-none w-full sm:w-96 text-gray-700"
             />
           </div>
+          <div className='mt-8 flex'>
+            <div className="flex flex-wrap gap-2 justify-center">
+                {tags.map((tag, index) => {
+                    const schoolStyle = schoolColors[tag.toLowerCase() as keyof typeof schoolColors] || { bg: 'bg-gray-200', text: 'text-black' };
+                    return (
+                        <button key={index} onClick={() => handleTagClick(tag)} className={`text-sm font-medium px-3 py-1 rounded-full break-words ${schoolStyle.bg} ${schoolStyle.text}`}>
+                            {tag}
+                        </button>
+                    );
+                })}
+            </div>
+          </div>
         </div>
         <div className="flex flex-col items-center">
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 2xl:grid-cols-4 gap-6 p-6 max-w-full overflow-x-auto">
@@ -173,11 +218,12 @@ const Home: React.FC = () => {
                         description={club.description}
                         tags={club.tags}
                         links={club.links}
-                        upvoteCount={club.upvoteCount ?? 0}
+                        upvoteCount={club.upvoteCount}
                         isUpvoted={upvotedClubs.includes(club.id)}
                         onUpvote={() => handleUpvoteClub(club.id)}
                         onRemoveUpvote={() => handleRemoveUpvote(club.id)}
                         onUpvoteClick={(e) => handleUpvoteClick(e, club.id)}
+                        isUpvoteLoading={isUpvoteLoading[club.id] || false}
                       />
                     </div>
                   ))}
@@ -203,11 +249,15 @@ const Home: React.FC = () => {
                     onUpvote={() => handleUpvoteClub(club.id)}
                     onRemoveUpvote={() => handleRemoveUpvote(club.id)}
                     onUpvoteClick={(e) => handleUpvoteClick(e, club.id)}
+                    isUpvoteLoading={isUpvoteLoading[club.id] || false}
                   />
                 </div>
               ))}
             </div>
           )}
+          {filteredClubs.length === 0 ? (
+                        <p className="text-lg text-white mb-12">No clubs available at this time. Please check back later!</p>
+                    ) : <div></div>}
         </div>
       </main>
     </div>

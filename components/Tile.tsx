@@ -20,25 +20,25 @@ interface TileProps {
   clubName: string;
   description: string;
   tags: string[];
-  links: { platform: string; url: string; }[];
+  links: { platform: string; url: string }[];
   upvoteCount: number;
   isUpvoted: boolean;
   onUpvote: () => void;
   onRemoveUpvote: () => void;
-  onUpvoteClick: (e: React.MouseEvent) => void;
+  onUpvoteClick: (e: React.MouseEvent<HTMLButtonElement>) => void; // Specify HTMLButtonElement here
   isUpvoteLoading: boolean;
 }
 
 const schoolColors: { [key: string]: { bg: string; text: string } } = {
-  'wayzata': { bg: 'bg-blue-500', text: 'text-yellow-400' },
-  'minnetonka': { bg: 'bg-blue-600', text: 'text-white' },
-  'edina': { bg: 'bg-green-600', text: 'text-yellow-400' },
-  'hopkins': { bg: 'bg-green-600', text: 'text-yellow-400' },
-  'st-louis-park': { bg: 'bg-blue-500', text: 'text-yellow-300' },
-  'osseo': { bg: 'bg-blue-600', text: 'text-white' },
-  'robbinsdale': { bg: 'bg-red-600', text: 'text-white' },
-  'anoka-hennepin': { bg: 'bg-blue-500', text: 'text-yellow-400' },
-};
+    'wayzata': { bg: 'bg-yellow-400', text: 'text-blue-500' },
+    'minnetonka': { bg: 'bg-blue-600', text: 'text-white' },
+    'edina': { bg: 'bg-green-700', text: 'text-white' },
+    'hopkins': { bg: 'bg-gray-200', text: 'text-blue-500' },
+    'st-louis-park': { bg: 'bg-orange-500', text: 'text-black' },
+    'osseo': { bg: 'bg-orange-600', text: 'text-white' },
+    'robbinsdale': { bg: 'bg-cyan-600', text: 'text-white' },
+    'anoka-hennepin': { bg: 'bg-blue-900', text: 'text-white' },
+  };
 
 const Tile: React.FC<TileProps> = ({ 
   icon, 

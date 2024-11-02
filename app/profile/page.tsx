@@ -65,57 +65,6 @@ const Profile: React.FC = () => {
     }
   };
 
-  const handleSelectClub = async (clubId: string) => {
-    if (user) {
-      try {
-        await updateDoc(doc(db, 'users', user.uid), {
-          selectedClubs: arrayUnion(clubId)
-        });
-        setSelectedClubs(prevClubs => [...prevClubs, clubId]);
-      } catch (error) {
-        console.error("Error selecting club:", error);
-      }
-    }
-  };
-
-  const handleDeselectClub = async (clubId: string) => {
-    if (user) {
-      try {
-        await runTransaction(db, async (transaction) => {
-          // Update user document
-          const userRef = doc(db, 'users', user.uid);
-          transaction.update(userRef, {
-            selectedClubs: arrayRemove(clubId)
-          });
-
-          // Update club document
-          const clubRef = doc(db, 'clubs', clubId);
-          transaction.update(clubRef, {
-            upvoteCount: increment(-1)
-          });
-        });
-
-        // Update local state
-        setSelectedClubs(prevClubs => prevClubs.filter(id => id !== clubId));
-      } catch (error) {
-        console.error("Error deselecting club:", error);
-      }
-    }
-  };
-
-  const handleUpvoteClub = async (clubId: string) => {
-    if (user) {
-      try {
-        await updateDoc(doc(db, 'users', user.uid), {
-          upvotedClubs: arrayUnion(clubId)
-        });
-        setUpvotedClubs(prevClubs => [...prevClubs, clubId]);
-      } catch (error) {
-        console.error("Error upvoting club:", error);
-      }
-    }
-  };
-
   const handleRemoveUpvote = async (clubId: string) => {
     if (user) {
       try {
@@ -123,6 +72,11 @@ const Profile: React.FC = () => {
           upvotedClubs: arrayRemove(clubId)
         });
         setUpvotedClubs(prevClubs => prevClubs.filter(id => id !== clubId));
+
+        const clubRef = doc(db, 'clubs', clubId);
+        await updateDoc(clubRef, {
+          upvoteCount: increment(-1)
+        });
       } catch (error) {
         console.error("Error removing upvote:", error);
       }
@@ -156,22 +110,7 @@ const Profile: React.FC = () => {
             <option value="Anoka-Hennepin School District">Anoka-Hennepin School District</option>
           </select>
         </div>
-        <div className="mb-6">
-          <h2 className="text-2xl font-semibold text-white mb-4">Selected Clubs</h2>
-          <ul>
-            {selectedClubs.map((clubId) => (
-              <li key={clubId} className="text-white mb-2">
-                {clubId}
-                <button
-                  onClick={() => handleDeselectClub(clubId)}
-                  className="ml-2 text-red-500"
-                >
-                  Deselect
-                </button>
-              </li>
-            ))}
-          </ul>
-        </div>
+        
         <div className="mb-6">
           <h2 className="text-2xl font-semibold text-white mb-4">Upvoted Clubs</h2>
           <ul>
