@@ -7,8 +7,13 @@ import { doc, getDoc, updateDoc, arrayUnion, arrayRemove } from 'firebase/firest
 import { onAuthStateChanged } from 'firebase/auth';
 import Navbar from '@/components/Navbar';
 
+interface User {
+  uid: string;
+  displayName: string | null;
+}
+
 const Profile: React.FC = () => {
-  const [user, setUser] = useState(null);
+  const [user, setUser] = useState<User | null>(null);
   const [selectedSchool, setSelectedSchool] = useState('');
   const [selectedClubs, setSelectedClubs] = useState<string[]>([]);
   const [upvotedClubs, setUpvotedClubs] = useState<string[]>([]);
@@ -17,7 +22,11 @@ const Profile: React.FC = () => {
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
       if (currentUser) {
-        setUser(currentUser);
+        const typedUser: User = {
+          uid: currentUser.uid,
+          displayName: currentUser.displayName,
+        };
+        setUser(typedUser);
         fetchUserData(currentUser.uid);
       } else {
         setUser(null);

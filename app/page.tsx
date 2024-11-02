@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from 'react';
-import { collection, getDocs, query, where, updateDoc, doc, arrayUnion, arrayRemove } from 'firebase/firestore';
+import { collection, getDocs, query, where, updateDoc, doc, arrayUnion, arrayRemove, increment, getDoc } from 'firebase/firestore';
 import { db, auth } from '@/firebase/firebase'; // Adjust the path as necessary
 import Tile from '@/components/Tile';
 import Navbar from '@/components/Navbar';
@@ -22,7 +22,7 @@ interface DisplayClub {
 const Home: React.FC = () => {
   const [clubs, setClubs] = useState<DisplayClub[]>([]); // Specify the state type
   const [searchQuery, setSearchQuery] = useState(''); // Pbf40
-  const [user, setUser] = useState(null);
+  const [user, setUser] = useState<any>(null); // Ensure user type is properly defined
   const [upvotedClubs, setUpvotedClubs] = useState<string[]>([]);
   const router = useRouter();
 

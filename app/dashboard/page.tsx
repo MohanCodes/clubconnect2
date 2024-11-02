@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import { FaPlus, FaTimes, FaExclamationTriangle } from 'react-icons/fa';
 import Navbar from '@/components/Navbar';
 import { auth, db } from '@/firebase/firebase';
-import { collection, getDocs, query, where, serverTimestamp, setDoc, doc, updateDoc, arrayUnion, arrayRemove } from 'firebase/firestore';
+import { collection, getDocs, query, where, serverTimestamp, setDoc, doc, updateDoc, arrayUnion, arrayRemove, getDoc } from 'firebase/firestore';
 import { onAuthStateChanged } from 'firebase/auth';
 import Tile from '@/components/Tile'
 
@@ -237,10 +237,8 @@ const Dashboard: React.FC = () => {
                   description={`School: ${club.school}`}
                   tags={club.tags}
                   links={[]}
-                  isSelected={selectedClubs.includes(club.id)}
+                  upvoteCount={0} // Placeholder for upvote count
                   isUpvoted={upvotedClubs.includes(club.id)}
-                  onSelect={() => handleSelectClub(club.id)}
-                  onDeselect={() => handleDeselectClub(club.id)}
                   onUpvote={() => handleUpvoteClub(club.id)}
                   onRemoveUpvote={() => handleRemoveUpvote(club.id)}
                 />
