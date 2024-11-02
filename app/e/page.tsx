@@ -96,7 +96,7 @@ const PopulateClubs: React.FC = () => {
     <div className="p-4">
       <h1 className="text-2xl font-bold mb-4">Random Club Generator</h1>
       <button
-        onClick={() => populateClubs(25)}
+        onClick={() => populateClubs(1)}
         disabled={isLoading}
         className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded flex items-center"
       >

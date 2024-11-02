@@ -1,7 +1,7 @@
 "use client";
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { FaPlus, FaTimes, FaExclamationTriangle } from 'react-icons/fa';
+import { FaPlus, FaTimes, FaExclamationTriangle, FaCheckCircle } from 'react-icons/fa';
 import Navbar from '@/components/Navbar';
 import { auth, db } from '@/firebase/firebase';
 import { collection, getDocs, query, where, serverTimestamp, setDoc, doc, updateDoc, arrayUnion, arrayRemove, getDoc, increment } from 'firebase/firestore';
@@ -109,7 +109,7 @@ const Dashboard: React.FC = () => {
                     createdAt: serverTimestamp(),
                     creatorName: user.displayName,
                     isComplete: false,
-                    tags: [], // Add tags if needed
+                    tags: [newClubSchool], // Add tags if needed
                     upvoteCount: 0,
                 });
 
@@ -190,7 +190,7 @@ const Dashboard: React.FC = () => {
                 {clubs.length === 0 ? (
                     <p className="text-gray-300 w-2/3">You haven't created any clubs yet.<br /> Note that only groups that have either successfully gone through the student group application process or a club affiliated with your school body should create a club.</p>
                 ) : (
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-x-6 gap-y-16">
                         {clubs.map((club) => (
                             <div key={club.id} className="relative">
                                 <Tile 
@@ -207,12 +207,18 @@ const Dashboard: React.FC = () => {
                                     isUpvoteLoading={isUpvoteLoading[club.id] || false} 
                                 />
                                 {!club.isComplete && (
-                                    <div className="absolute top-0 right-0 bg-yellow-500 text-black p-2 rounded-bl-lg flex items-center">
+                                    <div className="absolute top-7 right-0 bg-yellow-500 text-black p-2 rounded-bl-lg rounded-tl-lg flex items-center">
                                         <FaExclamationTriangle className="mr-2" />
                                         <span className="text-sm">Incomplete</span>
                                     </div>
                                 )}
-                                <button onClick={() => router.push(`/edit-club/${club.id}`)} className="absolute -bottom-9 left-0 right-0 bg-azul text-white p-2 text-center mt-2 rounded">
+                                {club.isComplete && (
+                                    <div className="absolute top-7 right-0 bg-green-500 text-black p-2 rounded-bl-lg rounded-tl-lg flex items-center">
+                                        <FaCheckCircle className="mr-2" />
+                                        <span className="text-sm">Complete</span>
+                                    </div>
+                                )}
+                                <button onClick={() => router.push(`/edit-club/${club.id}`)} className="absolute rounded-br-lg rounded-bl-lg -bottom-9 left-0 right-0 bg-azul text-white p-2 text-center mt-2">
                                     {club.isComplete ? 'View/Edit Club' : 'Complete Club Info'}
                                 </button>
                             </div>

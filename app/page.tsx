@@ -181,7 +181,7 @@ const Home: React.FC = () => {
           <div className="space-y-4 sm:space-y-0 sm:space-x-4 pt-4 flex flex-col sm:flex-row px-4 sm:px-0">
             <input
               type="text"
-              placeholder="Search Wayzata CSC"
+              placeholder="Search for a club:"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="px-5 py-3 rounded-full border-none outline-none w-full sm:w-96 text-gray-700"
@@ -202,7 +202,7 @@ const Home: React.FC = () => {
         </div>
         <div className="flex flex-col items-center">
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 2xl:grid-cols-4 gap-6 p-6 max-w-full overflow-x-auto">
-            {[0, 1, 2, 3].map((columnIndex) => (
+            {[0, 1, 2, 3, 4].map((columnIndex) => (
               <div key={columnIndex} className="grid auto-rows-max gap-6">
                 {filteredClubs
                   .filter((_, index) => index % (window.innerWidth >= 1536 ? 4 : window.innerWidth >= 768 ? 3 : window.innerWidth >= 640 ? 2 : 1) === columnIndex)

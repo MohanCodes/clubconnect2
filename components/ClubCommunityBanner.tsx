@@ -12,7 +12,7 @@ const ClubCommunityBanner: React.FC = () => {
       <div className="flex justify-center items-center">
         <input
           type="text"
-          placeholder="Wayzata CSC"
+          placeholder="Search for a club"
           className="p-3 rounded-l-full border-none outline-none w-64"
         />
         <button className="p-3 rounded-r-full bg-blue-500 text-white">
