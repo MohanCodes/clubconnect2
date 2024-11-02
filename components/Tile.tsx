@@ -29,9 +29,9 @@ interface TileProps {
 const schoolColors: { [key: string]: { bg: string; text: string } } = {
   'wayzata': { bg: 'bg-blue-500', text: 'text-yellow-400' },
   'minnetonka': { bg: 'bg-blue-600', text: 'text-white' },
-  'edina': { bg: 'bg-maroon-600', text: 'text-yellow-400' },
+  'edina': { bg: 'bg-green-600', text: 'text-yellow-400' },
   'hopkins': { bg: 'bg-green-600', text: 'text-yellow-400' },
-  'st-louis park': { bg: 'bg-blue-500', text: 'text-yellow-300' },
+  'st-louis-park': { bg: 'bg-blue-500', text: 'text-yellow-300' },
   'osseo': { bg: 'bg-blue-600', text: 'text-white' },
   'robbinsdale': { bg: 'bg-red-600', text: 'text-white' },
   'anoka-hennepin': { bg: 'bg-blue-500', text: 'text-yellow-400' },
@@ -79,7 +79,18 @@ const Tile: React.FC<TileProps> = ({ icon, clubName, description, tags, links, u
   });
 
   return (
-    <div className="rounded-lg p-9 transition-shadow duration-300 bg-[#2A2A2A]">
+    <div className="rounded-lg p-9 transition-shadow duration-300 bg-[#2A2A2A] relative">
+      {/* Upvote Section - Moved to top right */}
+      <div className="absolute top-8 right-5 flex items-center">
+        <button
+          onClick={isUpvoted ? onRemoveUpvote : onUpvote}
+          className={`flex items-center ${isUpvoted ? 'text-blue-500' : 'text-gray-500'} hover:text-blue-500 transition-colors duration-300`}
+        >
+          <FaThumbsUp className="mr-2 w-5 h-5" />
+        </button>
+        <span className="text-white">{upvoteCount}</span>
+      </div>
+
       {/* Icon and Club Name */}
       <div className="flex items-center mb-4">
         <Image src={icon} alt="Club Icon" width={40} height={40} className="mr-4" />
@@ -126,19 +137,7 @@ const Tile: React.FC<TileProps> = ({ icon, clubName, description, tags, links, u
             </Link>
           ))}
         </div>
-      </div>
-
-      {/* Upvote Section */}
-      <div className="flex items-center mt-4">
-        <button
-          onClick={isUpvoted ? onRemoveUpvote : onUpvote}
-          className={`flex items-center ${isUpvoted ? 'text-blue-500' : 'text-gray-500'} hover:text-blue-500 transition-colors duration-300`}
-        >
-          <FaThumbsUp className="mr-2" />
-          {isUpvoted ? 'Upvoted' : 'Upvote'}
-        </button>
-        <span className="ml-2 text-white">{upvoteCount}</span>
-      </div>
+      </div>      
     </div>
   );
 };
