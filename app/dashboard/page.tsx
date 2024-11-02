@@ -48,6 +48,7 @@ const Dashboard: React.FC = () => {
   const [selectedSchool, setSelectedSchool] = useState('');
   const [selectedClubs, setSelectedClubs] = useState<string[]>([]);
   const [upvotedClubs, setUpvotedClubs] = useState<string[]>([]);
+  const [isUpvoteLoading, setIsUpvoteLoading] = useState(false);
   const router = useRouter();
 
   useEffect(() => {
@@ -189,6 +190,7 @@ const Dashboard: React.FC = () => {
 
   const handleUpvoteClub = async (clubId: string) => {
     if (user) {
+      setIsUpvoteLoading(true);
       try {
         const userDoc = await getDoc(doc(db, 'users', user.uid));
         const userData = userDoc.data();
@@ -212,12 +214,15 @@ const Dashboard: React.FC = () => {
         ));
       } catch (error) {
         console.error("Error upvoting club:", error);
+      } finally {
+        setIsUpvoteLoading(false);
       }
     }
   };
 
   const handleRemoveUpvote = async (clubId: string) => {
     if (user) {
+      setIsUpvoteLoading(true);
       try {
         await updateDoc(doc(db, 'users', user.uid), {
           upvotedClubs: arrayRemove(clubId)
@@ -234,6 +239,8 @@ const Dashboard: React.FC = () => {
         ));
       } catch (error) {
         console.error("Error removing upvote:", error);
+      } finally {
+        setIsUpvoteLoading(false);
       }
     }
   };
@@ -268,6 +275,7 @@ const Dashboard: React.FC = () => {
                   isUpvoted={upvotedClubs.includes(club.id)}
                   onUpvote={() => handleUpvoteClub(club.id)}
                   onRemoveUpvote={() => handleRemoveUpvote(club.id)}
+                  isUpvoteLoading={isUpvoteLoading}
                 />
                 {!club.isComplete && (
                   <div className="absolute top-0 right-0 bg-yellow-500 text-black p-2 rounded-bl-lg flex items-center">

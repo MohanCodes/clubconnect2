@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import Image from 'next/image'
-import React from 'react';
+import React, { useState } from 'react';
 import {
   FaTwitter,
   FaInstagram,
@@ -11,7 +11,8 @@ import {
   FaDiscord,
   FaTiktok,
   FaLink,
-  FaThumbsUp
+  FaThumbsUp,
+  FaSpinner
 } from 'react-icons/fa';
 
 interface TileProps {
@@ -25,6 +26,7 @@ interface TileProps {
   onUpvote: () => void;
   onRemoveUpvote: () => void;
   onUpvoteClick: (e: React.MouseEvent) => void;
+  isUpvoteLoading: boolean;
 }
 
 const schoolColors: { [key: string]: { bg: string; text: string } } = {
@@ -48,7 +50,8 @@ const Tile: React.FC<TileProps> = ({
   isUpvoted, 
   onUpvote, 
   onRemoveUpvote, 
-  onUpvoteClick 
+  onUpvoteClick,
+  isUpvoteLoading
 }) => {
   const renderIcon = (platform: string) => {
     switch (platform.toLowerCase()) {
@@ -97,8 +100,13 @@ const Tile: React.FC<TileProps> = ({
         <button
           onClick={onUpvoteClick}
           className={`flex items-center ${isUpvoted ? 'text-blue-500' : 'text-gray-500'} hover:text-blue-500 transition-colors duration-300`}
+          disabled={isUpvoteLoading}
         >
-          <FaThumbsUp className="mr-2 w-5 h-5" />
+          {isUpvoteLoading ? (
+            <FaSpinner className="animate-spin mr-2 w-5 h-5" />
+          ) : (
+            <FaThumbsUp className="mr-2 w-5 h-5" />
+          )}
         </button>
         <span className="text-white">{upvoteCount == 0 ? <div/> : upvoteCount}</span>
       </div>
