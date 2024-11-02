@@ -257,7 +257,8 @@ const EditClubPage = () => {
 
   const handleDeleteClub = async () => {
     try {
-      const clubDocRef = doc(db, 'clubs', `${clubInfo.name}-${clubInfo.school}`);
+      const docId = `${clubInfo.name.replace(/\s+/g, '-')}-${clubInfo.school.replace(/\s+/g, '-')}`.toLowerCase();
+      const clubDocRef = doc(db, 'clubs', docId);
       await deleteDoc(clubDocRef);
       console.log('Club deleted successfully');
       router.push('/dashboard'); // Redirect to the clubs list page
