@@ -69,6 +69,13 @@ const Home: React.FC = () => {
   const handleUpvoteClub = async (clubId: string) => {
     if (user) {
       try {
+        const userDoc = await getDoc(doc(db, 'users', user.uid));
+        const userData = userDoc.data();
+        if (userData.upvotedClubs && userData.upvotedClubs.includes(clubId)) {
+          console.log("Club already upvoted by this user.");
+          return;
+        }
+
         await updateDoc(doc(db, 'users', user.uid), {
           upvotedClubs: arrayUnion(clubId)
         });

@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import { FaPlus, FaTimes, FaExclamationTriangle } from 'react-icons/fa';
 import Navbar from '@/components/Navbar';
 import { auth, db } from '@/firebase/firebase';
-import { collection, getDocs, query, where, serverTimestamp, setDoc, doc, updateDoc, arrayUnion, arrayRemove, getDoc } from 'firebase/firestore';
+import { collection, getDocs, query, where, serverTimestamp, setDoc, doc, updateDoc, arrayUnion, arrayRemove, getDoc, increment } from 'firebase/firestore';
 import { onAuthStateChanged } from 'firebase/auth';
 import Tile from '@/components/Tile'
 
@@ -23,6 +23,7 @@ interface DashClub {
   creatorName: string;
   isComplete: boolean;
   tags: string[];
+  upvoteCount: number;
 }
 
 const schoolDistricts = [
@@ -77,7 +78,8 @@ const Dashboard: React.FC = () => {
         id: doc.id,
         ...doc.data(),
         isComplete: doc.data().isComplete || false,
-        tags: doc.data().tags || []
+        tags: doc.data().tags || [],
+        upvoteCount: doc.data().upvoteCount || 0
       } as DashClub));
       setClubs(clubsData);
     } catch (error) {
@@ -188,10 +190,26 @@ const Dashboard: React.FC = () => {
   const handleUpvoteClub = async (clubId: string) => {
     if (user) {
       try {
+        const userDoc = await getDoc(doc(db, 'users', user.uid));
+        const userData = userDoc.data();
+        if (userData.upvotedClubs && userData.upvotedClubs.includes(clubId)) {
+          console.log("Club already upvoted by this user.");
+          return;
+        }
+
         await updateDoc(doc(db, 'users', user.uid), {
           upvotedClubs: arrayUnion(clubId)
         });
         setUpvotedClubs(prevClubs => [...prevClubs, clubId]);
+
+        const clubRef = doc(db, 'clubs', clubId);
+        await updateDoc(clubRef, {
+          upvoteCount: increment(1)
+        });
+
+        setClubs(prevClubs => prevClubs.map(club => 
+          club.id === clubId ? { ...club, upvoteCount: club.upvoteCount + 1 } : club
+        ));
       } catch (error) {
         console.error("Error upvoting club:", error);
       }
@@ -205,6 +223,15 @@ const Dashboard: React.FC = () => {
           upvotedClubs: arrayRemove(clubId)
         });
         setUpvotedClubs(prevClubs => prevClubs.filter(id => id !== clubId));
+
+        const clubRef = doc(db, 'clubs', clubId);
+        await updateDoc(clubRef, {
+          upvoteCount: increment(-1)
+        });
+
+        setClubs(prevClubs => prevClubs.map(club => 
+          club.id === clubId ? { ...club, upvoteCount: club.upvoteCount - 1 } : club
+        ));
       } catch (error) {
         console.error("Error removing upvote:", error);
       }
@@ -237,7 +264,7 @@ const Dashboard: React.FC = () => {
                   description={`School: ${club.school}`}
                   tags={club.tags}
                   links={[]}
-                  upvoteCount={0} // Placeholder for upvote count
+                  upvoteCount={club.upvoteCount}
                   isUpvoted={upvotedClubs.includes(club.id)}
                   onUpvote={() => handleUpvoteClub(club.id)}
                   onRemoveUpvote={() => handleRemoveUpvote(club.id)}
