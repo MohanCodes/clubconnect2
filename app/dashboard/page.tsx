@@ -117,6 +117,7 @@ const Dashboard: React.FC = () => {
                 setNewClubName('');
                 setNewClubSchool('');
                 setIsModalOpen(false);
+                router.push(`/edit-club/${docId}`)
             } catch (error) {
                 console.error("Error creating club:", error);
                 setError('An error occurred while creating the club. Please try again.');
