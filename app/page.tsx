@@ -171,7 +171,7 @@ const Home: React.FC = () => {
                         description={club.description}
                         tags={club.tags}
                         links={club.links}
-                        upvoteCount={club.upvoteCount}
+                        upvoteCount={club.upvoteCount.toString()}
                         isUpvoted={upvotedClubs.includes(club.id)}
                         onUpvote={() => handleUpvoteClub(club.id)}
                         onRemoveUpvote={() => handleRemoveUpvote(club.id)}
@@ -196,7 +196,7 @@ const Home: React.FC = () => {
                     description={club.description}
                     tags={club.tags}
                     links={club.links}
-                    upvoteCount={club.upvoteCount}
+                    upvoteCount={club.upvoteCount.toString()}
                     isUpvoted={upvotedClubs.includes(club.id)}
                     onUpvote={() => handleUpvoteClub(club.id)}
                     onRemoveUpvote={() => handleRemoveUpvote(club.id)}

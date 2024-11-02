@@ -264,7 +264,7 @@ const Dashboard: React.FC = () => {
                   description={`School: ${club.school}`}
                   tags={club.tags}
                   links={[]}
-                  upvoteCount={club.upvoteCount}
+                  upvoteCount={club.upvoteCount.toString()}
                   isUpvoted={upvotedClubs.includes(club.id)}
                   onUpvote={() => handleUpvoteClub(club.id)}
                   onRemoveUpvote={() => handleRemoveUpvote(club.id)}
