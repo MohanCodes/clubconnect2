@@ -71,24 +71,26 @@ const Home: React.FC = () => {
       try {
         const userDoc = await getDoc(doc(db, 'users', user.uid));
         const userData = userDoc.data();
-        if (userData?.upvotedClubs && userData.upvotedClubs.includes(clubId)) {
-          console.log("Club already upvoted by this user.");
-          return;
+        if (userData) {
+          if (userData.upvotedClubs && userData.upvotedClubs.includes(clubId)) {
+            console.log("Club already upvoted by this user.");
+            return;
+          }
+  
+          await updateDoc(doc(db, 'users', user.uid), {
+            upvotedClubs: arrayUnion(clubId)
+          });
+          setUpvotedClubs(prevClubs => [...prevClubs, clubId]);
+  
+          const clubRef = doc(db, 'clubs', clubId);
+          await updateDoc(clubRef, {
+            upvoteCount: increment(1)
+          });
+  
+          setClubs(prevClubs => prevClubs.map(club => 
+            club.id === clubId ? { ...club, upvoteCount: (club.upvoteCount || 0) + 1 } : club
+          ));
         }
-
-        await updateDoc(doc(db, 'users', user.uid), {
-          upvotedClubs: arrayUnion(clubId)
-        });
-        setUpvotedClubs(prevClubs => [...prevClubs, clubId]);
-
-        const clubRef = doc(db, 'clubs', clubId);
-        await updateDoc(clubRef, {
-          upvoteCount: increment(1)
-        });
-
-        setClubs(prevClubs => prevClubs.map(club => 
-          club.id === clubId ? { ...club, upvoteCount: club.upvoteCount + 1 } : club
-        ));
       } catch (error) {
         console.error("Error upvoting club:", error);
       }
@@ -171,7 +173,7 @@ const Home: React.FC = () => {
                         description={club.description}
                         tags={club.tags}
                         links={club.links}
-                        upvoteCount={club.upvoteCount.toString()}
+                        upvoteCount={club.upvoteCount ?? 0}
                         isUpvoted={upvotedClubs.includes(club.id)}
                         onUpvote={() => handleUpvoteClub(club.id)}
                         onRemoveUpvote={() => handleRemoveUpvote(club.id)}
@@ -196,7 +198,7 @@ const Home: React.FC = () => {
                     description={club.description}
                     tags={club.tags}
                     links={club.links}
-                    upvoteCount={club.upvoteCount.toString()}
+                    upvoteCount={club.upvoteCount ?? 0}
                     isUpvoted={upvotedClubs.includes(club.id)}
                     onUpvote={() => handleUpvoteClub(club.id)}
                     onRemoveUpvote={() => handleRemoveUpvote(club.id)}
