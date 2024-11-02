@@ -24,6 +24,7 @@ interface TileProps {
   isUpvoted: boolean;
   onUpvote: () => void;
   onRemoveUpvote: () => void;
+  onUpvoteClick: (e: React.MouseEvent) => void;
 }
 
 const schoolColors: { [key: string]: { bg: string; text: string } } = {
@@ -37,7 +38,18 @@ const schoolColors: { [key: string]: { bg: string; text: string } } = {
   'anoka-hennepin': { bg: 'bg-blue-500', text: 'text-yellow-400' },
 };
 
-const Tile: React.FC<TileProps> = ({ icon, clubName, description, tags, links, upvoteCount, isUpvoted, onUpvote, onRemoveUpvote }) => {
+const Tile: React.FC<TileProps> = ({ 
+  icon, 
+  clubName, 
+  description, 
+  tags, 
+  links, 
+  upvoteCount, 
+  isUpvoted, 
+  onUpvote, 
+  onRemoveUpvote, 
+  onUpvoteClick 
+}) => {
   const renderIcon = (platform: string) => {
     switch (platform.toLowerCase()) {
       case 'twitter':
@@ -61,7 +73,7 @@ const Tile: React.FC<TileProps> = ({ icon, clubName, description, tags, links, u
       case 'link':
         return <FaLink className="text-azul w-5 h-5" />;
       default:
-        return <FaLink className="text-azul w-5 h-5" />; // Use a default icon instead of null
+        return <FaLink className="text-azul w-5 h-5" />;
     }
   };
 
@@ -83,12 +95,12 @@ const Tile: React.FC<TileProps> = ({ icon, clubName, description, tags, links, u
       {/* Upvote Section - Moved to top right */}
       <div className="absolute top-8 right-5 flex items-center">
         <button
-          onClick={isUpvoted ? onRemoveUpvote : onUpvote}
+          onClick={onUpvoteClick}
           className={`flex items-center ${isUpvoted ? 'text-blue-500' : 'text-gray-500'} hover:text-blue-500 transition-colors duration-300`}
         >
           <FaThumbsUp className="mr-2 w-5 h-5" />
         </button>
-        <span className="text-white">{upvoteCount}</span>
+        <span className="text-white">{upvoteCount == 0 ? <div/> : upvoteCount}</span>
       </div>
 
       {/* Icon and Club Name */}

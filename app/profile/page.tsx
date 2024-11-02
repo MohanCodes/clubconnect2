@@ -3,9 +3,10 @@
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { auth, db } from '@/firebase/firebase';
-import { doc, getDoc, updateDoc, arrayUnion, arrayRemove } from 'firebase/firestore';
+import { doc, updateDoc, arrayRemove, increment, runTransaction, getDoc, arrayUnion } from 'firebase/firestore';
 import { onAuthStateChanged } from 'firebase/auth';
 import Navbar from '@/components/Navbar';
+
 
 interface User {
   uid: string;
@@ -80,9 +81,21 @@ const Profile: React.FC = () => {
   const handleDeselectClub = async (clubId: string) => {
     if (user) {
       try {
-        await updateDoc(doc(db, 'users', user.uid), {
-          selectedClubs: arrayRemove(clubId)
+        await runTransaction(db, async (transaction) => {
+          // Update user document
+          const userRef = doc(db, 'users', user.uid);
+          transaction.update(userRef, {
+            selectedClubs: arrayRemove(clubId)
+          });
+
+          // Update club document
+          const clubRef = doc(db, 'clubs', clubId);
+          transaction.update(clubRef, {
+            upvoteCount: increment(-1)
+          });
         });
+
+        // Update local state
         setSelectedClubs(prevClubs => prevClubs.filter(id => id !== clubId));
       } catch (error) {
         console.error("Error deselecting club:", error);

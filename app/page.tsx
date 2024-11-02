@@ -15,14 +15,14 @@ interface DisplayClub {
   description: string;
   tags: string[];
   links: { platform: string; url: string }[];
-  isComplete: boolean; // Ensure this field is included
-  upvoteCount: number; // Add upvoteCount field
+  isComplete: boolean;
+  upvoteCount: number;
 }
 
 const Home: React.FC = () => {
-  const [clubs, setClubs] = useState<DisplayClub[]>([]); // Specify the state type
-  const [searchQuery, setSearchQuery] = useState(''); // Pbf40
-  const [user, setUser] = useState<any>(null); // Ensure user type is properly defined
+  const [clubs, setClubs] = useState<DisplayClub[]>([]);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [user, setUser] = useState<any>(null);
   const [upvotedClubs, setUpvotedClubs] = useState<string[]>([]);
   const router = useRouter();
 
@@ -34,7 +34,7 @@ const Home: React.FC = () => {
     const fetchClubs = async () => {
       const q = query(collection(db, 'clubs'), where('isComplete', '==', true));
       const querySnapshot = await getDocs(q);
-      const clubsData = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })) as DisplayClub[]; // Cast to Club[]
+      const clubsData = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })) as DisplayClub[];
       setClubs(clubsData);
     };
 
@@ -110,32 +110,41 @@ const Home: React.FC = () => {
     }
   };
 
+  const handleUpvoteClick = (e: React.MouseEvent, clubId: string) => {
+    e.stopPropagation(); // Prevent the click from bubbling up to the parent
+    if (upvotedClubs.includes(clubId)) {
+      handleRemoveUpvote(clubId);
+    } else {
+      handleUpvoteClub(clubId);
+    }
+  };
+
   const filteredClubs = clubs.filter(club => 
     club.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
     club.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
     club.tags.some(tag => tag.toLowerCase().includes(searchQuery.toLowerCase()))
-  ); // P43ea
+  );
 
   return (
     <div className="bg-cblack">
       <Navbar />
       <main className="relative flex min-h-screen flex-col items-center justify-center bg-cblack text-center -mt-20">
         <div className='max-w-lg flex flex-col justify-center h-screen items-center'>
-        <div className='font-semibold text-white text-2xl sm:text-3xl md:text-4xl lg:text-5xl text-center'>
-          <span className='text-azul'>Connect</span> with your club community.
-        </div>
-        <p className="text-lg sm:text-xl my-4 sm:my-6 text-center text-grey px-4 sm:px-0 max-w-md mx-auto">
-          Currently a club database for students located in the west metro.
-        </p>
-        <div className="space-y-4 sm:space-y-0 sm:space-x-4 pt-4 flex flex-col sm:flex-row px-4 sm:px-0">
-          <input
-            type="text"
-            placeholder="Search Wayzata CSC"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="px-5 py-3 rounded-full border-none outline-none w-full sm:w-96 text-gray-700"
-          />
-        </div>
+          <div className='font-semibold text-white text-2xl sm:text-3xl md:text-4xl lg:text-5xl text-center'>
+            <span className='text-azul'>Connect</span> with your club community.
+          </div>
+          <p className="text-lg sm:text-xl my-4 sm:my-6 text-center text-grey px-4 sm:px-0 max-w-md mx-auto">
+            Currently a club database for students located in the west metro.
+          </p>
+          <div className="space-y-4 sm:space-y-0 sm:space-x-4 pt-4 flex flex-col sm:flex-row px-4 sm:px-0">
+            <input
+              type="text"
+              placeholder="Search Wayzata CSC"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="px-5 py-3 rounded-full border-none outline-none w-full sm:w-96 text-gray-700"
+            />
+          </div>
         </div>
         <div className="flex flex-col items-center">
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 2xl:grid-cols-4 gap-6 p-6 max-w-full overflow-x-auto">
@@ -159,6 +168,7 @@ const Home: React.FC = () => {
                         isUpvoted={upvotedClubs.includes(club.id)}
                         onUpvote={() => handleUpvoteClub(club.id)}
                         onRemoveUpvote={() => handleRemoveUpvote(club.id)}
+                        onUpvoteClick={(e) => handleUpvoteClick(e, club.id)}
                       />
                     </div>
                   ))}
@@ -183,6 +193,7 @@ const Home: React.FC = () => {
                     isUpvoted={upvotedClubs.includes(club.id)}
                     onUpvote={() => handleUpvoteClub(club.id)}
                     onRemoveUpvote={() => handleRemoveUpvote(club.id)}
+                    onUpvoteClick={(e) => handleUpvoteClick(e, club.id)}
                   />
                 </div>
               ))}
