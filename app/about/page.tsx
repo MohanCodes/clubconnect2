@@ -38,7 +38,7 @@ export default function About() {
             <div>
               <h2 className="text-2xl font-semibold text-azul mb-4">Club Members</h2>
               <p className="text-grey">
-                Club members are the heart of any club. They participate in activities, contribute ideas, and help in achieving the club's goals.
+                Club members are the heart of any club. They participate in activities, contribute ideas, and help in achieving the club&apos;s goals.
               </p>
             </div>
 
@@ -59,7 +59,7 @@ export default function About() {
             <div>
               <h2 className="text-2xl font-semibold text-azul mb-4">Get Involved</h2>
               <p className="text-grey mb-6">
-                Whether you're looking to join a club or promote your own, ClubConnect is here to help. Join our community today!
+                Whether you&apos;re looking to join a club or promote your own, ClubConnect is here to help. Join our community today!
               </p>
               <div className="text-center">
                 <button className="px-7 py-3 rounded-full bg-azul text-white hover:opacity-70">

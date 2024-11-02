@@ -5,7 +5,6 @@ import { collection, getDocs, query, where } from 'firebase/firestore';
 import { db } from '@/firebase/firebase'; // Adjust the path as necessary
 import Tile from '@/components/Tile';
 import Navbar from '@/components/Navbar';
-import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 
 interface DisplayClub {
@@ -66,49 +65,49 @@ const Home: React.FC = () => {
         </div>
         </div>
         <div className="flex flex-col items-center">
-  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 2xl:grid-cols-4 gap-6 p-6 max-w-full overflow-x-auto">
-    {[0, 1, 2, 3].map((columnIndex) => (
-      <div key={columnIndex} className="grid auto-rows-max gap-6">
-        {filteredClubs
-          .filter((_, index) => index % (window.innerWidth >= 1536 ? 4 : window.innerWidth >= 768 ? 3 : window.innerWidth >= 640 ? 2 : 1) === columnIndex)
-          .map((club) => (
-            <div 
-              key={club.id} 
-              onClick={() => handleClubClick(club.id)}
-              className="cursor-pointer"
-            >
-              <Tile
-                icon={club.icon || "circles.svg"}
-                clubName={club.name}
-                description={club.description}
-                tags={club.tags}
-                links={club.links}
-              />
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 2xl:grid-cols-4 gap-6 p-6 max-w-full overflow-x-auto">
+            {[0, 1, 2, 3].map((columnIndex) => (
+              <div key={columnIndex} className="grid auto-rows-max gap-6">
+                {filteredClubs
+                  .filter((_, index) => index % (window.innerWidth >= 1536 ? 4 : window.innerWidth >= 768 ? 3 : window.innerWidth >= 640 ? 2 : 1) === columnIndex)
+                  .map((club) => (
+                    <div 
+                      key={club.id} 
+                      onClick={() => handleClubClick(club.id)}
+                      className="cursor-pointer"
+                    >
+                      <Tile
+                        icon={club.icon || "circles.svg"}
+                        clubName={club.name}
+                        description={club.description}
+                        tags={club.tags}
+                        links={club.links}
+                      />
+                    </div>
+                  ))}
+              </div>
+            ))}
+          </div>
+          {filteredClubs.length <= 4 && (
+            <div className="flex justify-center mt-6">
+              {filteredClubs.slice(4).map((club) => (
+                <div 
+                  key={club.id} 
+                  onClick={() => handleClubClick(club.id)}
+                  className="cursor-pointer mx-3"
+                >
+                  <Tile
+                    icon={club.icon || "circles.svg"}
+                    clubName={club.name}
+                    description={club.description}
+                    tags={club.tags}
+                    links={club.links}
+                  />
+                </div>
+              ))}
             </div>
-          ))}
-      </div>
-    ))}
-  </div>
-  {filteredClubs.length <= 4 && (
-    <div className="flex justify-center mt-6">
-      {filteredClubs.slice(4).map((club) => (
-        <div 
-          key={club.id} 
-          onClick={() => handleClubClick(club.id)}
-          className="cursor-pointer mx-3"
-        >
-          <Tile
-            icon={club.icon || "circles.svg"}
-            clubName={club.name}
-            description={club.description}
-            tags={club.tags}
-            links={club.links}
-          />
+          )}
         </div>
-      ))}
-    </div>
-  )}
-</div>
       </main>
     </div>
   );

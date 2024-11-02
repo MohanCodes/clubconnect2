@@ -19,7 +19,7 @@ const AboutPage: React.FC = () => {
         <section className="mb-8 max-w-2xl text-center">
           <h2 className="text-2xl font-semibold mb-4">What We Offer</h2>
           <p className="text-lg text-gray-300">
-            We provide a comprehensive database of clubs, allowing students to find communities that resonate with their hobbies and aspirations. From photography to technology, we support a diverse range of interests.
+            We will provide a comprehensive database of clubs, allowing students to find communities that resonate with their hobbies and aspirations. From photography to technology, we support a diverse range of interests.
           </p>
         </section>
 

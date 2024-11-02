@@ -1,4 +1,4 @@
-"use client";
+/*"use client";
 
 import React, { useState } from 'react';
 import { db } from '@/firebase/firebase';
@@ -114,3 +114,4 @@ const PopulateClubs: React.FC = () => {
 };
 
 export default PopulateClubs;
+*/
