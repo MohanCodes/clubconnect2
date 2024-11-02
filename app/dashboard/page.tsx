@@ -22,7 +22,19 @@ interface DashClub {
   createdAt: Date;
   creatorName: string;
   isComplete: boolean;
+  tags: string[];
 }
+
+const schoolDistricts = [
+  "Wayzata Public Schools",
+  "Minnetonka Public Schools",
+  "Edina Public Schools",
+  "Hopkins School District",
+  "St. Louis Park Public Schools",
+  "Osseo Area Schools",
+  "Robbinsdale Area Schools",
+  "Anoka-Hennepin School District"
+];
 
 const Dashboard: React.FC = () => {
   const [clubs, setClubs] = useState<DashClub[]>([]);
@@ -40,7 +52,6 @@ const Dashboard: React.FC = () => {
         const typedUser: User = {
           uid: currentUser.uid,
           displayName: currentUser.displayName,
-          // Add other properties as needed
         };
         setUser(typedUser);
         fetchClubs(currentUser.uid);
@@ -61,7 +72,8 @@ const Dashboard: React.FC = () => {
       const clubsData = querySnapshot.docs.map(doc => ({
         id: doc.id,
         ...doc.data(),
-        isComplete: doc.data().isComplete || false // Ensure isComplete is included
+        isComplete: doc.data().isComplete || false,
+        tags: doc.data().tags || []
       } as DashClub));
       setClubs(clubsData);
     } catch (error) {
@@ -74,7 +86,6 @@ const Dashboard: React.FC = () => {
   const handleCreateClub = async () => {
     if (newClubName && newClubSchool && user) {
       try {
-        // Check if the club already exists in clubs
         const clubsRef = collection(db, 'clubs');
         const clubQuery = query(
           clubsRef, 
@@ -88,7 +99,6 @@ const Dashboard: React.FC = () => {
           return;
         }
   
-        // Create the document ID
         const docId = `${newClubName.replace(/\s+/g, '-')}-${newClubSchool.replace(/\s+/g, '-')}`.toLowerCase();
   
         const newClub = {
@@ -96,23 +106,20 @@ const Dashboard: React.FC = () => {
           school: newClubSchool,
           creatorId: user.uid,
           createdAt: serverTimestamp(),
-          creatorName: user.displayName || 'Unknown', // Handle potential null
+          creatorName: user.displayName || 'Unknown',
           isComplete: false,
+          tags: [newClubSchool.split(' ')[0]] // Add the first word of the school as a tag
         };
         
-        // Use setDoc instead of addDoc to specify the document ID
         await setDoc(doc(clubsRef, docId), newClub);
         
-        // Update local state
         setClubs(prevClubs => [...prevClubs, { ...newClub, id: docId, createdAt: new Date() }]);
         
-        // Close modal and reset form
         setIsModalOpen(false);
         setNewClubName('');
         setNewClubSchool('');
         setError('');
         
-        // Navigate to edit page
         router.push(`/edit-club/${encodeURIComponent(docId)}`);
       } catch (error) {
         console.error("Error creating club:", error);
@@ -136,7 +143,7 @@ const Dashboard: React.FC = () => {
         <h1 className="text-3xl font-bold text-white mb-6">Your Clubs</h1>
         {clubs.length === 0 ? (
           <p className="text-gray-300 w-2/3">You haven&apos;t created any clubs yet.<br />
-          Note that only groups that have either sucessfully gone through the student group application process or a club affliated with your school body should create a club.</p>
+          Note that only groups that have either successfully gone through the student group application process or a club affiliated with your school body should create a club.</p>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {clubs.map((club) => (
@@ -145,7 +152,7 @@ const Dashboard: React.FC = () => {
                   icon="circles.svg"
                   clubName={club.name}
                   description={`School: ${club.school}`}
-                  tags={[]}
+                  tags={club.tags}
                   links={[]}
                 />
                 {!club.isComplete && (
@@ -159,7 +166,7 @@ const Dashboard: React.FC = () => {
                     const slug = `${club.name.replace(/\s+/g, '-')}-${club.school.replace(/\s+/g, '-')}`.toLowerCase();
                     router.push(`/edit-club/${encodeURIComponent(slug)}`);
                   }}
-                  className="absolute bottom-0 left-0 right-0 bg-azul text-white p-2 text-center"
+                  className="absolute -bottom-9 left-0 right-0 bg-azul text-white p-2 text-center mt-2 rounded"
                 >
                   {club.isComplete ? 'View/Edit Club' : 'Complete Club Info'}
                 </button>
@@ -193,13 +200,16 @@ const Dashboard: React.FC = () => {
               onChange={(e) => setNewClubName(e.target.value)}
               className="w-full p-2 mb-4 border rounded"
             />
-            <input
-              type="text"
-              placeholder="School"
+            <select
               value={newClubSchool}
               onChange={(e) => setNewClubSchool(e.target.value)}
               className="w-full p-2 mb-4 border rounded"
-            />
+            >
+              <option value="">Select School District</option>
+              {schoolDistricts.map((district) => (
+                <option key={district} value={district}>{district}</option>
+              ))}
+            </select>
             <button
               onClick={handleCreateClub}
               className="w-full bg-azul text-white p-2 rounded hover:bg-blue-600"

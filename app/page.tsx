@@ -6,6 +6,7 @@ import { db } from '@/firebase/firebase'; // Adjust the path as necessary
 import Tile from '@/components/Tile';
 import Navbar from '@/components/Navbar';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 
 interface DisplayClub {
   id: string;
@@ -19,6 +20,11 @@ interface DisplayClub {
 
 const Home: React.FC = () => {
   const [clubs, setClubs] = useState<DisplayClub[]>([]); // Specify the state type
+  const router = useRouter();
+
+  const handleClubClick = (clubId: string) => {
+    router.push(`/club/${clubId}`);
+  };
 
   useEffect(() => {
     const fetchClubs = async () => {
@@ -54,19 +60,20 @@ const Home: React.FC = () => {
           </div>
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 p-6 max-w-full">
-          {clubs.map(club => (
-            <Link href={`/club/${club.id}`} key={club.id}>
-              <span>
-                <Tile
-                  key={club.id}
-                  icon={club.icon || "circles.svg"} // Use a default icon if none is provided
-                  clubName={club.name}
-                  description={club.description}
-                  tags={club.tags}
-                  links={club.links}
-                />
-              </span>
-            </Link>
+          {clubs.map((club) => (
+            <div 
+              key={club.id} 
+              onClick={() => handleClubClick(club.id)}
+              className="cursor-pointer"
+            >
+              <Tile
+                icon={club.icon || "circles.svg"}
+                clubName={club.name}
+                description={club.description}
+                tags={club.tags}
+                links={club.links}
+              />
+            </div>
           ))}
         </div>
       </main>

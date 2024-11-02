@@ -40,7 +40,7 @@ const Navbar: React.FC = () => {
             height={60}
             className="h-10"
           />
-          <span className="text-2xl font-bold text-white">
+          <span className="text-3xl font-bold text-white">
             Club<span className="text-azul">Connect</span>
           </span>
         </Link>
