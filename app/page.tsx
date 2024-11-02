@@ -1,11 +1,12 @@
 "use client";
 
 import { useEffect, useState } from 'react';
-import { collection, getDocs, query, where } from 'firebase/firestore';
-import { db } from '@/firebase/firebase'; // Adjust the path as necessary
+import { collection, getDocs, query, where, updateDoc, doc, arrayUnion, arrayRemove } from 'firebase/firestore';
+import { db, auth } from '@/firebase/firebase'; // Adjust the path as necessary
 import Tile from '@/components/Tile';
 import Navbar from '@/components/Navbar';
 import { useRouter } from 'next/navigation';
+import { onAuthStateChanged } from 'firebase/auth';
 
 interface DisplayClub {
   id: string;
@@ -15,11 +16,14 @@ interface DisplayClub {
   tags: string[];
   links: { platform: string; url: string }[];
   isComplete: boolean; // Ensure this field is included
+  upvoteCount: number; // Add upvoteCount field
 }
 
 const Home: React.FC = () => {
   const [clubs, setClubs] = useState<DisplayClub[]>([]); // Specify the state type
   const [searchQuery, setSearchQuery] = useState(''); // Pbf40
+  const [user, setUser] = useState(null);
+  const [upvotedClubs, setUpvotedClubs] = useState<string[]>([]);
   const router = useRouter();
 
   const handleClubClick = (clubId: string) => {
@@ -36,6 +40,75 @@ const Home: React.FC = () => {
 
     fetchClubs();
   }, []);
+
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+      if (currentUser) {
+        setUser(currentUser);
+        fetchUserData(currentUser.uid);
+      } else {
+        setUser(null);
+      }
+    });
+
+    return () => unsubscribe();
+  }, []);
+
+  const fetchUserData = async (userId: string) => {
+    try {
+      const userDoc = await getDoc(doc(db, 'users', userId));
+      if (userDoc.exists()) {
+        const userData = userDoc.data();
+        setUpvotedClubs(userData.upvotedClubs || []);
+      }
+    } catch (error) {
+      console.error("Error fetching user data:", error);
+    }
+  };
+
+  const handleUpvoteClub = async (clubId: string) => {
+    if (user) {
+      try {
+        await updateDoc(doc(db, 'users', user.uid), {
+          upvotedClubs: arrayUnion(clubId)
+        });
+        setUpvotedClubs(prevClubs => [...prevClubs, clubId]);
+
+        const clubRef = doc(db, 'clubs', clubId);
+        await updateDoc(clubRef, {
+          upvoteCount: increment(1)
+        });
+
+        setClubs(prevClubs => prevClubs.map(club => 
+          club.id === clubId ? { ...club, upvoteCount: club.upvoteCount + 1 } : club
+        ));
+      } catch (error) {
+        console.error("Error upvoting club:", error);
+      }
+    }
+  };
+
+  const handleRemoveUpvote = async (clubId: string) => {
+    if (user) {
+      try {
+        await updateDoc(doc(db, 'users', user.uid), {
+          upvotedClubs: arrayRemove(clubId)
+        });
+        setUpvotedClubs(prevClubs => prevClubs.filter(id => id !== clubId));
+
+        const clubRef = doc(db, 'clubs', clubId);
+        await updateDoc(clubRef, {
+          upvoteCount: increment(-1)
+        });
+
+        setClubs(prevClubs => prevClubs.map(club => 
+          club.id === clubId ? { ...club, upvoteCount: club.upvoteCount - 1 } : club
+        ));
+      } catch (error) {
+        console.error("Error removing upvote:", error);
+      }
+    }
+  };
 
   const filteredClubs = clubs.filter(club => 
     club.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -82,6 +155,10 @@ const Home: React.FC = () => {
                         description={club.description}
                         tags={club.tags}
                         links={club.links}
+                        upvoteCount={club.upvoteCount}
+                        isUpvoted={upvotedClubs.includes(club.id)}
+                        onUpvote={() => handleUpvoteClub(club.id)}
+                        onRemoveUpvote={() => handleRemoveUpvote(club.id)}
                       />
                     </div>
                   ))}
@@ -102,6 +179,10 @@ const Home: React.FC = () => {
                     description={club.description}
                     tags={club.tags}
                     links={club.links}
+                    upvoteCount={club.upvoteCount}
+                    isUpvoted={upvotedClubs.includes(club.id)}
+                    onUpvote={() => handleUpvoteClub(club.id)}
+                    onRemoveUpvote={() => handleRemoveUpvote(club.id)}
                   />
                 </div>
               ))}

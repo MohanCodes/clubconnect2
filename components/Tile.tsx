@@ -10,7 +10,8 @@ import {
   FaGithub,
   FaDiscord,
   FaTiktok,
-  FaLink
+  FaLink,
+  FaThumbsUp
 } from 'react-icons/fa';
 
 interface TileProps {
@@ -19,6 +20,10 @@ interface TileProps {
   description: string;
   tags: string[];
   links: { platform: string; url: string; }[];
+  upvoteCount: number;
+  isUpvoted: boolean;
+  onUpvote: () => void;
+  onRemoveUpvote: () => void;
 }
 
 const schoolColors: { [key: string]: { bg: string; text: string } } = {
@@ -32,7 +37,7 @@ const schoolColors: { [key: string]: { bg: string; text: string } } = {
   'anoka-hennepin': { bg: 'bg-blue-500', text: 'text-yellow-400' },
 };
 
-const Tile: React.FC<TileProps> = ({ icon, clubName, description, tags, links }) => {
+const Tile: React.FC<TileProps> = ({ icon, clubName, description, tags, links, upvoteCount, isUpvoted, onUpvote, onRemoveUpvote }) => {
   const renderIcon = (platform: string) => {
     switch (platform.toLowerCase()) {
       case 'twitter':
@@ -121,6 +126,18 @@ const Tile: React.FC<TileProps> = ({ icon, clubName, description, tags, links })
             </Link>
           ))}
         </div>
+      </div>
+
+      {/* Upvote Section */}
+      <div className="flex items-center mt-4">
+        <button
+          onClick={isUpvoted ? onRemoveUpvote : onUpvote}
+          className={`flex items-center ${isUpvoted ? 'text-blue-500' : 'text-gray-500'} hover:text-blue-500 transition-colors duration-300`}
+        >
+          <FaThumbsUp className="mr-2" />
+          {isUpvoted ? 'Upvoted' : 'Upvote'}
+        </button>
+        <span className="ml-2 text-white">{upvoteCount}</span>
       </div>
     </div>
   );

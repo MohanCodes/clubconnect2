@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import { FaPlus, FaTimes, FaExclamationTriangle } from 'react-icons/fa';
 import Navbar from '@/components/Navbar';
 import { auth, db } from '@/firebase/firebase';
-import { collection, getDocs, query, where, serverTimestamp, setDoc, doc } from 'firebase/firestore';
+import { collection, getDocs, query, where, serverTimestamp, setDoc, doc, updateDoc, arrayUnion, arrayRemove } from 'firebase/firestore';
 import { onAuthStateChanged } from 'firebase/auth';
 import Tile from '@/components/Tile'
 
@@ -44,6 +44,9 @@ const Dashboard: React.FC = () => {
   const [newClubName, setNewClubName] = useState('');
   const [newClubSchool, setNewClubSchool] = useState('');
   const [error, setError] = useState('');
+  const [selectedSchool, setSelectedSchool] = useState('');
+  const [selectedClubs, setSelectedClubs] = useState<string[]>([]);
+  const [upvotedClubs, setUpvotedClubs] = useState<string[]>([]);
   const router = useRouter();
 
   useEffect(() => {
@@ -55,6 +58,7 @@ const Dashboard: React.FC = () => {
         };
         setUser(typedUser);
         fetchClubs(currentUser.uid);
+        fetchUserData(currentUser.uid);
       } else {
         setUser(null);
         router.push('/signin');
@@ -80,6 +84,20 @@ const Dashboard: React.FC = () => {
       console.error("Error fetching clubs:", error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchUserData = async (userId: string) => {
+    try {
+      const userDoc = await getDoc(doc(db, 'users', userId));
+      if (userDoc.exists()) {
+        const userData = userDoc.data();
+        setSelectedSchool(userData.selectedSchool || '');
+        setSelectedClubs(userData.selectedClubs || []);
+        setUpvotedClubs(userData.upvotedClubs || []);
+      }
+    } catch (error) {
+      console.error("Error fetching user data:", error);
     }
   };
 
@@ -128,6 +146,71 @@ const Dashboard: React.FC = () => {
     }
   };
 
+  const handleSelectSchool = async (school: string) => {
+    if (user) {
+      try {
+        await updateDoc(doc(db, 'users', user.uid), {
+          selectedSchool: school
+        });
+        setSelectedSchool(school);
+      } catch (error) {
+        console.error("Error selecting school:", error);
+      }
+    }
+  };
+
+  const handleSelectClub = async (clubId: string) => {
+    if (user) {
+      try {
+        await updateDoc(doc(db, 'users', user.uid), {
+          selectedClubs: arrayUnion(clubId)
+        });
+        setSelectedClubs(prevClubs => [...prevClubs, clubId]);
+      } catch (error) {
+        console.error("Error selecting club:", error);
+      }
+    }
+  };
+
+  const handleDeselectClub = async (clubId: string) => {
+    if (user) {
+      try {
+        await updateDoc(doc(db, 'users', user.uid), {
+          selectedClubs: arrayRemove(clubId)
+        });
+        setSelectedClubs(prevClubs => prevClubs.filter(id => id !== clubId));
+      } catch (error) {
+        console.error("Error deselecting club:", error);
+      }
+    }
+  };
+
+  const handleUpvoteClub = async (clubId: string) => {
+    if (user) {
+      try {
+        await updateDoc(doc(db, 'users', user.uid), {
+          upvotedClubs: arrayUnion(clubId)
+        });
+        setUpvotedClubs(prevClubs => [...prevClubs, clubId]);
+      } catch (error) {
+        console.error("Error upvoting club:", error);
+      }
+    }
+  };
+
+  const handleRemoveUpvote = async (clubId: string) => {
+    if (user) {
+      try {
+        await updateDoc(doc(db, 'users', user.uid), {
+          upvotedClubs: arrayRemove(clubId)
+        });
+        setUpvotedClubs(prevClubs => prevClubs.filter(id => id !== clubId));
+      } catch (error) {
+        console.error("Error removing upvote:", error);
+      }
+    }
+  };
+
   if (loading) {
     return <div className="text-center mt-10 text-white">Loading...</div>;
   }
@@ -154,6 +237,12 @@ const Dashboard: React.FC = () => {
                   description={`School: ${club.school}`}
                   tags={club.tags}
                   links={[]}
+                  isSelected={selectedClubs.includes(club.id)}
+                  isUpvoted={upvotedClubs.includes(club.id)}
+                  onSelect={() => handleSelectClub(club.id)}
+                  onDeselect={() => handleDeselectClub(club.id)}
+                  onUpvote={() => handleUpvoteClub(club.id)}
+                  onRemoveUpvote={() => handleRemoveUpvote(club.id)}
                 />
                 {!club.isComplete && (
                   <div className="absolute top-0 right-0 bg-yellow-500 text-black p-2 rounded-bl-lg flex items-center">
