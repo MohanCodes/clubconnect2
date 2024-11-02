@@ -80,15 +80,12 @@ const Tile: React.FC<TileProps> = ({ icon, clubName, description, tags, links })
         {/* Links - Only show the first three */}
         <div className="flex flex-row gap-4 self-center">
           {links.slice(0, 3).map((link, index) => (
-            <Link
+            <span
               key={index}
-              href={link.url}
               className="flex items-center text-azul hover:text-blue-300"
-              target="_blank"
-              rel="noopener noreferrer"
             >
               {renderIcon(link.platform)}
-            </Link>
+            </span>
           ))}
         </div>
       </div>
