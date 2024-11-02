@@ -26,7 +26,7 @@ const schoolColors: { [key: string]: { bg: string; text: string } } = {
   'minnetonka': { bg: 'bg-blue-600', text: 'text-white' },
   'edina': { bg: 'bg-maroon-600', text: 'text-yellow-400' },
   'hopkins': { bg: 'bg-green-600', text: 'text-yellow-400' },
-  'st. louis park': { bg: 'bg-blue-500', text: 'text-yellow-300' },
+  'st-louis park': { bg: 'bg-blue-500', text: 'text-yellow-300' },
   'osseo': { bg: 'bg-blue-600', text: 'text-white' },
   'robbinsdale': { bg: 'bg-red-600', text: 'text-white' },
   'anoka-hennepin': { bg: 'bg-blue-500', text: 'text-yellow-400' },

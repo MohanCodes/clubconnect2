@@ -70,6 +70,7 @@ const Navbar: React.FC = () => {
           <Link href="/about" className="text-white hover:text-azul">About</Link>
           <Link href="/blog" className="text-white hover:text-azul">Blog</Link>
           <Link href="/calendar" className="text-white hover:text-azul">Calendar</Link>
+          
 
           {user && (
             <Link href="/dashboard" className="text-white hover:text-azul">Dashboard</Link>
@@ -83,9 +84,12 @@ const Navbar: React.FC = () => {
               Sign Out
             </button>
           ) : (
-            <Link href="/signup" className="px-7 py-3 rounded-full bg-azul text-white hover:opacity-70">
-              Signup
-            </Link>
+            <div>
+              <Link href="/signin" className="text-white hover:text-azul mr-10">Sign In</Link>
+              <Link href="/signup" className="px-7 py-3 rounded-full bg-azul text-white hover:opacity-70">
+                Signup
+              </Link>
+            </div>
           )}
         </div>
       </div>
