@@ -1,34 +1,39 @@
-import Navbar from '@/components/Navbar';
+import fs from 'fs';
+import path from 'path';
+import matter from 'gray-matter';
 import Link from 'next/link';
+import Navbar from '@/components/Navbar';
 
 export default function Blog() {
-  const posts = [
-    { slug: 'first-post', title: 'First Post' },
-    { slug: 'second-post', title: 'Second Post' },
-    { slug: 'third-post', title: 'Third Post' },
-  ];
+    const blogDir = "blogs";
+    const files = fs.readdirSync(path.join(blogDir));
+    const blogs = files.map(filename => {
+        const fileContent = fs.readFileSync(path.join(blogDir, filename), 'utf-8');
+        const { data: frontMatter } = matter(fileContent);
+        return {
+            meta: frontMatter,
+            slug: filename.replace('.mdx', '')
+        };
+    });
 
-  return (
-    <div className="bg-cblack min-h-screen flex flex-col">
-      <Navbar />
-      <main className="flex-grow flex items-center justify-center px-4 py-16">
-        <div className="max-w-3xl w-full">
-          <h1 className="font-semibold text-white text-5xl mb-12 text-center">
-            Blog <span className="text-azul">Posts</span>
-          </h1>
-          <ul className="space-y-6">
-            {posts.map((post) => (
-              <li key={post.slug}>
-                <Link href={`/blog/${post.slug}`}>
-                  <a className="text-2xl font-semibold text-azul hover:underline">
-                    {post.title}
-                  </a>
-                </Link>
-              </li>
-            ))}
-          </ul>
-        </div>
-      </main>
-    </div>
-  );
+    return (
+        <main className='text-white'>
+            <div className='md:max-w-screen-xl text-white md:mx-auto'>
+                <Navbar />
+                <section>
+                    <h1>item</h1>
+                    <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8'>
+                        {blogs.map(blog => (
+                            <Link href={'/blog/' + blog.slug} passHref key={blog.slug}>
+                                <div className="text-cgray bg-white p-6 rounded-lg shadow-lg hover:opacity-75 hover:scale-110 transition duration-300">
+                                    <h3 className="text-2xl mb-4 font-bold">{blog.meta.title}</h3>
+                                    <p className="text-lg">{blog.meta.description}</p>
+                                </div>
+                            </Link>
+                        ))}
+                    </div>
+                </section>
+            </div>
+        </main>
+    );
 }

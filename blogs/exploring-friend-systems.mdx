@@ -1,0 +1,99 @@
+---
+title: exploring friend systems in data
+date: 8th August 2024
+description: let's go over my thought process in how i'm attempting to implement a friend system.
+---
+
+## Introduction
+
+My mobile app journey has been an incredible learning experience, filled with exciting challenges and rewarding breakthroughs. As I dove deeper into app development, I encountered a particularly interesting challenge: implementing a system for making friends and generating a "pack" — a concept akin to forming a party in shooter games.
+
+Creating a robust friend system in a mobile app might seem straightforward at first glance, but as I discovered, there are many different approaches one can take. Each method comes with its own set of trade-offs, depending on the app's requirements, user experience goals, and the underlying technology stack.
+
+In this blog post, I’ll walk you through my thought process, the challenges I faced, and the different approaches I considered for building a friend system in my app.
+
+## The Concept of a "Pack"
+
+Before diving into the technical details, let me explain the "pack" concept. In many online multiplayer games, players can form parties or teams to play together. This concept can be adapted to fitness and social apps, where users form groups — or packs — to engage in activities together, whether it’s a run, a hike, or a challenge.
+
+The idea is to create a group so that users can play Runner's Tag — now called Urban Fox — with their friends.
+
+## Challenges in Designing a Friend System
+
+Creating a friend system isn’t just about allowing users to connect; it’s about designing a system that feels natural, secure, and scalable. Here are some of the challenges I encountered:
+
+1. **Data Structure Complexity**:
+   - Should friendships be bi-directional (both users must accept the request), or can they be one-sided (like a follow system)?
+   - How do you efficiently store and query the relationships between users?
+
+2. **Scalability**:
+   - As the user base grows, the system must handle thousands of relationships without performance degradation.
+   - Efficient querying becomes crucial when generating friend recommendations, managing large friend lists, or displaying mutual connections.
+
+3. **User Experience**:
+   - The process of finding and adding friends must be seamless.
+   - How do you notify users of friend requests, acceptances, or pack invitations without overwhelming them with notifications?
+
+4. **Security and Privacy**:
+   - How do you ensure that only authorized users can access or modify friend data?
+   - What privacy settings should be available to users regarding their friend list and activities?
+
+## Exploring Different Approaches
+
+After identifying these challenges, I explored several different approaches to implementing the friend system. Here’s a breakdown of some of the options I considered:
+
+### 1. Relational Database Approach
+
+Using a relational database (like PostgreSQL or MySQL) is a common approach, where relationships are stored in a table with foreign keys linking users. This approach is straightforward and allows for complex queries using SQL.
+
+- **Pros**:
+  - Well-suited for complex queries (e.g., finding mutual friends).
+  - Easy to maintain data integrity with foreign keys.
+- **Cons**:
+  - Scalability can become an issue as the number of users and relationships grows.
+  - Requires careful indexing and optimization to maintain performance.
+
+### 2. NoSQL Database Approach
+
+With the rise of NoSQL databases like Firebase, MongoDB, and DynamoDB, storing friendships as documents or key-value pairs has become popular. This approach is more flexible and can handle large datasets efficiently.
+
+- **Pros**:
+  - Highly scalable and can handle large amounts of data with ease.
+  - Flexibility in data structure, allowing for quick iteration during development.
+- **Cons**:
+  - Complex queries (e.g., mutual friends) can be more challenging to implement.
+  - May require denormalization, leading to data duplication and potential consistency issues.
+
+### 3. Graph Database Approach
+
+Graph databases like Neo4j are specifically designed to handle relationships, making them an excellent choice for a friend system. In a graph database, users are nodes, and friendships are edges connecting these nodes.
+
+- **Pros**:
+  - Perfect for handling complex relationship queries (e.g., finding shortest paths, mutual friends).
+  - Highly efficient for traversing relationships, even in large networks.
+- **Cons**:
+  - Less familiarity in the developer community compared to relational or NoSQL databases.
+  - May require specialized knowledge and tooling.
+
+### 4. Hybrid Approach
+
+In some cases, a hybrid approach combining different databases can be the most effective solution. For instance, using a relational database for user data and a graph database for handling relationships might provide the best of both worlds.
+
+- **Pros**:
+  - Leverages the strengths of multiple database types.
+  - Allows for optimized performance for both data storage and relationship handling.
+- **Cons**:
+  - Increases complexity in terms of data management and synchronization.
+  - Requires more resources and expertise to maintain.
+
+## My Chosen Approach
+
+After weighing the pros and cons of each approach, I opted for a hybrid approach in my app. I use a NoSQL database (Firebase Firestore) for user data and core functionality, combined with a relational model for managing friend relationships. This allows for flexibility and scalability while maintaining the ability to perform complex queries when needed.
+
+To address scalability, I’m also exploring the possibility of integrating a graph database for handling specific friend-related features, such as mutual friends and pack recommendations. This hybrid approach provides a balance between simplicity, scalability, and performance, which I believe will serve my app well as it grows.
+
+## Final Thoughts
+
+Building a friend system in a mobile app is a multifaceted challenge that requires careful consideration of data structure, scalability, user experience, and privacy. My journey has taught me that there is no one-size-fits-all solution; the best approach depends on your app’s specific needs and the trade-offs you’re willing to make.
+
+Have fun attempting to implement a friend system in your apps!
