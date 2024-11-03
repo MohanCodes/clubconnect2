@@ -31,7 +31,7 @@ interface ClubLink {
 }
 
 interface OneOffEvent {
-  date: Date;
+  date: string; // Store as 'YYYY-MM-DD' string
   title: string;
 }
 
@@ -39,9 +39,9 @@ interface RecurringEvent {
   title: string;
   frequency: 'weekly' | 'biweekly' | 'monthly';
   dayOfWeek: number;
-  startDate: Date;
-  endDate: Date;
-  exceptions: Date[];
+  startDate: string; // Format: 'YYYY-MM-DD'
+  endDate: string; // Format: 'YYYY-MM-DD'
+  exceptions: string[]; // Array of 'YYYY-MM-DD' strings
 }
 
 interface ClubInfo {
@@ -72,7 +72,10 @@ const EditClubPage = () => {
   const [newLink, setNewLink] = useState({ url: '', platform: '' });
   const [isUploading, setIsUploading] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
-  const [newOneOffEvent, setNewOneOffEvent] = useState<OneOffEvent>({ date: new Date(), title: '' });
+  const [newOneOffEvent, setNewOneOffEvent] = useState<OneOffEvent>({
+    date: new Date().toISOString().split('T')[0], // This will give you 'YYYY-MM-DD'
+    title: ''
+  });
   const [clubInfo, setClubInfo] = useState<ClubInfo>({
     id: "",
     isComplete: false,
@@ -93,7 +96,6 @@ const EditClubPage = () => {
     oneOffEvents: [], // Add this line
   });
   const [newTag, setNewTag] = useState("");
-  const [recurringEvents, setRecurringEvents] = useState<RecurringEvent[]>([]);
 
   const router = useRouter();
   const params = useParams();
@@ -114,8 +116,7 @@ const EditClubPage = () => {
           studentLeads: data.studentLeads || [],
           links: data.links || [],
           images: data.images || [],
-          recurringEvents: data.recurringEvents || [],
-          oneOffEvents: data.oneOffEvents || [] // Add this line
+          oneOffEvents: data.oneOffEvents || [],
         } as ClubInfo;
       });
       const matchingClub = clubsData.find(club => club.id === slug);
@@ -263,28 +264,33 @@ const EditClubPage = () => {
     setIsUploading(true);
     try {
       const clubDocRef = doc(db, 'clubs', clubInfo.id);
-      
-      // Update the title of recurring events
-      const updatedRecurringEvents = clubInfo.recurringEvents?.map(event => ({
-        ...event,
-        title: `${clubInfo.name} ${event.title}`
-      }));
   
-      const clubData = {
+      // Create the club data object
+      const clubData: any = {
         ...clubInfo,
-        recurringEvents: updatedRecurringEvents,
-        isComplete: checkCompletion({...clubInfo})
+        isComplete: checkCompletion(clubInfo),
       };
+  
+      // Only include recurringEvents if they exist
+      if (clubInfo.recurringEvents && clubInfo.recurringEvents.length > 0) {
+        clubData.recurringEvents = clubInfo.recurringEvents.map(event => ({
+          ...event,
+          startDate: event.startDate, // Assuming these are already in the correct format
+          endDate: event.endDate,
+          exceptions: event.exceptions,
+        }));
+      }
+  
+      // Only include oneOffEvents if they exist
+      if (clubInfo.oneOffEvents && clubInfo.oneOffEvents.length > 0) {
+        clubData.oneOffEvents = clubInfo.oneOffEvents.map(event => ({
+          ...event,
+          date: event.date, // Assuming these are already in the correct format
+        }));
+      }
   
       await setDoc(clubDocRef, clubData);
       console.log('Club data uploaded successfully');
-  
-      // Update the local state with the new recurring events
-      setClubInfo(prevState => ({
-        ...prevState,
-        recurringEvents: updatedRecurringEvents
-      }));
-  
     } catch (error) {
       console.error('Error uploading club data:', error);
     } finally {
@@ -368,15 +374,21 @@ const EditClubPage = () => {
     }
   };
 
+  const handleOneOffEventChange = (field: 'date' | 'title', value: string) => {
+    setNewOneOffEvent(prev => ({ ...prev, [field]: value }));
+  };
+  
   const handleAddOneOffEvent = () => {
     if (newOneOffEvent.title && newOneOffEvent.date) {
       setClubInfo(prevState => ({
         ...prevState,
         oneOffEvents: [...prevState.oneOffEvents, newOneOffEvent]
       }));
-      setNewOneOffEvent({ date: new Date(), title: '' });
+      setNewOneOffEvent({ date: new Date().toISOString().split('T')[0], title: '' });
     }
   };
+  
+  // Similarly for recurring events when adding or updating
   
   const handleRemoveOneOffEvent = (index: number) => {
     setClubInfo(prevState => ({
@@ -384,56 +396,54 @@ const EditClubPage = () => {
       oneOffEvents: prevState.oneOffEvents.filter((_, i) => i !== index)
     }));
   };
-  
-  const handleOneOffEventChange = (field: 'date' | 'title', value: string | Date) => {
-    setNewOneOffEvent({ ...newOneOffEvent, [field]: value });
-  };
 
-  const handleRecurringEventChange = (index: number, field: keyof ClubInfo['recurringEvents'][0], value: any) => {
-    const updatedEvents = [...recurringEvents];
-    if (field === 'startDate' || field === 'endDate') {
-      // Ensure the date is set to noon UTC to avoid timezone issues
-      const date = new Date(value);
-      date.setUTCHours(12, 0, 0, 0);
-      updatedEvents[index] = { ...updatedEvents[index], [field]: date };
-    } else {
-      updatedEvents[index] = { ...updatedEvents[index], [field]: value };
-    }
-    setRecurringEvents(updatedEvents);
+  const handleRecurringEventChange = (index: number, field: keyof RecurringEvent, value: any) => {
+    const updatedEvents = [...clubInfo.recurringEvents];
+    updatedEvents[index] = { ...updatedEvents[index], [field]: value };
+    setClubInfo(prevState => ({ ...prevState, recurringEvents: updatedEvents }));
   };
   
   const handleAddRecurringEvent = () => {
-    const today = new Date();
-    today.setUTCHours(12, 0, 0, 0);
-    const oneYearLater = new Date(today);
-    oneYearLater.setFullYear(today.getFullYear() + 1);
-  
-    setRecurringEvents([...recurringEvents, {
-      title: '',
-      frequency: 'weekly',
-      dayOfWeek: 1,
-      startDate: today,
-      endDate: oneYearLater,
-      exceptions: []
-    }]);
+    const today = new Date().toISOString().split('T')[0];
+    const oneYearLater = new Date(new Date().setFullYear(new Date().getFullYear() + 1)).toISOString().split('T')[0];
+    
+    setClubInfo(prevState => ({
+      ...prevState,
+      recurringEvents: [
+        ...prevState.recurringEvents,
+        {
+          title: '',
+          frequency: 'weekly',
+          dayOfWeek: 1,
+          startDate: today,
+          endDate: oneYearLater,
+          exceptions: []
+        }
+      ]
+    }));
   };
   
   const handleRemoveRecurringEvent = (index: number) => {
-    setRecurringEvents(recurringEvents.filter((_, i) => i !== index));
+    setClubInfo(prevState => ({
+      ...prevState,
+      recurringEvents: prevState.recurringEvents.filter((_, i) => i !== index)
+    }));
   };
   
-  const handleAddException = (eventIndex: number, date: Date) => {
-    const exceptionDate = new Date(date);
-    exceptionDate.setUTCHours(12, 0, 0, 0);
-    const updatedEvents = [...recurringEvents];
-    updatedEvents[eventIndex].exceptions.push(exceptionDate);
-    setRecurringEvents(updatedEvents);
+  const handleAddException = (eventIndex: number, date: string) => {
+    setClubInfo(prevState => {
+      const updatedEvents = [...prevState.recurringEvents];
+      updatedEvents[eventIndex].exceptions.push(date);
+      return { ...prevState, recurringEvents: updatedEvents };
+    });
   };
   
   const handleRemoveException = (eventIndex: number, exceptionIndex: number) => {
-    const updatedEvents = [...recurringEvents];
-    updatedEvents[eventIndex].exceptions = updatedEvents[eventIndex].exceptions.filter((_, i) => i !== exceptionIndex);
-    setRecurringEvents(updatedEvents);
+    setClubInfo(prevState => {
+      const updatedEvents = [...prevState.recurringEvents];
+      updatedEvents[eventIndex].exceptions = updatedEvents[eventIndex].exceptions.filter((_, i) => i !== exceptionIndex);
+      return { ...prevState, recurringEvents: updatedEvents };
+    });
   };
 
   if (!user) {
@@ -760,7 +770,7 @@ const EditClubPage = () => {
               {clubInfo.oneOffEvents.map((event, index) => (
                 <div key={index} className="mb-2 flex items-center">
                   <span className="text-white mr-2">
-                    {event.date.toDateString()} - {event.title}
+                    {new Date(event.date).toLocaleDateString()} - {event.title}
                   </span>
                   {isEditing && (
                     <button onClick={() => handleRemoveOneOffEvent(index)} className="text-red-500">
@@ -773,8 +783,8 @@ const EditClubPage = () => {
                 <div className="flex items-center mt-2">
                   <input
                     type="date"
-                    value={newOneOffEvent.date.toISOString().split('T')[0]}
-                    onChange={(e) => handleOneOffEventChange('date', new Date(e.target.value))}
+                    value={newOneOffEvent.date}
+                    onChange={(e) => handleOneOffEventChange('date', e.target.value)}
                     className="bg-gray-800 text-white p-1 rounded mr-2"
                   />
                   <input
@@ -793,7 +803,7 @@ const EditClubPage = () => {
 
             <div className="mb-8">
               <h2 className="text-2xl font-bold text-white mb-2">Recurring Events</h2>
-              {recurringEvents.map((event, index) => (
+              {clubInfo.recurringEvents.map((event, index) => (
                 <div key={index} className="mb-4 p-4 bg-gray-800 rounded xl:w-2/3 text-white">
                   <input
                     type="text"
@@ -835,14 +845,14 @@ const EditClubPage = () => {
                     <p className='flex items-center mx-2'>From</p>
                     <input
                       type="date"
-                      value={event.startDate.toISOString().split('T')[0]}
+                      value={event.startDate}
                       onChange={(e) => handleRecurringEventChange(index, 'startDate', e.target.value)}
                       className="bg-gray-700 text-white p-2 rounded mr-2"
                     />
-
+                    <p className='flex items-center mx-2'>To</p>
                     <input
                       type="date"
-                      value={event.endDate.toISOString().split('T')[0]}
+                      value={event.endDate}
                       onChange={(e) => handleRecurringEventChange(index, 'endDate', e.target.value)}
                       className="bg-gray-700 text-white p-2 rounded mr-2"
                     />
@@ -851,7 +861,7 @@ const EditClubPage = () => {
                     <h3 className="text-xl font-bold text-white mb-2">Exceptions</h3>
                     {event.exceptions.map((exception, exceptionIndex) => (
                       <div key={exceptionIndex} className="flex items-center mb-2">
-                        <span className="text-white mr-2">{exception.toDateString()}</span>
+                        <span className="text-white mr-2">{exception}</span>
                         <button
                           onClick={() => handleRemoveException(index, exceptionIndex)}
                           className="text-red-500"
@@ -862,7 +872,7 @@ const EditClubPage = () => {
                     ))}
                     <input
                       type="date"
-                      onChange={(e) => handleAddException(index, new Date(e.target.value))}
+                      onChange={(e) => handleAddException(index, e.target.value)}
                       className="bg-gray-700 text-white p-2 rounded"
                     />
                   </div>
