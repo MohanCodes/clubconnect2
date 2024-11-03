@@ -26,14 +26,14 @@ interface DashClub {
 }
 
 const schoolDistricts = [
-    "Wayzata Public Schools",
-    "Minnetonka Public Schools",
-    "Edina Public Schools",
-    "Hopkins School District",
-    "St. Louis Park Public Schools",
-    "Osseo Area Schools",
-    "Robbinsdale Area Schools",
-    "Anoka-Hennepin School District"
+    "Wayzata",
+    "Minnetonka",
+    "Edina",
+    "Hopkins",
+    "St Louis Park",
+    "Osseo",
+    "Robbinsdale",
+    "Anoka-Hennepin"
 ];
 
 const Dashboard: React.FC = () => {
@@ -188,7 +188,10 @@ const Dashboard: React.FC = () => {
                 <h1 className="text-3xl font-bold text-white mb-6">Your Clubs</h1>
                 
                 {clubs.length === 0 ? (
-                    <p className="text-gray-300 w-2/3">You haven&apos;t created any clubs yet.<br /> Note that only groups that have either successfully gone through the student group application process or a club affiliated with your school body should create a club.</p>
+                    <div className="rounded-lg p-9 transition-shadow duration-300 bg-[#2A2A2A] relative md:w-1/2">
+                        <p className="text-gray-300">You haven&apos;t created any clubs yet.<br />Note that only groups that have either <span className='text-white font-semibold'>successfully</span> gone through the student group application process or a club <span className='text-white font-semibold'>affiliated</span> with your school body should create a club.<br /><br /></p>
+                        <div className='text-white font-semibold'>CLICK RENDER PAGE TO SEE WHAT IT LOOKS LIKS AND UPLOAD PAGE TO SAVE YOUR CHANGES!</div>
+                    </div>
                 ) : (
                     <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-x-6 gap-y-16">
                         {clubs.map((club) => (
@@ -201,8 +204,6 @@ const Dashboard: React.FC = () => {
                                     links={[]} // Pass links here as needed
                                     upvoteCount={club.upvoteCount} 
                                     isUpvoted={upvotedClubs.includes(club.id)} 
-                                    onUpvote={() => handleUpvoteClub(club.id)} 
-                                    onRemoveUpvote={() => handleRemoveUpvote(club.id)} 
                                     onUpvoteClick={(e) => handleUpvoteClick(e, club.id)} 
                                     isUpvoteLoading={isUpvoteLoading[club.id] || false} 
                                 />

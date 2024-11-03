@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import Image from 'next/image'
-import React, { useState } from 'react';
+import React from 'react';
 import {
   FaTwitter,
   FaInstagram,
@@ -23,9 +23,7 @@ interface TileProps {
   links: { platform: string; url: string }[];
   upvoteCount: number;
   isUpvoted: boolean;
-  onUpvote: () => void;
-  onRemoveUpvote: () => void;
-  onUpvoteClick: (e: React.MouseEvent<HTMLButtonElement>) => void; // Specify HTMLButtonElement here
+  onUpvoteClick: (e: React.MouseEvent<HTMLButtonElement>) => void;
   isUpvoteLoading: boolean;
 }
 
@@ -94,19 +92,23 @@ const Tile: React.FC<TileProps> = ({
   return (
     <div className="rounded-lg p-9 transition-shadow duration-300 bg-[#2A2A2A] relative">
       {/* Upvote Section - Moved to top right */}
-      <div className="absolute top-8 right-5 flex items-center">
-        <button
-          onClick={onUpvoteClick}
-          className={`flex items-center ${isUpvoted ? 'text-blue-500' : 'text-gray-500'} hover:text-blue-500 transition-colors duration-300`}
-          disabled={isUpvoteLoading}
-        >
-          {isUpvoteLoading ? (
-            <FaSpinner className="animate-spin mr-2 w-5 h-5" />
-          ) : (
-            <FaThumbsUp className="mr-2 w-5 h-5" />
-          )}
-        </button>
-        <span className="text-white">{upvoteCount == 0 ? <div/> : upvoteCount}</span>
+      <div className="absolute top-10 right-0 flex items-center">
+        <div className="flex items-center">
+          <button
+            onClick={onUpvoteClick}
+            className={`flex items-center ${isUpvoted ? 'text-blue-500' : 'text-gray-500'} hover:text-blue-500 transition-colors duration-300`}
+            disabled={isUpvoteLoading}
+          >
+            {isUpvoteLoading ? (
+              <FaSpinner className="animate-spin w-5 h-5" />
+            ) : (
+              <FaThumbsUp className="w-5 h-5" />
+            )}
+          </button>
+        </div>
+        <div className="w-10 text-right">
+          <span className="text-white hidden">{upvoteCount > 0 ? upvoteCount : ''}</span>
+        </div>
       </div>
 
       {/* Icon and Club Name */}

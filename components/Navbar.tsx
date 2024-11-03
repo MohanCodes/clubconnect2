@@ -73,7 +73,10 @@ const Navbar: React.FC = () => {
           
 
           {user && (
-            <Link href="/dashboard" className="text-white hover:text-azul">Dashboard</Link>
+            <div>
+              <Link href="/dashboard" className="text-white hover:text-azul mr-10">Dashboard</Link>
+              <Link href="/profile" className="text-white hover:text-azul">Profile</Link>
+            </div>
           )}
 
           {user ? (
