@@ -7,6 +7,7 @@ import Tile from '@/components/Tile';
 import Navbar from '@/components/Navbar';
 import { useRouter } from 'next/navigation';
 import { onAuthStateChanged } from 'firebase/auth';
+import { User as FirebaseUser } from 'firebase/auth';
 
 interface DisplayClub {
   id: string;
@@ -22,7 +23,7 @@ interface DisplayClub {
 const Home: React.FC = () => {
   const [clubs, setClubs] = useState<DisplayClub[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
-  const [user, setUser] = useState<any>(null);
+  const [user, setUser] = useState<FirebaseUser | null>(null);
   const [upvotedClubs, setUpvotedClubs] = useState<string[]>([])
   const [isUpvoteLoading, setIsUpvoteLoading] = useState<{ [key: string]: boolean }>({});;
   const [selectedTag, setSelectedTag] = useState<string | null>(null);

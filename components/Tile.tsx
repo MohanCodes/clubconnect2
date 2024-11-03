@@ -47,9 +47,7 @@ const Tile: React.FC<TileProps> = ({
   tags, 
   links, 
   upvoteCount, 
-  isUpvoted, 
-  onUpvote, 
-  onRemoveUpvote, 
+  isUpvoted,
   onUpvoteClick,
   isUpvoteLoading
 }) => {
