@@ -30,11 +30,25 @@ interface ClubLink {
   platform: string;
 }
 
+interface OneOffEvent {
+  date: Date;
+  title: string;
+}
+
+interface RecurringEvent {
+  title: string;
+  frequency: 'weekly' | 'biweekly' | 'monthly';
+  dayOfWeek: number;
+  startDate: Date;
+  endDate: Date;
+  exceptions: Date[];
+}
+
 interface ClubInfo {
   id: string;
-  isComplete: boolean,
+  isComplete: boolean;
   name: string;
-  school: string,
+  school: string;
   tags: string[];
   description: string;
   length: string;
@@ -45,12 +59,12 @@ interface ClubInfo {
   advisors: Advisor[];
   studentLeads: StudentLead[];
   links: ClubLink[];
-  images: string[]; // Added images property
+  images: string[];
+  recurringEvents: RecurringEvent[];
+  oneOffEvents: OneOffEvent[]; // Add this line
 }
 
 const EditClubPage = () => {
-  const params = useParams();
-  const slug = params.slug;
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isEditing, setIsEditing] = useState(true);
@@ -58,7 +72,7 @@ const EditClubPage = () => {
   const [newLink, setNewLink] = useState({ url: '', platform: '' });
   const [isUploading, setIsUploading] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
-
+  const [newOneOffEvent, setNewOneOffEvent] = useState<OneOffEvent>({ date: new Date(), title: '' });
   const [clubInfo, setClubInfo] = useState<ClubInfo>({
     id: "",
     isComplete: false,
@@ -75,10 +89,15 @@ const EditClubPage = () => {
     studentLeads: [],
     links: [],
     images: [],
+    recurringEvents: [],
+    oneOffEvents: [], // Add this line
   });
-
   const [newTag, setNewTag] = useState("");
+  const [recurringEvents, setRecurringEvents] = useState<RecurringEvent[]>([]);
+
   const router = useRouter();
+  const params = useParams();
+  const slug = params.slug;
 
   const fetchClubInfo = useCallback(async () => {
     setIsLoading(true);
@@ -94,7 +113,9 @@ const EditClubPage = () => {
           advisors: data.advisors || [],
           studentLeads: data.studentLeads || [],
           links: data.links || [],
-          images: data.images || []
+          images: data.images || [],
+          recurringEvents: data.recurringEvents || [],
+          oneOffEvents: data.oneOffEvents || [] // Add this line
         } as ClubInfo;
       });
       const matchingClub = clubsData.find(club => club.id === slug);
@@ -242,12 +263,28 @@ const EditClubPage = () => {
     setIsUploading(true);
     try {
       const clubDocRef = doc(db, 'clubs', clubInfo.id);
+      
+      // Update the title of recurring events
+      const updatedRecurringEvents = clubInfo.recurringEvents?.map(event => ({
+        ...event,
+        title: `${clubInfo.name} ${event.title}`
+      }));
+  
       const clubData = {
         ...clubInfo,
-        isComplete: checkCompletion(clubInfo)
+        recurringEvents: updatedRecurringEvents,
+        isComplete: checkCompletion({...clubInfo})
       };
+  
       await setDoc(clubDocRef, clubData);
       console.log('Club data uploaded successfully');
+  
+      // Update the local state with the new recurring events
+      setClubInfo(prevState => ({
+        ...prevState,
+        recurringEvents: updatedRecurringEvents
+      }));
+  
     } catch (error) {
       console.error('Error uploading club data:', error);
     } finally {
@@ -329,6 +366,74 @@ const EditClubPage = () => {
       console.error('Error deleting image:', error);
       // You might want to show an error message to the user here
     }
+  };
+
+  const handleAddOneOffEvent = () => {
+    if (newOneOffEvent.title && newOneOffEvent.date) {
+      setClubInfo(prevState => ({
+        ...prevState,
+        oneOffEvents: [...prevState.oneOffEvents, newOneOffEvent]
+      }));
+      setNewOneOffEvent({ date: new Date(), title: '' });
+    }
+  };
+  
+  const handleRemoveOneOffEvent = (index: number) => {
+    setClubInfo(prevState => ({
+      ...prevState,
+      oneOffEvents: prevState.oneOffEvents.filter((_, i) => i !== index)
+    }));
+  };
+  
+  const handleOneOffEventChange = (field: 'date' | 'title', value: string | Date) => {
+    setNewOneOffEvent({ ...newOneOffEvent, [field]: value });
+  };
+
+  const handleRecurringEventChange = (index: number, field: keyof ClubInfo['recurringEvents'][0], value: any) => {
+    const updatedEvents = [...recurringEvents];
+    if (field === 'startDate' || field === 'endDate') {
+      // Ensure the date is set to noon UTC to avoid timezone issues
+      const date = new Date(value);
+      date.setUTCHours(12, 0, 0, 0);
+      updatedEvents[index] = { ...updatedEvents[index], [field]: date };
+    } else {
+      updatedEvents[index] = { ...updatedEvents[index], [field]: value };
+    }
+    setRecurringEvents(updatedEvents);
+  };
+  
+  const handleAddRecurringEvent = () => {
+    const today = new Date();
+    today.setUTCHours(12, 0, 0, 0);
+    const oneYearLater = new Date(today);
+    oneYearLater.setFullYear(today.getFullYear() + 1);
+  
+    setRecurringEvents([...recurringEvents, {
+      title: '',
+      frequency: 'weekly',
+      dayOfWeek: 1,
+      startDate: today,
+      endDate: oneYearLater,
+      exceptions: []
+    }]);
+  };
+  
+  const handleRemoveRecurringEvent = (index: number) => {
+    setRecurringEvents(recurringEvents.filter((_, i) => i !== index));
+  };
+  
+  const handleAddException = (eventIndex: number, date: Date) => {
+    const exceptionDate = new Date(date);
+    exceptionDate.setUTCHours(12, 0, 0, 0);
+    const updatedEvents = [...recurringEvents];
+    updatedEvents[eventIndex].exceptions.push(exceptionDate);
+    setRecurringEvents(updatedEvents);
+  };
+  
+  const handleRemoveException = (eventIndex: number, exceptionIndex: number) => {
+    const updatedEvents = [...recurringEvents];
+    updatedEvents[eventIndex].exceptions = updatedEvents[eventIndex].exceptions.filter((_, i) => i !== exceptionIndex);
+    setRecurringEvents(updatedEvents);
   };
 
   if (!user) {
@@ -640,7 +745,7 @@ const EditClubPage = () => {
               )}
             </div>
 
-            <div className="mt-8">
+            <div className="mb-8">
               <h2 className="text-2xl font-bold text-white mb-2">More Information</h2>
               <p className="text-grey">
                 For more information, please{' '}
@@ -648,6 +753,127 @@ const EditClubPage = () => {
                   contact Mr. Dobson
                 </Link>.
               </p>
+            </div>
+
+            <div className="mb-8">
+              <h2 className="text-2xl font-bold text-white mb-2">One-off Events</h2>
+              {clubInfo.oneOffEvents.map((event, index) => (
+                <div key={index} className="mb-2 flex items-center">
+                  <span className="text-white mr-2">
+                    {event.date.toDateString()} - {event.title}
+                  </span>
+                  {isEditing && (
+                    <button onClick={() => handleRemoveOneOffEvent(index)} className="text-red-500">
+                      <FaTrash />
+                    </button>
+                  )}
+                </div>
+              ))}
+              {isEditing && (
+                <div className="flex items-center mt-2">
+                  <input
+                    type="date"
+                    value={newOneOffEvent.date.toISOString().split('T')[0]}
+                    onChange={(e) => handleOneOffEventChange('date', new Date(e.target.value))}
+                    className="bg-gray-800 text-white p-1 rounded mr-2"
+                  />
+                  <input
+                    type="text"
+                    value={newOneOffEvent.title}
+                    onChange={(e) => handleOneOffEventChange('title', e.target.value)}
+                    placeholder="Event Title"
+                    className="bg-gray-800 text-white p-1 rounded mr-2"
+                  />
+                  <button onClick={handleAddOneOffEvent} className="bg-green-500 text-white px-2 py-1 rounded">
+                    Add Event
+                  </button>
+                </div>
+              )}
+            </div>
+
+            <div className="mb-8">
+              <h2 className="text-2xl font-bold text-white mb-2">Recurring Events</h2>
+              {recurringEvents.map((event, index) => (
+                <div key={index} className="mb-4 p-4 bg-gray-800 rounded xl:w-2/3 text-white">
+                  <input
+                    type="text"
+                    value={event.title || ''}
+                    onChange={(e) => handleRecurringEventChange(index, 'title', e.target.value)}
+                    placeholder="Event Title"
+                    className="bg-gray-700 text-white p-2 rounded mr-2"
+                  />
+                  <button
+                    onClick={() => handleRemoveRecurringEvent(index)}
+                    className="bg-red-500 text-white px-2 py-1 rounded"
+                  >
+                    <FaTrash />
+                  </button>
+                  <div className='flex flex-row mt-4'>
+                    <select
+                      value={event.frequency}
+                      onChange={(e) => handleRecurringEventChange(index, 'frequency', e.target.value)}
+                      className="bg-gray-700 p-2 rounded mr-2"
+                    >
+                      <option value="weekly">Weekly</option>
+                      <option value="biweekly">Bi-weekly</option>
+                      <option value="monthly">Monthly</option>
+                    </select>
+                    <p className='flex items-center ml-1 mr-2'>
+                      {event.frequency === 'biweekly' ? 'every other' : 'every'}
+                    </p>
+                    <select
+                      value={event.dayOfWeek}
+                      onChange={(e) => handleRecurringEventChange(index, 'dayOfWeek', parseInt(e.target.value))}
+                      className="bg-gray-700 p-2 rounded mr-2"
+                    >
+                      {['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'].map((day, i) => (
+                        <option key={i} value={i}>{day}</option>
+                      ))}
+                    </select>
+                  </div>
+                  <div className='my-2 flex flex-row'>
+                    <p className='flex items-center mx-2'>From</p>
+                    <input
+                      type="date"
+                      value={event.startDate.toISOString().split('T')[0]}
+                      onChange={(e) => handleRecurringEventChange(index, 'startDate', e.target.value)}
+                      className="bg-gray-700 text-white p-2 rounded mr-2"
+                    />
+
+                    <input
+                      type="date"
+                      value={event.endDate.toISOString().split('T')[0]}
+                      onChange={(e) => handleRecurringEventChange(index, 'endDate', e.target.value)}
+                      className="bg-gray-700 text-white p-2 rounded mr-2"
+                    />
+                  </div>
+                  <div className="mt-2">
+                    <h3 className="text-xl font-bold text-white mb-2">Exceptions</h3>
+                    {event.exceptions.map((exception, exceptionIndex) => (
+                      <div key={exceptionIndex} className="flex items-center mb-2">
+                        <span className="text-white mr-2">{exception.toDateString()}</span>
+                        <button
+                          onClick={() => handleRemoveException(index, exceptionIndex)}
+                          className="text-red-500"
+                        >
+                          <FaTrash />
+                        </button>
+                      </div>
+                    ))}
+                    <input
+                      type="date"
+                      onChange={(e) => handleAddException(index, new Date(e.target.value))}
+                      className="bg-gray-700 text-white p-2 rounded"
+                    />
+                  </div>
+                </div>
+              ))}
+              <button
+                onClick={handleAddRecurringEvent}
+                className="bg-green-500 text-white px-2 py-1 rounded flex flex-row items-center"
+              >
+                <FaPlus className="mr-2" /> Add Recurring Event
+              </button>
             </div>
           </div>
 
