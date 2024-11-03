@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { auth, db } from '@/firebase/firebase';
-import { doc, updateDoc, arrayRemove, increment, runTransaction, getDoc, arrayUnion } from 'firebase/firestore';
+import { doc, updateDoc, arrayRemove, increment, getDoc } from 'firebase/firestore';
 import { onAuthStateChanged } from 'firebase/auth';
 import Navbar from '@/components/Navbar';
 
@@ -16,7 +16,6 @@ interface User {
 const Profile: React.FC = () => {
   const [user, setUser] = useState<User | null>(null);
   const [selectedSchool, setSelectedSchool] = useState('');
-  const [selectedClubs, setSelectedClubs] = useState<string[]>([]);
   const [upvotedClubs, setUpvotedClubs] = useState<string[]>([]);
   const router = useRouter();
 
@@ -44,7 +43,6 @@ const Profile: React.FC = () => {
       if (userDoc.exists()) {
         const userData = userDoc.data();
         setSelectedSchool(userData.selectedSchool || '');
-        setSelectedClubs(userData.selectedClubs || []);
         setUpvotedClubs(userData.upvotedClubs || []);
       }
     } catch (error) {

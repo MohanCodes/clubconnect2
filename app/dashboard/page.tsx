@@ -4,7 +4,7 @@ import { useRouter } from 'next/navigation';
 import { FaPlus, FaTimes, FaExclamationTriangle, FaCheckCircle } from 'react-icons/fa';
 import Navbar from '@/components/Navbar';
 import { auth, db } from '@/firebase/firebase';
-import { collection, getDocs, query, where, serverTimestamp, setDoc, doc, updateDoc, arrayUnion, arrayRemove, getDoc, increment } from 'firebase/firestore';
+import { collection, getDocs, query, where, serverTimestamp, setDoc, doc, updateDoc, arrayUnion, arrayRemove, increment } from 'firebase/firestore';
 import { onAuthStateChanged } from 'firebase/auth';
 import Tile from '@/components/Tile';
 
@@ -188,7 +188,7 @@ const Dashboard: React.FC = () => {
                 <h1 className="text-3xl font-bold text-white mb-6">Your Clubs</h1>
                 
                 {clubs.length === 0 ? (
-                    <p className="text-gray-300 w-2/3">You haven't created any clubs yet.<br /> Note that only groups that have either successfully gone through the student group application process or a club affiliated with your school body should create a club.</p>
+                    <p className="text-gray-300 w-2/3">You haven&apos;t created any clubs yet.<br /> Note that only groups that have either successfully gone through the student group application process or a club affiliated with your school body should create a club.</p>
                 ) : (
                     <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-x-6 gap-y-16">
                         {clubs.map((club) => (
