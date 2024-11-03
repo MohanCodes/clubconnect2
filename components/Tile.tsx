@@ -11,8 +11,8 @@ import {
   FaDiscord,
   FaTiktok,
   FaLink,
-  FaThumbsUp,
-  FaSpinner
+  FaStar,
+  FaRegStar
 } from 'react-icons/fa';
 
 interface TileProps {
@@ -25,6 +25,7 @@ interface TileProps {
   isUpvoted: boolean;
   onUpvoteClick: (e: React.MouseEvent<HTMLButtonElement>) => void;
   isUpvoteLoading: boolean;
+  showVoteButton: boolean; // New prop added here
 }
 
 const schoolColors: { [key: string]: { bg: string; text: string } } = {
@@ -47,32 +48,33 @@ const Tile: React.FC<TileProps> = ({
   upvoteCount, 
   isUpvoted,
   onUpvoteClick,
-  isUpvoteLoading
+  isUpvoteLoading,
+  showVoteButton,
 }) => {
   const renderIcon = (platform: string) => {
     switch (platform.toLowerCase()) {
       case 'twitter':
-        return <FaTwitter className="text-azul w-5 h-5" />;
+        return <FaTwitter className="text-azul w-6 h-6" />;
       case 'instagram':
-        return <FaInstagram className="text-azul w-5 h-5" />;
+        return <FaInstagram className="text-azul w-6 h-6" />;
       case 'facebook':
-        return <FaFacebook className="text-azul w-5 h-5" />;
+        return <FaFacebook className="text-azul w-6 h-6" />;
       case 'linkedin':
-        return <FaLinkedin className="text-azul w-5 h-5" />;
+        return <FaLinkedin className="text-azul w-6 h-6" />;
       case 'youtube':
-        return <FaYoutube className="text-azul w-5 h-5" />;
+        return <FaYoutube className="text-azul w-6 h-6" />;
       case 'github':
-        return <FaGithub className="text-azul w-5 h-5" />;
+        return <FaGithub className="text-azul w-6 h-6" />;
       case 'discord':
-        return <FaDiscord className="text-azul w-5 h-5" />;
+        return <FaDiscord className="text-azul w-6 h-6" />;
       case 'tiktok':
-        return <FaTiktok className="text-azul w-5 h-5" />;
+        return <FaTiktok className="text-azul w-6 h-6" />;
       case 'website':
       case 'personal':
       case 'link':
-        return <FaLink className="text-azul w-5 h-5" />;
+        return <FaLink className="text-azul w-6 h-6" />;
       default:
-        return <FaLink className="text-azul w-5 h-5" />;
+        return <FaLink className="text-azul w-6 h-6" />;
     }
   };
 
@@ -91,26 +93,28 @@ const Tile: React.FC<TileProps> = ({
 
   return (
     <div className="rounded-lg p-9 transition-shadow duration-300 bg-[#2A2A2A] relative">
-      {/* Upvote Section - Moved to top right */}
-      <div className="absolute top-10 right-0 flex items-center">
-        <div className="flex items-center">
-          <button
-            onClick={onUpvoteClick}
-            className={`flex items-center ${isUpvoted ? 'text-blue-500' : 'text-gray-500'} hover:text-blue-500 transition-colors duration-300`}
-            disabled={isUpvoteLoading}
-          >
-            {isUpvoteLoading ? (
-              <FaSpinner className="animate-spin w-5 h-5" />
-            ) : (
-              <FaThumbsUp className="w-5 h-5" />
+        <div className="absolute top-10 right-0 flex items-center">
+          <div className="flex items-center">
+            {showVoteButton && ( // Check if showVoteButton is true
+              <button
+                onClick={onUpvoteClick}
+                className={`flex items-center ${isUpvoted ? 'text-azul' : 'text-gray-500'} hover:text-blue-500 transition-colors duration-300`}
+                disabled={isUpvoteLoading}
+              >
+                {isUpvoteLoading ? (
+                  <FaStar className="animate-spin w-6 h-6" />
+                ) : isUpvoted ? (
+                  <FaStar className="w-6 h-6" />     
+                ) : (
+                  <FaRegStar className="w-6 h-6" />
+                )}
+              </button>
             )}
-          </button>
+          </div>
+          <div className="w-10 text-right">
+            <span className="text-white hidden">{upvoteCount > 0 ? upvoteCount : ''}</span>
+          </div>
         </div>
-        <div className="w-10 text-right">
-          <span className="text-white hidden">{upvoteCount > 0 ? upvoteCount : ''}</span>
-        </div>
-      </div>
-
       {/* Icon and Club Name */}
       <div className="flex items-center mb-4">
         <Image src={icon} alt="Club Icon" width={40} height={40} className="mr-4" />

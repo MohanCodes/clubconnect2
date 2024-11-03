@@ -20,6 +20,21 @@ const Navbar: React.FC = () => {
     return () => unsubscribe();
   }, []);
 
+  // Close navbar on larger screens
+  useEffect(() => {
+    const handleResize = () => {
+      if (window.innerWidth >= 1024) { // Adjust breakpoint as needed
+        setIsOpen(false);
+      }
+    };
+
+    window.addEventListener('resize', handleResize);
+    
+    return () => {
+      window.removeEventListener('resize', handleResize);
+    };
+  }, []);
+
   const handleSignOut = async () => {
     try {
       await signOut(auth);
@@ -48,34 +63,36 @@ const Navbar: React.FC = () => {
         <button 
           onClick={() => setIsOpen(!isOpen)} 
           className="lg:hidden text-white"
+          aria-expanded={isOpen}
+          aria-label={isOpen ? "Close menu" : "Open menu"}
         >
           {isOpen ? <FaTimes size={32} /> : <FaBars size={30} />}
         </button>
 
         <div 
-          className={`
-            ${isOpen ? 'fixed inset-0 flex items-center justify-center bg-black bg-opacity-75 backdrop-blur' : 'hidden lg:flex lg:items-center lg:space-x-10 lg:static'} 
-            flex-col space-y-4 text-lg lg:flex-row lg:space-y-0 lg:bg-transparent
-          `}
+          className={`${
+            isOpen 
+              ? 'fixed inset-0 flex items-center justify-center bg-black bg-opacity-75 backdrop-blur' 
+              : 'hidden lg:flex lg:items-center lg:space-x-10 lg:static'
+          } flex-col space-y-4 text-lg lg:flex-row lg:space-y-0 lg:bg-transparent`}
         >
           {isOpen && (
             <button 
               onClick={() => setIsOpen(false)}
               className="absolute top-8 right-5 text-white text-md"
+              aria-label="Close menu"
             >
               <FaTimes size={32} />
             </button>
           )}
 
+          <Link href="/" className="text-white hover:text-azul">Home</Link>
           <Link href="/about" className="text-white hover:text-azul">About</Link>
           <Link href="/blog" className="text-white hover:text-azul">Blog</Link>
           
-
           {user && (
-            <div>
-              <Link href="/calendar" className="text-white hover:text-azul mr-10">Calendar</Link>
-              <Link href="/dashboard" className="text-white hover:text-azul mr-10">Dashboard</Link>
-              <Link href="/profile" className="text-white hover:text-azul">Profile</Link>
+            <div className={`flex ${isOpen ? 'flex-col space-y-4' : 'hidden lg:flex lg:flex-row lg:space-x-10'} text-center`}>
+              <Link href="/dashboard" className="text-white hover:text-azul">Dashboard</Link>
             </div>
           )}
 
@@ -87,8 +104,8 @@ const Navbar: React.FC = () => {
               Sign Out
             </button>
           ) : (
-            <div>
-              <Link href="/signin" className="text-white hover:text-azul mr-10">Sign In</Link>
+            <div className={`flex ${isOpen ? 'flex-col space-y-4' : 'hidden lg:flex lg:flex-row lg:space-x-10'} items-center`}>
+              <Link href="/signin" className="text-white hover:text-azul">Sign In</Link>
               <Link href="/signup" className="px-7 py-3 rounded-full bg-azul text-white hover:opacity-70">
                 Signup
               </Link>
@@ -99,24 +116,27 @@ const Navbar: React.FC = () => {
 
       {isSignOutModalOpen && (
         <div className="fixed inset-0 bg-black backdrop-blur bg-opacity-50 flex items-center justify-center">
-          <div className="bg-white p-6 rounded-lg w-96">
+          <div className="bg-white p-6 rounded-lg w-full max-w-md mx-auto">
             <div className="flex justify-between items-center mb-4">
-              <h2 className="text-2xl font-bold">Sign Out</h2>
-              <button onClick={() => setIsSignOutModalOpen(false)} className="text-gray-500 hover:text-gray-700">
+              <h2 className="text-xl font-bold">Sign Out</h2>
+              <button onClick={() => setIsSignOutModalOpen(false)} aria-label="Close sign out modal" className="text-gray-500 hover:text-gray-700">
                 <FaTimes size={24} />
               </button>
             </div>
             <p className="mb-4">Are you sure you want to sign out?</p>
-            <div className="flex justify-end space-x-4">
+            {/* Improved column layout for buttons */}
+            <div className="flex flex-col space-y-2">
               <button
                 onClick={() => setIsSignOutModalOpen(false)}
                 className="bg-gray-300 text-black px-4 py-2 rounded hover:bg-gray-400"
+                aria-label="Cancel sign out"
               >
                 Cancel
               </button>
               <button
                 onClick={handleSignOut}
                 className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600"
+                aria-label="Confirm sign out"
               >
                 Sign Out
               </button>

@@ -45,7 +45,7 @@ const Home: React.FC = () => {
     'minnetonka': { bg: 'bg-blue-600', text: 'text-white' },
     'edina': { bg: 'bg-green-700', text: 'text-white' },
     'hopkins': { bg: 'bg-gray-200', text: 'text-blue-500' },
-    'st-louis-park': { bg: 'bg-orange-500', text: 'text-black' },
+    'st-louis-park': { bg: 'bg-orange-500', text: 'text-amber-950' },
     'osseo': { bg: 'bg-orange-600', text: 'text-white' },
     'robbinsdale': { bg: 'bg-cyan-600', text: 'text-white' },
     'anoka-hennepin': { bg: 'bg-blue-900', text: 'text-white' },
@@ -165,9 +165,9 @@ const Home: React.FC = () => {
   });
 
   const handleTagClick = (tag: string) => {
-    setSelectedTag(tag);
+    // Toggle the selected tag
+    setSelectedTag(prevTag => (prevTag === tag ? null : tag));
   };
-
   return (
     <div className="bg-cblack">
       <Navbar />
@@ -177,7 +177,7 @@ const Home: React.FC = () => {
             <span className='text-azul'>Connect</span> with your club community.
           </div>
           <p className="text-lg sm:text-xl my-4 sm:my-6 text-center text-grey px-4 sm:px-0 max-w-md mx-auto">
-            Currently a club database for students located in the west metro.
+            Currently a club platform for students located in the west metro.
           </p>
           <div className="space-y-4 sm:space-y-0 sm:space-x-4 pt-4 flex flex-col sm:flex-row px-4 sm:px-0">
             <input
@@ -190,19 +190,24 @@ const Home: React.FC = () => {
           </div>
           <div className='mt-8 flex'>
             <div className="flex flex-wrap gap-2 justify-center">
-                {tags.map((tag, index) => {
-                    const schoolStyle = schoolColors[tag.toLowerCase() as keyof typeof schoolColors] || { bg: 'bg-gray-200', text: 'text-black' };
-                    return (
-                        <button key={index} onClick={() => handleTagClick(tag)} className={`text-sm font-medium px-3 py-1 rounded-full break-words ${schoolStyle.bg} ${schoolStyle.text}`}>
-                            {tag}
-                        </button>
-                    );
-                })}
+              {tags.map((tag, index) => {
+                const schoolStyle = schoolColors[tag.toLowerCase() as keyof typeof schoolColors] || { bg: 'bg-gray-200', text: 'text-black' };
+                const isSelected = selectedTag === tag; // Check if the tag is selected
+                return (
+                  <button
+                    key={index}
+                    onClick={() => handleTagClick(tag)}
+                    className={`text-sm font-medium px-3 py-1 rounded-full break-words ${schoolStyle.bg} ${schoolStyle.text} ${isSelected ? `ring-2 ring-${schoolStyle.text.replace('text-', '')}` : ''}`} // Fix ring color reference
+                  >
+                    {tag}
+                  </button>
+                );
+              })}
             </div>
           </div>
         </div>
         <div className="flex flex-col items-center">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4 gap-6 p-6 max-w-full overflow-x-auto">
+          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-6 p-6 max-w-full overflow-x-auto items-center">
             {[0, 1, 2, 3, 4].map((columnIndex) => (
               <div key={columnIndex} className="grid auto-rows-max gap-6">
                 {filteredClubs
@@ -223,6 +228,7 @@ const Home: React.FC = () => {
                         isUpvoted={upvotedClubs.includes(club.id)}
                         onUpvoteClick={(e) => handleUpvoteClick(e, club.id)}
                         isUpvoteLoading={isUpvoteLoading[club.id] || false}
+                        showVoteButton={!!user}
                       />
                     </div>
                   ))}
@@ -247,6 +253,7 @@ const Home: React.FC = () => {
                     isUpvoted={upvotedClubs.includes(club.id)}
                     onUpvoteClick={(e) => handleUpvoteClick(e, club.id)}
                     isUpvoteLoading={isUpvoteLoading[club.id] || false}
+                    showVoteButton={!!user}
                   />
                 </div>
               ))}

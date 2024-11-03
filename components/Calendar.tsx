@@ -1,80 +1,191 @@
 "use client";
 
-import React, { useState } from 'react';
-import Link from 'next/link'; // Import Link from Next.js
+import React, { useState, useEffect } from 'react';
+import dynamic from 'next/dynamic';
+import CalendarProp from '@/components/CalendarProp';
+import { auth, db } from '@/firebase/firebase';
+import { doc, getDoc } from 'firebase/firestore';
+import { onAuthStateChanged } from 'firebase/auth';
+import { FaCircleNotch } from 'react-icons/fa';
+import { User } from 'firebase/auth'; // Import User type
 
-interface CalendarProps {
-  events?: { date: Date; title: string; link: string }[]; // Add link property
+// Dynamically import the Calendar component
+const Calendar = dynamic(() => import('@/components/CalendarProp'), {
+  loading: () => <p className="text-white">Loading Calendar...</p>,
+});
+
+interface Event {
+  date: Date;
+  title: string;
+  link: string; // Add link property for navigation
 }
 
-const Calendar: React.FC<CalendarProps> = ({ events = [] }) => {
-  const [currentDate, setCurrentDate] = useState(new Date());
+export default function CalendarPage() {
+  const [events, setEvents] = useState<Event[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [user, setUser] = useState<User | null>(null); // Update user state type
 
-  const daysInMonth = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 0).getDate();
-  const firstDayOfMonth = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1).getDay();
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+      setUser(currentUser);
+      setLoading(false);
+    });
 
-  const monthNames = [
-    "January", "February", "March", "April", "May", "June",
-    "July", "August", "September", "October", "November", "December"
-  ];
+    return () => unsubscribe();
+  }, []);
 
-  const prevMonth = () => {
-    setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() - 1, 1));
-  };
+  useEffect(() => {
+    const fetchEvents = async () => {
+      if (!user) return;
 
-  const nextMonth = () => {
-    setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 1));
-  };
+      setLoading(true);
+      try {
+        console.log("Fetching user document...");
+        const userDocRef = doc(db, 'users', user.uid);
+        const userSnapshot = await getDoc(userDocRef);
 
-  const renderCalendarDays = () => {
-    const days = [];
-    for (let i = 0; i < firstDayOfMonth; i++) {
-      days.push(<div key={`empty-${i}`} className="h-24"></div>);
+        if (!userSnapshot.exists()) {
+          console.error("User not found");
+          setLoading(false);
+          return;
+        }
+
+        const userData = userSnapshot.data();
+        console.log("User data:", userData);
+
+        const upvotedClubIds = userData.upvotedClubs || [];
+        console.log("Upvoted clubs:", upvotedClubIds);
+
+        if (upvotedClubIds.length === 0) {
+          setLoading(false);
+          return;
+        }
+
+        const fetchedEvents: Event[] = [];
+        
+        for (const clubId of upvotedClubIds) {
+          console.log(`Fetching club document for ID: ${clubId}`);
+          const clubDocRef = doc(db, 'clubs', clubId);
+          const clubSnapshot = await getDoc(clubDocRef);
+
+          if (!clubSnapshot.exists()) continue;
+
+          const clubData = clubSnapshot.data();
+          console.log(`Club data for ${clubId}:`, clubData);
+
+          const clubName = clubData.name;
+
+          if (clubData.oneOffEvents) {
+            console.log("Processing one-off events...");
+            clubData.oneOffEvents.forEach((event: { date: string; title: string }) => {
+              fetchedEvents.push({
+                date: new Date(event.date),
+                title: `${clubName}: ${event.title}`,
+                link: `/club/${clubId}` // Create a link
+              });
+            });
+          }
+
+          if (clubData.recurringEvents) {
+            console.log("Processing recurring events...");
+            clubData.recurringEvents.forEach((event: {
+              title: string;
+              frequency: 'weekly' | 'biweekly' | 'monthly';
+              dayOfWeek: number;
+              startDate: string;
+              endDate: string;
+              exceptions: string[];
+            }) => {
+              const dates = generateRecurringDates(event);
+              dates.forEach(date => {
+                fetchedEvents.push({
+                  date,
+                  title: `${clubName}: ${event.title}`,
+                  link: `/club/${clubId}` // Create a link for recurring events
+                });
+              });
+            });
+          }
+        }
+
+        console.log("Fetched events:", fetchedEvents);
+        setEvents(fetchedEvents);
+      } catch (error) {
+        console.error("Error fetching events:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    if (user) {
+      fetchEvents();
     }
-    for (let day = 1; day <= daysInMonth; day++) {
-      const date = new Date(currentDate.getFullYear(), currentDate.getMonth(), day);
-      const dayEvents = events.filter(event => 
-        event.date.toDateString() === date.toDateString()
-      );
-      days.push(
-        <div key={day} className="h-32 border border-gray-700 p-2 rounded">
-          <div className="text-right text-gray-400">{day}</div>
-          <div className="flex flex-col">
-            {dayEvents.map((event, index) => (
-              <Link key={index} href={event.link} className="text-xs text-azul mt-1 truncate hover:underline">
-                {event.title}
-              </Link>
-            ))}
+  }, [user]);
+
+  const generateRecurringDates = (event: {
+    frequency: 'weekly' | 'biweekly' | 'monthly';
+    dayOfWeek: number;
+    startDate: string;
+    endDate: string;
+    exceptions: string[];
+  }): Date[] => {
+    console.log("Generating recurring dates for event:", event);
+    const dates: Date[] = [];
+    let currentDate = new Date(event.startDate);
+    const endDate = new Date(event.endDate);
+
+    while (currentDate.getDay() !== event.dayOfWeek) {
+      currentDate.setDate(currentDate.getDate() + 1);
+    }
+
+    while (currentDate <= endDate) {
+      const currentDateString = currentDate.toISOString().split('T')[0];
+      
+      if (!event.exceptions.includes(currentDateString)) {
+        dates.push(new Date(currentDate));
+      }
+
+      switch (event.frequency) {
+        case 'weekly':
+          currentDate.setDate(currentDate.getDate() + 7);
+          break;
+        case 'biweekly':
+          currentDate.setDate(currentDate.getDate() + 14);
+          break;
+        case 'monthly':
+          currentDate.setMonth(currentDate.getMonth() + 1);
+          break;
+      }
+    }
+
+    return dates;
+  };
+
+  if (loading) {
+    return (
+      <div className="fixed inset-0 bg-cblack flex items-center justify-center z-50">
+          <div className="bg-white p-6 rounded-lg flex flex-col items-center">
+            <FaCircleNotch className="animate-spin h-16 w-16 text-azul" />
+            <p className="mt-4 text-azul font-semibold">Loading calendar data...</p>
           </div>
-        </div>
-      );
-    }
-    return days;
-  };
+      </div>
+    );
+  }
+
+  if (!user) {
+    return (
+      <div className="bg-cblack min-h-screen flex items-center justify-center">
+        <p className="text-white text-xl">Please log in to view the calendar.</p>
+      </div>
+    );
+  }
 
   return (
-    <div className="bg-cblack text-white p-6 rounded-lg shadow-lg">
-      <div className="flex justify-between items-center mb-4">
-        <button onClick={prevMonth} className="text-azul hover:text-blue-400">
-          &lt; Prev
-        </button>
-        <h2 className="text-2xl font-semibold">
-          {monthNames[currentDate.getMonth()]} {currentDate.getFullYear()}
-        </h2>
-        <button onClick={nextMonth} className="text-azul hover:text-blue-400">
-          Next &gt;
-        </button>
-      </div>
-      <div className="grid grid-cols-7 gap-1 font-medium mb-2">
-        {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(day => (
-          <div key={day} className="text-center text-gray-500">{day}</div>
-        ))}
-      </div>
-      <div className="grid grid-cols-7 gap-1">
-        {renderCalendarDays()}
-      </div>
+    <div className="container mx-auto px-4 py-8">
+      <h1 className="text-white text-3xl font-bold mb-8">
+          Your Calendar {events.length === 0 ? ' - No events currently' : ''}
+      </h1>
+      <CalendarProp events={events} />
     </div>
   );
-};
-
-export default Calendar;
+}

@@ -93,8 +93,8 @@ const EditClubPage = () => {
     links: [],
     images: [],
     recurringEvents: [],
-    oneOffEvents: [], // Add this line
-  });
+    oneOffEvents: [],
+});
   const [newTag, setNewTag] = useState("");
 
   const router = useRouter();
@@ -408,18 +408,18 @@ const EditClubPage = () => {
     const oneYearLater = new Date(new Date().setFullYear(new Date().getFullYear() + 1)).toISOString().split('T')[0];
     
     setClubInfo(prevState => ({
-      ...prevState,
-      recurringEvents: [
-        ...prevState.recurringEvents,
-        {
-          title: '',
-          frequency: 'weekly',
-          dayOfWeek: 1,
-          startDate: today,
-          endDate: oneYearLater,
-          exceptions: []
-        }
-      ]
+        ...prevState,
+        recurringEvents: [
+            ...(prevState.recurringEvents || []), // Ensure this defaults to an empty array if undefined
+            {
+                title: '',
+                frequency: 'weekly',
+                dayOfWeek: 1,
+                startDate: today,
+                endDate: oneYearLater,
+                exceptions: []
+            }
+        ]
     }));
   };
   
@@ -803,7 +803,7 @@ const EditClubPage = () => {
 
             <div className="mb-8">
               <h2 className="text-2xl font-bold text-white mb-2">Recurring Events</h2>
-              {clubInfo.recurringEvents.map((event, index) => (
+              {(clubInfo.recurringEvents || []).map((event, index) => (
                 <div key={index} className="mb-4 p-4 bg-gray-800 rounded xl:w-2/3 text-white">
                   <input
                     type="text"
