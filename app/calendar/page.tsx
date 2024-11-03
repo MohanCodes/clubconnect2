@@ -1,31 +1,45 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
+import dynamic from 'next/dynamic';
 import Navbar from '@/components/Navbar';
-import UnderDevelopment from '@/components/UnderDevelopment';
-import Calendar from '@/components/Calendar';
 import { auth, db } from '@/firebase/firebase';
 import { doc, getDoc } from 'firebase/firestore';
+import { onAuthStateChanged } from 'firebase/auth';
+import { FaCircleNotch } from 'react-icons/fa';
+import { User } from 'firebase/auth'; // Import User type
+
+// Dynamically import the Calendar component
+const Calendar = dynamic(() => import('@/components/Calendar'), {
+  loading: () => <p className="text-white">Loading Calendar...</p>,
+});
 
 interface Event {
   date: Date;
   title: string;
+  link: string; // Add link property for navigation
 }
 
 export default function CalendarPage() {
   const [events, setEvents] = useState<Event[]>([]);
   const [loading, setLoading] = useState(true);
+  const [user, setUser] = useState<User | null>(null); // Update user state type
+
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+      setUser(currentUser);
+      setLoading(false);
+    });
+
+    return () => unsubscribe();
+  }, []);
 
   useEffect(() => {
     const fetchEvents = async () => {
-      const user = auth.currentUser;
-      if (!user) {
-        setLoading(false);
-        return;
-      }
+      if (!user) return;
 
+      setLoading(true);
       try {
-        // Fetch user's document
         console.log("Fetching user document...");
         const userDocRef = doc(db, 'users', user.uid);
         const userSnapshot = await getDoc(userDocRef);
@@ -47,7 +61,6 @@ export default function CalendarPage() {
           return;
         }
 
-        // Fetch events for each upvoted club
         const fetchedEvents: Event[] = [];
         
         for (const clubId of upvotedClubIds) {
@@ -60,19 +73,19 @@ export default function CalendarPage() {
           const clubData = clubSnapshot.data();
           console.log(`Club data for ${clubId}:`, clubData);
 
-          const clubName = clubData.name; // Get the club name
+          const clubName = clubData.name;
 
-          // Process one-off events
           if (clubData.oneOffEvents) {
             console.log("Processing one-off events...");
             clubData.oneOffEvents.forEach((event: { date: string; title: string }) => {
               fetchedEvents.push({
                 date: new Date(event.date),
-                title: `${clubName}: ${event.title}`, // Prefix the club name to the event title
+                title: `${clubName}: ${event.title}`,
+                link: `/club/${clubId}` // Create a link
               });
             });
           }
-          // Process recurring events
+
           if (clubData.recurringEvents) {
             console.log("Processing recurring events...");
             clubData.recurringEvents.forEach((event: {
@@ -83,12 +96,12 @@ export default function CalendarPage() {
               endDate: string;
               exceptions: string[];
             }) => {
-              // Generate dates for recurring events
               const dates = generateRecurringDates(event);
               dates.forEach(date => {
                 fetchedEvents.push({
                   date,
-                  title: `${clubName}: ${event.title}`, // Prefix the club name to the event title
+                  title: `${clubName}: ${event.title}`,
+                  link: `/club/${clubId}` // Create a link for recurring events
                 });
               });
             });
@@ -104,10 +117,11 @@ export default function CalendarPage() {
       }
     };
 
-    fetchEvents();
-  }, []);
+    if (user) {
+      fetchEvents();
+    }
+  }, [user]);
 
-  // Function to generate recurring event dates
   const generateRecurringDates = (event: {
     frequency: 'weekly' | 'biweekly' | 'monthly';
     dayOfWeek: number;
@@ -120,22 +134,17 @@ export default function CalendarPage() {
     let currentDate = new Date(event.startDate);
     const endDate = new Date(event.endDate);
 
-    // Adjust currentDate to first occurrence of correct dayOfWeek after startDate
-    if (currentDate.getDay() !== event.dayOfWeek) {
-      while (currentDate.getDay() !== event.dayOfWeek) {
-        currentDate.setDate(currentDate.getDate() + 1);
-      }
+    while (currentDate.getDay() !== event.dayOfWeek) {
+      currentDate.setDate(currentDate.getDate() + 1);
     }
 
     while (currentDate <= endDate) {
-      const currentDateString = currentDate.toISOString().split('T')[0]; // Format as 'YYYY-MM-DD'
+      const currentDateString = currentDate.toISOString().split('T')[0];
       
-      // Check if this date is in exceptions
       if (!event.exceptions.includes(currentDateString)) {
         dates.push(new Date(currentDate));
       }
 
-      // Increment based on frequency
       switch (event.frequency) {
         case 'weekly':
           currentDate.setDate(currentDate.getDate() + 7);
@@ -152,19 +161,34 @@ export default function CalendarPage() {
     return dates;
   };
 
+  if (loading) {
+    return (
+      <div className="fixed inset-0 bg-cblack flex items-center justify-center z-50">
+          <div className="bg-white p-6 rounded-lg flex flex-col items-center">
+            <FaCircleNotch className="animate-spin h-16 w-16 text-azul" />
+            <p className="mt-4 text-azul font-semibold">Loading calendar data...</p>
+          </div>
+      </div>
+    );
+  }
+
+  if (!user) {
+    return (
+      <div className="bg-cblack min-h-screen flex items-center justify-center">
+        <p className="text-white text-xl">Please log in to view the calendar.</p>
+      </div>
+    );
+  }
+
   return (
-    <div className="bg-cblack">
+    <div className="bg-cblack min-h-screen">
       <Navbar />
-      <main className="min-h-screen bg-cblack text-center">
-        {loading ? (
-          <p className="text-white">Loading events...</p>
-        ) : events.length === 0 ? (
-          <p className="text-white">No events available</p>
+      <main className="container mx-auto px-4 py-8">
+        <h1 className="text-white text-3xl font-bold mb-8">Your Calendar</h1>
+        {events.length === 0 ? (
+          <p className="text-white text-xl">No events available</p>
         ) : (
-          <>
-            <Calendar events={events} />
-            <UnderDevelopment />
-          </>
+          <Calendar events={events} />
         )}
       </main>
     </div>

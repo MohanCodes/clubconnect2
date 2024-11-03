@@ -1,9 +1,10 @@
 "use client";
 
 import React, { useState } from 'react';
+import Link from 'next/link'; // Import Link from Next.js
 
 interface CalendarProps {
-  events?: { date: Date; title: string }[];
+  events?: { date: Date; title: string; link: string }[]; // Add link property
 }
 
 const Calendar: React.FC<CalendarProps> = ({ events = [] }) => {
@@ -36,13 +37,15 @@ const Calendar: React.FC<CalendarProps> = ({ events = [] }) => {
         event.date.toDateString() === date.toDateString()
       );
       days.push(
-        <div key={day} className="h-24 border border-gray-700 p-2 rounded">
+        <div key={day} className="h-32 border border-gray-700 p-2 rounded">
           <div className="text-right text-gray-400">{day}</div>
-          {dayEvents.map((event, index) => (
-            <div key={index} className="text-xs text-azul mt-1 truncate">
-              {event.title}
-            </div>
-          ))}
+          <div className="flex flex-col">
+            {dayEvents.map((event, index) => (
+              <Link key={index} href={event.link} className="text-xs text-azul mt-1 truncate hover:underline">
+                {event.title}
+              </Link>
+            ))}
+          </div>
         </div>
       );
     }

@@ -69,11 +69,11 @@ const Navbar: React.FC = () => {
 
           <Link href="/about" className="text-white hover:text-azul">About</Link>
           <Link href="/blog" className="text-white hover:text-azul">Blog</Link>
-          <Link href="/calendar" className="text-white hover:text-azul">Calendar</Link>
           
 
           {user && (
             <div>
+              <Link href="/calendar" className="text-white hover:text-azul mr-10">Calendar</Link>
               <Link href="/dashboard" className="text-white hover:text-azul mr-10">Dashboard</Link>
               <Link href="/profile" className="text-white hover:text-azul">Profile</Link>
             </div>

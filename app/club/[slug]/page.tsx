@@ -26,8 +26,23 @@ interface ClubLink {
   platform: string;
 }
 
+interface OneOffEvent {
+  date: string; // Store as 'YYYY-MM-DD' string
+  title: string;
+}
+
+interface RecurringEvent {
+  title: string;
+  frequency: 'weekly' | 'biweekly' | 'monthly';
+  dayOfWeek: number;
+  startDate: string; // Format: 'YYYY-MM-DD'
+  endDate: string; // Format: 'YYYY-MM-DD'
+  exceptions: string[]; // Array of 'YYYY-MM-DD' strings
+}
+
 interface ClubInfo {
   id: string;
+  isComplete: boolean;
   name: string;
   school: string;
   tags: string[];
@@ -41,6 +56,8 @@ interface ClubInfo {
   studentLeads: StudentLead[];
   links: ClubLink[];
   images: string[];
+  recurringEvents: RecurringEvent[];  // Add this line
+  oneOffEvents: OneOffEvent[];          // Add this line
 }
 
 const ClubPage = () => {
