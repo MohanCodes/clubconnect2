@@ -11,6 +11,7 @@ import { doc, collection, setDoc, getDocs, updateDoc, arrayUnion, arrayRemove, d
 import { ref, uploadBytes, getDownloadURL, deleteObject } from 'firebase/storage';
 import { onAuthStateChanged } from 'firebase/auth';
 import { User as FirebaseUser } from 'firebase/auth';
+import { v4 as uuidv4 } from 'uuid'; // Import UUID for generating unique IDs
 
 type User = Pick<FirebaseUser, 'uid' | 'email' | 'displayName'>;
 
@@ -44,6 +45,13 @@ interface RecurringEvent {
   exceptions: string[]; // Array of 'YYYY-MM-DD' strings
 }
 
+interface Blog {
+  id: string; // Add ID property
+  title: string;
+  content: string;
+  date: Date;
+}
+
 interface ClubInfo {
   id: string;
   isComplete: boolean;
@@ -61,7 +69,8 @@ interface ClubInfo {
   links: ClubLink[];
   images: string[];
   recurringEvents: RecurringEvent[];
-  oneOffEvents: OneOffEvent[]; // Add this line
+  oneOffEvents: OneOffEvent[];
+  blogs: Blog[];
 }
 
 const EditClubPage = () => {
@@ -76,6 +85,10 @@ const EditClubPage = () => {
     date: new Date().toISOString().split('T')[0], // This will give you 'YYYY-MM-DD'
     title: ''
   });
+  const [newBlogTitle, setNewBlogTitle] = useState<string>('');
+  const [newBlogContent, setNewBlogContent] = useState<string>('');
+  const [isBlogDeleteModalOpen, setIsBlogDeleteModalOpen] = useState(false);
+  const [blogToDelete, setBlogToDelete] = useState<Blog | null>(null);
   const [clubInfo, setClubInfo] = useState<ClubInfo>({
     id: "",
     isComplete: false,
@@ -94,6 +107,7 @@ const EditClubPage = () => {
     images: [],
     recurringEvents: [],
     oneOffEvents: [],
+    blogs: [],
 });
   const [newTag, setNewTag] = useState("");
 
@@ -104,34 +118,38 @@ const EditClubPage = () => {
   const fetchClubInfo = useCallback(async () => {
     setIsLoading(true);
     try {
-      const clubsCollectionRef = collection(db, 'clubs');
-      const clubsSnapshot = await getDocs(clubsCollectionRef);
-      const clubsData = clubsSnapshot.docs.map(doc => {
-        const data = doc.data();
-        return {
-          id: doc.id,
-          ...data,
-          tags: data.tags || [],
-          advisors: data.advisors || [],
-          studentLeads: data.studentLeads || [],
-          links: data.links || [],
-          images: data.images || [],
-          oneOffEvents: data.oneOffEvents || [],
-        } as ClubInfo;
-      });
-      const matchingClub = clubsData.find(club => club.id === slug);
-      if (matchingClub) {
-        setClubInfo(matchingClub);
-      } else {
-        console.error('Club not found');
-      }
+        const clubsCollectionRef = collection(db, 'clubs');
+        const clubsSnapshot = await getDocs(clubsCollectionRef);
+        const clubsData = clubsSnapshot.docs.map(doc => {
+            const data = doc.data();
+            return {
+                id: doc.id,
+                ...data,
+                tags: data.tags || [],
+                advisors: data.advisors || [],
+                studentLeads: data.studentLeads || [],
+                links: data.links || [],
+                images: data.images || [],
+                oneOffEvents: data.oneOffEvents || [],
+                blogs: (data.blogs || []).map((blog: any) => ({
+                    ...blog,
+                    date: blog.date ? new Date(blog.date.seconds * 1000) : new Date(), // Convert Firestore timestamp to Date
+                })) || []
+            } as ClubInfo;
+        });
+        const matchingClub = clubsData.find(club => club.id === slug);
+        if (matchingClub) {
+            setClubInfo(matchingClub);
+        } else {
+            console.error('Club not found');
+        }
     } catch (error) {
-      console.error('Error fetching club data:', error);
+        console.error('Error fetching club data:', error);
     } finally {
-      setIsLoading(false);
+        setIsLoading(false);
     }
   }, [slug]);
-  
+
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
       setUser(currentUser);
@@ -445,6 +463,57 @@ const EditClubPage = () => {
       return { ...prevState, recurringEvents: updatedEvents };
     });
   };
+
+  const handleAddBlog = async () => {
+    if (newBlogTitle.trim() && newBlogContent.trim()) {
+        try {
+            // Check if clubInfo.id is valid
+            if (!clubInfo.id) {
+                console.error('Invalid club ID:', clubInfo.id);
+                return; // Exit if the ID is not valid
+            }
+
+            const clubDocRef = doc(db, 'clubs', clubInfo.id);
+            const newBlog = {
+                id: uuidv4(), // Generate a unique ID for the blog
+                title: newBlogTitle,
+                content: newBlogContent,
+                date: new Date(),
+            };
+
+            await updateDoc(clubDocRef, {
+                blogs: arrayUnion(newBlog),
+            });
+
+            // Reset blog inputs
+            setNewBlogTitle(''); // Reset title
+            setNewBlogContent(''); // Reset content
+            fetchClubInfo(); // Refresh the club info to update blogs
+        } catch (error) {
+            console.error('Error adding blog:', error);
+        }
+    } else {
+        console.error('Title and content cannot be empty');
+    }
+};
+
+const handleDeleteBlog = async (blogId: string) => {
+  try {
+      const clubDocRef = doc(db, 'clubs', clubInfo.id);
+      await updateDoc(clubDocRef, {
+          blogs: arrayRemove(clubInfo.blogs.find(blog => blog.id === blogId)), // Find and remove the specific blog by ID
+      });
+      console.log('Blog deleted successfully');
+      fetchClubInfo(); // Refresh the club info to update UI
+  } catch (error) {
+      console.error('Error deleting blog:', error);
+  }
+};
+
+const openDeleteBlogModal = (blog: Blog) => {
+    setBlogToDelete(blog);
+    setIsBlogDeleteModalOpen(true);
+};
 
   if (!user) {
     return null; // Prevent rendering if user is not authenticated
@@ -885,6 +954,70 @@ const EditClubPage = () => {
                 <FaPlus className="mr-2" /> Add Recurring Event
               </button>
             </div>
+
+            {/* Blog Input Form */}
+            <div className="mb-4">
+                <h2 className="text-2xl font-bold text-white mb-2">Add New Blog</h2>
+                <input
+                    type="text"
+                    value={newBlogTitle} // Controlled input
+                    onChange={(e) => setNewBlogTitle(e.target.value)}
+                    placeholder="Blog Title"
+                    className="bg-gray-800 text-white p-2 rounded mb-2 w-full"
+                />
+                <textarea
+                    value={newBlogContent} // Controlled input
+                    onChange={(e) => setNewBlogContent(e.target.value)}
+                    placeholder="Blog Content"
+                    className="bg-gray-800 text-white p-2 rounded mb-2 w-full h-40"
+                />
+                <button onClick={handleAddBlog} className="bg-green-500 text-white px-4 py-2 rounded">
+                    Add Blog
+                </button>
+            </div>
+
+            <div className="flex flex-col md:flex-row gap-8">
+              {clubInfo.blogs.map((blog) => (
+                  <div key={blog.id} className="rounded-lg p-9 transition-shadow duration-300 bg-[#2A2A2A] md:w-1/2">
+                      <Link href={`/blogs/${blog.id}`} className="block">
+                          <h3 className="text-xl text-white font-bold">{blog.title}</h3>
+                          <p className="text-sm text-gray-400 mt-1 mb-2">
+                              {blog.date.toLocaleDateString('en-US', {
+                                  year: 'numeric',
+                                  month: 'long',
+                                  day: 'numeric',
+                              })}
+                          </p>
+                          <p className="text-gray-300">
+                              {blog.content.length > 200 ? `${blog.content.substring(0, 200)}...` : blog.content}
+                          </p>
+                      </Link>
+                  </div>
+              ))}
+          </div>
+
+            {/* Delete Confirmation Modal */}
+            {isDeleteModalOpen && blogToDelete && (
+                <div className="fixed inset-0 bg-black backdrop-blur bg-opacity-50 flex items-center justify-center">
+                    <div className="bg-white p-6 rounded-lg w-96">
+                        <div className="flex justify-between items-center mb-4">
+                            <h2 className="text-2xl font-bold">Delete Blog</h2>
+                            <button onClick={() => setIsDeleteModalOpen(false)} className="text-gray-500 hover:text-gray-700">
+                                <FaTimes size={24} />
+                            </button>
+                        </div>
+                        <p className="mb-4">Are you sure you want to delete the blog titled "{blogToDelete.title}"? This action cannot be undone.</p>
+                        <div className="flex justify-end space-x-4">
+                            <button onClick={() => setIsDeleteModalOpen(false)} className="bg-gray-300 text-black px-4 py-2 rounded hover:bg-gray-400">
+                                Cancel
+                            </button>
+                            <button onClick={() => handleDeleteBlog(blogToDelete.id)} className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600">
+                                Delete
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
           </div>
 
           <div className="md:w-1/3">

@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import { db } from '@/firebase/firebase';
 import { collection, setDoc, serverTimestamp, doc } from 'firebase/firestore';
 import { FaPlus } from 'react-icons/fa';
+import ReactMarkdown from 'react-markdown'; // Importing React Markdown
 
 interface ClubInfo {
   id: string;
@@ -26,6 +27,12 @@ interface ClubInfo {
   creatorName: string;
 }
 
+interface BlogInfo {
+  title: string;
+  date: Date | null;
+  content: string;
+}
+
 const schoolDistricts = [
   { name: "Wayzata", colors: ["Blue", "Gold"] },
   { name: "Minnetonka", colors: ["Blue", "White"] },
@@ -37,12 +44,15 @@ const schoolDistricts = [
   { name: "Anoka-Hennepin", colors: ["Blue", "Gold"] }
 ];
 
-const PopulateClubs: React.FC = () => {
+const PopulateClubsAndBlogs: React.FC = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [password, setPassword] = useState('');
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  
+  // Blog state
+  const [blog, setBlog] = useState<BlogInfo>({ title: '', date: null, content: '' });
 
-  const correctPassword = 'ex'; // Set your desired password here
+  const correctPassword = 'ex'; 
 
   const handlePasswordSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -59,8 +69,6 @@ const PopulateClubs: React.FC = () => {
     const randomElement = <T,>(arr: T[]): T => arr[Math.floor(Math.random() * arr.length)];
 
     const clubTypes = ['Chess', 'Debate', 'Robotics', 'Art', 'Music', 'Sports', 'Science', 'Math', 'Literature', 'Drama'];
-    const platforms = ['twitter', 'instagram', 'facebook', 'linkedin', 'youtube', 'discord', 'github', 'tiktok', 'website'];
-
     const district = randomElement(schoolDistricts);
     const clubType = randomElement(clubTypes);
     const clubName = `${clubType} Club`;
@@ -78,7 +86,7 @@ const PopulateClubs: React.FC = () => {
       costs: `$${Math.floor(Math.random() * 50)} per semester`,
       advisors: [{ name: `Dr. ${randomString()}`, email: `advisor${randomString()}@${district.name.toLowerCase().replace(/\s+/g, '')}.edu` }],
       studentLeads: [{ name: `Student ${randomString()}`, role: 'President', email: `student${randomString()}@${district.name.toLowerCase().replace(/\s+/g, '')}.edu` }],
-      links: [{ url: `https://${randomElement(platforms)}.com/${randomString()}`, platform: randomElement(platforms) }],
+      links: [{ url: `https://${randomElement(['twitter', 'instagram', 'facebook', 'linkedin'])}.com/${randomString()}`, platform: randomElement(['twitter', 'instagram', 'facebook', 'linkedin']) }],
       images: [`https://picsum.photos/200/300?random=${Math.random()}`],
       creatorId: 'random-generator',
       createdAt: serverTimestamp(),
@@ -86,7 +94,7 @@ const PopulateClubs: React.FC = () => {
     };
   };
 
-  const populateClubs = async (count: number) => {
+  const populateClubs = async (count:number) => {
     setIsLoading(true);
     const clubsRef = collection(db, 'clubs');
 
@@ -106,44 +114,104 @@ const PopulateClubs: React.FC = () => {
     }
   };
 
-  return (
-    <div className="p-4">
-      {!isAuthenticated ? (
-        <form onSubmit={handlePasswordSubmit} className="mb-4">
-          <label className="text-white mb-2 block" htmlFor="password">Enter Password:</label>
-          <input
-            type="password"
-            id="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            className="bg-gray-800 text-white p-2 rounded mb-4"
-            required
-          />
-          <button type="submit" className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
-            Submit
-          </button>
-        </form>
-      ) : (
-        <>
-          <h1 className="text-2xl font-bold mb-4">Random Club Generator</h1>
-          <button
-            onClick={() => populateClubs(10)}
-            disabled={isLoading}
-            className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded flex items-center"
-          >
-            {isLoading ? (
-              <span>Generating...</span>
-            ) : (
-              <>
-                <FaPlus className="mr-2" />
-                <span>Generate Random Clubs</span>
-              </>
-            )}
-          </button>
-        </>
-      )}
-    </div>
-  );
+   // Function to handle blog submission
+   const handleBlogSubmit = async (e : React.FormEvent) => {
+     e.preventDefault();
+     
+     // Sanitize the title to create a docId
+     const sanitizedTitle = blog.title
+       .toLowerCase()
+       .replace(/\s+/g, '-') // Replace spaces with dashes
+       .replace(/[^\w-]/g, ''); // Remove special characters
+
+     const blogsRef = collection(db, 'blogs');
+
+     try {
+       const docId = sanitizedTitle; // Use the sanitized title as docId
+       await setDoc(doc(blogsRef, docId), { ...blog, createdAt : serverTimestamp() });
+       alert('Blog successfully added!');
+       setBlog({ title : '', date : null, content : '' }); // Reset form
+     } catch (error) {
+       console.error("Error adding blog:", error);
+       alert('An error occurred while adding the blog.');
+     }
+   };
+
+   return (
+     <div className="p-4">
+       {!isAuthenticated ? (
+         <form onSubmit={handlePasswordSubmit} className="mb-4">
+           <label className="text-white mb-2 block" htmlFor="password">Enter Password:</label>
+           <input
+             type="password"
+             id="password"
+             value={password}
+             onChange={(e) => setPassword(e.target.value)}
+             className="bg-gray-800 text-white p-2 rounded mb-4"
+             required
+           />
+           <button type="submit" className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
+             Submit
+           </button>
+         </form>
+       ) : (
+         <>
+           <h1 className="text-2xl font-bold mb-4">Random Club Generator</h1>
+           <button
+             onClick={() => populateClubs(10)}
+             disabled={isLoading}
+             className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded flex items-center"
+           >
+             {isLoading ? (
+               <span>Generating...</span>
+             ) : (
+               <>
+                 <FaPlus className="mr-2" />
+                 <span>Generate Random Clubs</span>
+               </>
+             )}
+           </button>
+
+           {/* Blog Section */}
+           <h2 className="text-xl font-bold mt-8">Create a Blog Post</h2>
+           <form onSubmit={handleBlogSubmit} className="mt-4">
+             <input
+               type="text"
+               placeholder="Blog Title"
+               value={blog.title}
+               onChange={(e) => setBlog({ ...blog, title : e.target.value })}
+               className="bg-gray-800 text-white p-2 rounded mb-2 w-full"
+               required
+             />
+             <input
+               type="date"
+               value={blog.date ? blog.date.toISOString().substring(0,10) : ''}
+               onChange={(e) => setBlog({ ...blog, date : new Date(e.target.value) })}
+               className="bg-gray-800 text-white p-2 rounded mb-2 w-full"
+             />
+             <textarea
+               placeholder="Write your blog content here..."
+               value={blog.content}
+               onChange={(e) => setBlog({ ...blog, content : e.target.value })}
+               className="bg-gray-800 text-white p-2 rounded mb-2 w-full h-40"
+               required
+             />
+             <button type="submit" className="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded">
+               Publish Blog
+             </button>
+           </form>
+
+           {/* Displaying Blog Content Preview */}
+           {blog.content && (
+             <div className="mt-6">
+               <h3 className="text-lg font-bold">Preview:</h3>
+               <ReactMarkdown>{blog.content}</ReactMarkdown>
+             </div>
+           )}
+         </>
+       )}
+     </div>
+   );
 };
 
-export default PopulateClubs;
+export default PopulateClubsAndBlogs;
