@@ -40,15 +40,15 @@ const Home: React.FC = () => {
     "Anoka-Hennepin"
   ];
 
-  const schoolColors: { [key: string]: { bg: string; text: string } } = {
-    'wayzata': { bg: 'bg-yellow-400', text: 'text-blue-500' },
-    'minnetonka': { bg: 'bg-blue-600', text: 'text-white' },
-    'edina': { bg: 'bg-green-700', text: 'text-white' },
-    'hopkins': { bg: 'bg-gray-200', text: 'text-blue-500' },
-    'st-louis-park': { bg: 'bg-orange-500', text: 'text-amber-950' },
-    'osseo': { bg: 'bg-orange-600', text: 'text-white' },
-    'robbinsdale': { bg: 'bg-cyan-600', text: 'text-white' },
-    'anoka-hennepin': { bg: 'bg-blue-900', text: 'text-white' },
+  const schoolColors: { [key: string]: { bg: string; text: string; ring: string } } = {
+    'wayzata': { bg: 'bg-yellow-400', text: 'text-blue-500', ring: 'ring-blue-500' },
+    'minnetonka': { bg: 'bg-blue-600', text: 'text-white', ring: 'ring-white' },
+    'edina': { bg: 'bg-green-700', text: 'text-white', ring: 'ring-white' },
+    'hopkins': { bg: 'bg-gray-200', text: 'text-blue-500', ring: 'ring-blue-500' },
+    'st-louis-park': { bg: 'bg-orange-500', text: 'text-amber-950', ring: 'ring-amber-950' },
+    'osseo': { bg: 'bg-orange-600', text: 'text-white', ring: 'ring-white' },
+    'robbinsdale': { bg: 'bg-cyan-600', text: 'text-white', ring: 'ring-white' },
+    'anoka-hennepin': { bg: 'bg-blue-900', text: 'text-white', ring: 'ring-white' },
   };
 
   const handleClubClick = (clubId: string) => {
@@ -190,19 +190,15 @@ const Home: React.FC = () => {
           </div>
           <div className='mt-8 flex'>
             <div className="flex flex-wrap gap-2 justify-center">
-              {tags.map((tag, index) => {
-                const schoolStyle = schoolColors[tag.toLowerCase() as keyof typeof schoolColors] || { bg: 'bg-gray-200', text: 'text-black' };
+            {tags.map((tag, index) => {
+                const schoolStyle = schoolColors[tag.toLowerCase() as keyof typeof schoolColors] || { bg: 'bg-gray-200', text: 'text-black', ring: '' };
                 const isSelected = selectedTag === tag; // Check if the tag is selected
                 return (
-                  <button
-                    key={index}
-                    onClick={() => handleTagClick(tag)}
-                    className={`text-sm font-medium px-3 py-1 rounded-full break-words ${schoolStyle.bg} ${schoolStyle.text} ${isSelected ? `ring-2 ring-${schoolStyle.text.replace('text-', '')}` : ''}`} // Fix ring color reference
-                  >
-                    {tag}
-                  </button>
+                    <button key={index} onClick={() => handleTagClick(tag)} className={`text-sm font-medium px-3 py-1 rounded-full break-words ${schoolStyle.bg} ${schoolStyle.text} ${isSelected ? `ring-2 ${schoolStyle.ring}` : ''}`}>
+                        {tag}
+                    </button>
                 );
-              })}
+            })}
             </div>
           </div>
         </div>

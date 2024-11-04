@@ -41,8 +41,8 @@ const CalendarProp: React.FC<CalendarProps> = ({ events = [] }) => {
           <div className="text-right text-gray-400">{day}</div>
           <div className="flex flex-col">
             {dayEvents.map((event, index) => (
-              <Link key={index} href={event.link} className="text-xs text-azul mt-1 truncate hover:underline">
-                {event.title}
+              <Link key={index} href={event.link} className="text-xs text-white mt-1">
+                <div className='bg-[#2A2A2A] rounded p-2 inline-block hover:underline truncate'>{event.title}</div>
               </Link>
             ))}
           </div>

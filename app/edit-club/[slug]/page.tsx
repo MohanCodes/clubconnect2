@@ -169,7 +169,11 @@ const EditClubPage = () => {
           setBlogs(blogs);
         }
   
-        setClubInfo(clubData);
+        setClubInfo({
+            ...clubData,
+            links: clubData.links || [], // Default to empty array if undefined
+            oneOffEvents: clubData.oneOffEvents || [],
+        });
       } else {
         console.error('Club not found');
       }
@@ -203,13 +207,13 @@ const EditClubPage = () => {
       info[field] !== undefined && info[field] !== ''
     );
     
-    const hasAdvisor = info.advisors.length > 0 && 
+    const hasAdvisor = info.advisors && info.advisors.length > 0 && 
       info.advisors.every(advisor => advisor.name !== '' && advisor.email !== '');
     
-    const hasStudentLead = info.studentLeads.length > 0 && 
+    const hasStudentLead = info.studentLeads && info.studentLeads.length > 0 && 
       info.studentLeads.every(lead => lead.name !== '' && lead.role !== '' && lead.email !== '');
     
-    const hasLink = info.links.length > 0;
+    const hasLink = info.links && info.links.length > 0;
     
     return isAllFieldsFilled && hasAdvisor && hasStudentLead && hasLink;
   };
@@ -664,21 +668,23 @@ const EditClubPage = () => {
           </div>
         </div>
 
-        <div className="flex flex-col lg:flex-row gap-8">
-          <div className={`lg:${(blogs && blogs.length > 0) || (clubInfo.images && clubInfo.images.length > 0) ? 'w-6/12' : 'w-10/12'}`}>
-          <h2 className="text-2xl font-bold text-white mb-2">Description</h2>
-            {isEditing ? (
-              <textarea
-                value={clubInfo.description}
-                onChange={(e) => handleChange(e, 'description')}
-                className="w-full h-40 p-2 text-grey bg-gray-800 rounded mb-4"
-                placeholder="Club Description"
-              />
-            ) : (
-              <p className="text-grey mb-4">{clubInfo.description}</p>
-            )}
+        <div className="flex flex-col lg:flex-row gap-8 grid lg:grid-cols-2">
+          <div className="space-y-8">
+            <div>
+              <h2 className="text-2xl font-bold text-white mb-2">Description</h2>
+                {isEditing ? (
+                  <textarea
+                    value={clubInfo.description}
+                    onChange={(e) => handleChange(e, 'description')}
+                    className="w-full h-40 p-2 text-grey bg-gray-800 rounded mb-4"
+                    placeholder="Club Description"
+                  />
+                ) : (
+                  <p className="text-grey mb-">{clubInfo.description}</p>
+                )}
+            </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-grey mb-8">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-grey">
               <div className="flex items-center">
                 <FaCalendarAlt className="mr-2 text-azul" />
                 {isEditing ? (
@@ -751,7 +757,7 @@ const EditClubPage = () => {
               </div>
             </div>
 
-            <div className="mb-8">
+            <div>
               <h2 className="text-2xl font-bold text-white mb-2">Advisors</h2>
               {(clubInfo.advisors || []).map((advisor, index) => (
                 <div key={index} className="mb-2">
@@ -795,7 +801,7 @@ const EditClubPage = () => {
               )}
             </div>
 
-            <div className="mb-8">
+            <div>
               <h2 className="text-2xl font-bold text-white mb-2">Student Leads</h2>
               {(clubInfo.studentLeads || []).map((lead, index) => (
                 <div key={index} className="mb-2">
@@ -846,7 +852,7 @@ const EditClubPage = () => {
               )}
             </div>
 
-            <div className="mb-8">
+            <div>
               <h2 className="text-2xl font-bold text-white mb-2">Links</h2>
               {(clubInfo.links || []).map((link, index) => (
                 <div key={index} className="flex items-center mb-2">
@@ -868,8 +874,13 @@ const EditClubPage = () => {
               )}
             </div>
 
-            <div className="mb-8">
+            <div>
               <h2 className="text-2xl font-bold text-white mb-2">One-off Events</h2>
+              {isEditing && (
+                  <p className="grey">
+                    Leave blank if there are no events
+                  </p>
+              )}
               {clubInfo.oneOffEvents && clubInfo.oneOffEvents.length > 0 ? (
                 clubInfo.oneOffEvents.map((event, index) => (
                   <div key={index} className="mb-4 flex items-center justify-between bg-gray-800 p-4 rounded-lg shadow-md lg:w-2/3">
@@ -914,7 +925,7 @@ const EditClubPage = () => {
               )}
             </div>
 
-            <div className="mb-8">
+            <div>
               {isEditing ? (
                 <>
                   <h2 className="text-2xl font-bold text-white mb-2">Recurring Events</h2>
@@ -1095,7 +1106,7 @@ const EditClubPage = () => {
 
           </div>
 
-          <div className="lg:w-6/12 space-y-10">
+          <div className="space-y-10">
             <>
               {(clubInfo.images && clubInfo.images.length > 0 || isEditing) && (
                 <div className="mb-8">

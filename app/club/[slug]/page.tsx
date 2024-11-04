@@ -199,10 +199,20 @@ const EditClubPage = () => {
   if (!user) {
     return null; // Prevent rendering if user is not authenticated
   }
+  
+  if (isLoading) {
+    <div className="fixed inset-0 bg-black flex items-center justify-center z-50">
+          <div className="bg-white p-6 rounded-lg flex flex-col items-center">
+            <FaCircleNotch className="animate-spin h-16 w-16 text-azul" />
+            <p className="mt-4 text-azul font-semibold">Loading club data...</p>
+          </div>
+    </div>
+  }
 
   if (!clubInfo.isComplete) {
-    return <div><Navbar /><ClubNotFound /></div>; // Don't render anything if club data is incomplete
+    return <div><Navbar /><div className="-mt-20"><ClubNotFound /></div></div>; // Don't render anything if club data is incomplete
   }
+
 
   return (
     <div className="bg-cblack min-h-screen">
@@ -236,11 +246,13 @@ const EditClubPage = () => {
           </div>
         </div>
 
-        <div className="flex flex-col lg:flex-row gap-8">
-          <div className={`lg:${(clubInfo.blogIds && clubInfo.blogIds.length > 0) || (clubInfo.images && clubInfo.images.length > 0) ? 'w-6/12' : 'w-10/12'}`}>
-          <h2 className="text-2xl font-bold text-white mb-2">Description</h2>
-            <p className="text-grey mb-4">{clubInfo.description}</p>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-grey mb-8">
+        <div className="flex flex-col lg:flex-row gap-8 grid lg:grid-cols-2">
+        <div className="space-y-8">
+            <div>
+              <h2 className="text-2xl font-bold text-white mb-2">Description</h2>
+              <p className="text-grey mb-4">{clubInfo.description}</p>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-grey">
               <div className="flex items-center">
                 <FaCalendarAlt className="mr-2 text-azul" />
                 <span>{clubInfo.length}</span>
@@ -263,7 +275,7 @@ const EditClubPage = () => {
               </div>
             </div>
 
-            <div className="mb-8">
+            <div>
               <h2 className="text-2xl font-bold text-white mb-2">Advisors</h2>
               {(clubInfo.advisors || []).map((advisor, index) => (
                 <div key={index} className="mb-2">
@@ -278,7 +290,7 @@ const EditClubPage = () => {
               ))}
             </div>
 
-            <div className="mb-8">
+            <div>
               <h2 className="text-2xl font-bold text-white mb-2">Student Leads</h2>
               {(clubInfo.studentLeads || []).map((lead, index) => (
                 <div key={index} className="mb-2">
@@ -293,7 +305,7 @@ const EditClubPage = () => {
               ))}
             </div>
 
-            <div className="mb-8">
+            <div>
               <h2 className="text-2xl font-bold text-white mb-2">Links</h2>
               {(clubInfo.links || []).map((link, index) => (
                 <div key={index} className="flex items-center mb-2">
@@ -305,7 +317,7 @@ const EditClubPage = () => {
               ))}
             </div>
 
-            <div className="mb-8">
+            <div>
               <h2 className="text-2xl font-bold text-white mb-2">One-off Events</h2>
               {clubInfo.oneOffEvents && clubInfo.oneOffEvents.length > 0 ? (
                     clubInfo.oneOffEvents.map((event, index) => (
@@ -321,7 +333,7 @@ const EditClubPage = () => {
                   )}
             </div>
 
-            <div className="mb-8">
+            <div>
               <h3 className="text-xl font-semibold text-white mb-3">Recurring Events</h3>
                   {(clubInfo.recurringEvents || []).length > 0 ? (
                     clubInfo.recurringEvents.map((event, index) => {
@@ -382,7 +394,7 @@ const EditClubPage = () => {
             </div>
           </div>
 
-          <div className="lg:w-6/12 space-y-10">
+          <div className="space-y-10">
           {clubInfo.images && clubInfo.images.length > 0 && (
             <>
                 <h2 className="text-2xl font-bold text-white -mb-8">Images</h2>
