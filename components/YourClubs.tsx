@@ -30,7 +30,7 @@ const schoolDistricts = [
     "Minnetonka",
     "Edina",
     "Hopkins",
-    "St Louis Park",
+    "St-Louis-Park",
     "Osseo",
     "Robbinsdale",
     "Anoka-Hennepin"

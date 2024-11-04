@@ -1,14 +1,19 @@
 "use client";
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { useParams } from 'next/navigation';
-import { FaEnvelope, FaCalendarAlt, FaClock, FaMapMarkerAlt, FaUserGraduate, FaDollarSign, FaTwitter, FaInstagram, FaFacebook, FaLinkedin, FaYoutube, FaDiscord, FaGithub, FaTiktok, FaGlobe, FaUser, FaLink, FaCircleNotch } from 'react-icons/fa';
+import { useRouter, useParams } from 'next/navigation';
+import { FaEnvelope, FaTimes, FaCalendarAlt, FaClock, FaMapMarkerAlt, FaUserGraduate, FaDollarSign, FaPlus, FaTrash, FaTwitter, FaInstagram, FaFacebook, FaLinkedin, FaYoutube, FaDiscord, FaGithub, FaTiktok, FaGlobe, FaUser, FaLink, FaCircleNotch } from 'react-icons/fa';
 import Navbar from '@/components/Navbar';
-import { db } from '@/firebase/firebase';
-import { doc, getDoc } from 'firebase/firestore';
-import ClubNotFound from '@/components/ClubNotFound';
+import { auth, db, storage } from '@/firebase/firebase';
+import { doc, collection, setDoc, getDocs, updateDoc, arrayUnion, arrayRemove, deleteDoc } from 'firebase/firestore';
+import { ref, uploadBytes, getDownloadURL, deleteObject } from 'firebase/storage';
+import { onAuthStateChanged } from 'firebase/auth';
+import { User as FirebaseUser } from 'firebase/auth';
+import { nanoid } from 'nanoid';
+
+type User = Pick<FirebaseUser, 'uid' | 'email' | 'displayName'>;
 
 interface Advisor {
   name: string;
@@ -40,6 +45,13 @@ interface RecurringEvent {
   exceptions: string[]; // Array of 'YYYY-MM-DD' strings
 }
 
+interface Blog {
+  id: string; // Add ID property
+  title: string;
+  content: string;
+  date: Date;
+}
+
 interface ClubInfo {
   id: string;
   isComplete: boolean;
@@ -56,50 +68,107 @@ interface ClubInfo {
   studentLeads: StudentLead[];
   links: ClubLink[];
   images: string[];
-  recurringEvents: RecurringEvent[];  // Add this line
-  oneOffEvents: OneOffEvent[];          // Add this line
+  recurringEvents: RecurringEvent[];
+  oneOffEvents: OneOffEvent[];
+  blogs: Blog[];
 }
 
-const ClubPage = () => {
+function getNextMeetingDate(event: RecurringEvent) {
+  const today = new Date();
+  const eventDay = event.dayOfWeek;
+  let nextMeeting = new Date(today);
+
+  // Calculate the next occurrence of the event's day of the week
+  while (nextMeeting.getDay() !== eventDay) {
+    nextMeeting.setDate(nextMeeting.getDate() + 1);
+  }
+
+  // Check if the next meeting is within the event's date range
+  const startDate = new Date(event.startDate);
+  const endDate = new Date(event.endDate);
+  
+  if (nextMeeting >= startDate && nextMeeting <= endDate) {
+    return nextMeeting;
+  } else {
+    return null; // No upcoming meeting within the range
+  }
+}
+
+const EditClubPage = () => {
+  const [user, setUser] = useState<User | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [clubInfo, setClubInfo] = useState<ClubInfo>({
+    id: "",
+    isComplete: false,
+    name: "",
+    school: "",
+    tags: [],
+    description: "",
+    length: "",
+    meetingTimes: "",
+    meetingSite: "",
+    eligibility: "",
+    costs: "",
+    advisors: [],
+    studentLeads: [],
+    links: [],
+    images: [],
+    recurringEvents: [],
+    oneOffEvents: [],
+    blogs: [],
+  });
+
+  const router = useRouter();
   const params = useParams();
   const slug = params.slug;
-  const [clubInfo, setClubInfo] = useState<ClubInfo | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+
+  const fetchClubInfo = useCallback(async () => {
+    setIsLoading(true);
+    try {
+        const clubsCollectionRef = collection(db, 'clubs');
+        const clubsSnapshot = await getDocs(clubsCollectionRef);
+        const clubsData = clubsSnapshot.docs.map(doc => {
+            const data = doc.data();
+            return {
+                id: doc.id,
+                ...data,
+                tags: data.tags || [],
+                advisors: data.advisors || [],
+                studentLeads: data.studentLeads || [],
+                links: data.links || [],
+                images: data.images || [],
+                oneOffEvents: data.oneOffEvents || [],
+                blogs: (data.blogs || []).map((blog: any) => ({
+                    ...blog,
+                    date: blog.date ? new Date(blog.date.seconds * 1000) : new Date(), // Convert Firestore timestamp to Date
+                })) || []
+            } as ClubInfo;
+        });
+        const matchingClub = clubsData.find(club => club.id === slug);
+        if (matchingClub) {
+            setClubInfo(matchingClub);
+        } else {
+            console.error('Club not found');
+        }
+    } catch (error) {
+        console.error('Error fetching club data:', error);
+    } finally {
+        setIsLoading(false);
+    }
+  }, [slug]);
 
   useEffect(() => {
-    const fetchClubInfo = async () => {
-      setIsLoading(true);
-      try {
-        if (typeof slug === 'string') {
-          const clubDocRef = doc(db, 'clubs', slug);
-          const clubDoc = await getDoc(clubDocRef);
-          
-          if (clubDoc.exists()) {
-            const clubData = clubDoc.data();
-            
-            // Check if the club document has isComplete set to true
-            if (clubData.isComplete === true) {
-              setClubInfo(clubData as ClubInfo);
-            } else {
-              console.log('Club data is not complete');
-              // You might want to set some state here to indicate incomplete data
-              // For example: setIsIncomplete(true);
-            }
-          } else {
-            console.error('Club not found');
-          }
-        } else {
-          console.error('Invalid slug');
-        }
-      } catch (error) {
-        console.error('Error fetching club data:', error);
-      } finally {
-        setIsLoading(false);
+    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+      setUser(currentUser);
+      if (!currentUser) {
+        router.push('/signin');
+      } else {
+        fetchClubInfo();
       }
-    };
+    });
   
-    fetchClubInfo();
-  }, [slug]);
+    return () => unsubscribe();
+  }, [router, fetchClubInfo]);
 
   const getPlatformIcon = (platform: string) => {
     switch (platform) {
@@ -117,46 +186,46 @@ const ClubPage = () => {
     }
   };
 
-  if (isLoading) {
-    return (
-    <div className="fixed inset-0 bg-cblack flex items-center justify-center z-50">
-      <div className="bg-white p-6 rounded-lg flex flex-col items-center">
-        <FaCircleNotch className="animate-spin h-16 w-16 text-azul" />
-        <p className="mt-4 text-azul font-semibold">Loading club data...</p>
-      </div>
-    </div>
-    );
-  }
-
-  if (!clubInfo) {
-    return (
-    <div>
-      <Navbar />
-      <ClubNotFound />
-    </div>
-  );
+  if (!user) {
+    return null; // Prevent rendering if user is not authenticated
   }
 
   return (
     <div className="bg-cblack min-h-screen">
       <Navbar />
       <main className="container mx-auto px-4 py-8">
+      {isLoading && (
+        <div className="fixed inset-0 bg-black backdrop-blur bg-opacity-75 flex items-center justify-center z-50">
+          <div className="bg-white p-6 rounded-lg flex flex-col items-center">
+            <FaCircleNotch className="animate-spin h-16 w-16 text-azul" />
+            <p className="mt-4 text-azul font-semibold">Loading club data...</p>
+          </div>
+        </div>
+      )}
         <div className="flex justify-between items-center mb-4">
-          <h1 className="text-4xl font-bold text-white">{clubInfo.name}</h1>
+          <h1 className="text-4xl font-bold text-white">{clubInfo.name == "" ? 'Enter Club Name Here' : clubInfo.name}</h1>
+          <div className='space-x-4'>
+            <button className='text-white'>
+                placeholder button
+            </button>
+          </div>
+            
         </div>
 
         <div className="flex flex-wrap gap-2 mb-6">
-          {(clubInfo.tags || []).map((tag, index) => (
-            <span key={index} className="inline-block bg-blue-100 text-azul text-sm font-medium px-3 py-1 rounded-full mr-2 mb-2">
-              {tag}
-            </span>
-          ))}
+          <div className="flex-grow">
+            {(clubInfo.tags || []).map((tag, index) => (
+              <span key={index} className="inline-block bg-blue-100 text-azul text-sm font-medium px-3 py-1 rounded-full mr-2 mb-2">
+                {tag}
+              </span>
+            ))}
+          </div>
         </div>
 
-        <div className="flex flex-col md:flex-row gap-8">
-          <div className="md:w-2/3">
+        <div className="flex flex-col lg:flex-row gap-8">
+          <div className={`lg:${(clubInfo.blogs && clubInfo.blogs.length > 0) || (clubInfo.images && clubInfo.images.length > 0) ? 'w-6/12' : 'w-10/12'}`}>
+          <h2 className="text-2xl font-bold text-white mb-2">Description</h2>
             <p className="text-grey mb-4">{clubInfo.description}</p>
-
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-grey mb-8">
               <div className="flex items-center">
                 <FaCalendarAlt className="mr-2 text-azul" />
@@ -185,12 +254,12 @@ const ClubPage = () => {
               {(clubInfo.advisors || []).map((advisor, index) => (
                 <div key={index} className="mb-2">
                   <p className="text-grey">{advisor.name}</p>
-                  <Link href={`mailto:${advisor.email}`} className="text-azul hover:underline">
+                    <Link href={`mailto:${advisor.email}`} className="text-azul hover:underline">
                     <span className="flex items-center">
-                      <FaEnvelope className="mr-2" />
-                      {advisor.email}
+                        <FaEnvelope className="mr-2" />
+                        {advisor.email}
                     </span>
-                  </Link>
+                    </Link>
                 </div>
               ))}
             </div>
@@ -200,12 +269,12 @@ const ClubPage = () => {
               {(clubInfo.studentLeads || []).map((lead, index) => (
                 <div key={index} className="mb-2">
                   <p className="text-grey">{lead.name} - {lead.role}</p>
-                  <Link href={`mailto:${lead.email}`} className="text-azul hover:underline">
+                    <Link href={`mailto:${lead.email}`} className="text-azul hover:underline">
                     <span className="flex items-center">
-                      <FaEnvelope className="mr-2" />
-                      {lead.email}
+                        <FaEnvelope className="mr-2" />
+                        {lead.email}
                     </span>
-                  </Link>
+                    </Link>
                 </div>
               ))}
             </div>
@@ -222,31 +291,126 @@ const ClubPage = () => {
               ))}
             </div>
 
-            <div className="mt-8">
-              <h2 className="text-2xl font-bold text-white mb-2">More Information</h2>
-              <p className="text-grey">
-                For more information, please{' '}
-                <Link href="mailto:help@clubconnect.xyz" className="text-azul hover:underline">
-                  contact ClubConnect for help
-                </Link>.
-              </p>
+            <div className="mb-8">
+              <h2 className="text-2xl font-bold text-white mb-2">One-off Events</h2>
+              {clubInfo.oneOffEvents.length > 0 ? (
+                    clubInfo.oneOffEvents.map((event, index) => (
+                      <div key={index} className="mb-4 flex items-center bg-gray-800 p-4 rounded-lg shadow-md lg:w-5/6">
+                        <FaCalendarAlt className="text-blue-400 mr-4" />
+                        <span className="text-white">
+                          {new Date(event.date).toLocaleDateString()} - {event.title}
+                        </span>
+                      </div>
+                    ))
+                  ) : (
+                    <p className="text-gray-300">No one-off events are scheduled at this time.</p>
+                  )}
+            </div>
+
+            <div className="mb-8">
+              <h3 className="text-xl font-semibold text-white mb-3">Recurring Events</h3>
+                  {(clubInfo.recurringEvents || []).length > 0 ? (
+                    clubInfo.recurringEvents.map((event, index) => {
+                      const nextMeeting = getNextMeetingDate(event);
+                      return (
+                        <div key={index} className="mb-6 p-6 bg-gray-800 rounded-lg shadow-md text-white lg:w-5/6">
+                          {/* Event Title */}
+                          <p className="font-semibold text-lg">Event: {event.title || 'Untitled Event'}</p>
+
+                          {/* Frequency and Day of Week */}
+                          <p className="mt-2">
+                            This event occurs{' '}
+                            {event.frequency === 'biweekly' ? 'every other' : 'every'}{' '}
+                            {
+                              ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'][
+                                event.dayOfWeek
+                              ]
+                            }.
+                          </p>
+
+                          {/* Start Date, End Date, and Next Meeting */}
+                          <p className="mt-2">
+                            It runs from {new Date(event.startDate).toLocaleDateString()} to{' '}
+                            {new Date(event.endDate).toLocaleDateString()}.
+                          </p>
+                          
+                          <p className="mt-2 font-semibold text-blue-400">
+                            Next meeting: {nextMeeting ? nextMeeting.toLocaleDateString() : 'No upcoming meeting'}
+                          </p>
+
+                          {/* Display Exceptions */}
+                          {event.exceptions.length > 0 && (
+                            <div className="mt-4">
+                              <h4 className="text-lg font-bold text-white mb-2">Exceptions:</h4>
+                              <ul className="list-disc pl-5 text-gray-300">
+                                {event.exceptions.map((exception, exceptionIndex) => (
+                                  <li key={exceptionIndex}>{new Date(exception).toLocaleDateString()}</li>
+                                ))}
+                              </ul>
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })
+                  ) : (
+                    <p className="text-gray-300">No recurring events are currently scheduled.</p>
+                  )}
+
+                <div className="mb-8">
+                    <h2 className="text-2xl font-bold text-white mb-2">More Information</h2>
+                    <p className="text-grey">
+                        For more information, please{' '}
+                        <Link href="mailto:clubconnect.xyz" className="text-azul hover:underline">
+                        contact ClubConnect.
+                        </Link>
+                    </p>
+                </div>
             </div>
           </div>
 
-          <div className="md:w-1/3">
-            <div className="grid grid-cols-2 gap-4">
-              {clubInfo.images?.map((src: string, index: number) => (
-                <div key={index} className="relative h-48">
-                  <Image
-                    src={src}
-                    alt={`Club activity ${index + 1}`}
-                    layout="fill"
-                    objectFit="cover"
-                    className="rounded-lg"
-                  />
+          <div className="lg:w-6/12 space-y-10">
+          {clubInfo.images && clubInfo.images.length > 0 && (
+            <>
+                <h2 className="text-2xl font-bold text-white -mb-8">Images</h2>
+                <div className="grid grid-cols-2 gap-4">
+                    {clubInfo.images.map((src: string, index: number) => (
+                    <div key={index} className="relative h-64">
+                        <Image
+                        src={src}
+                        alt={`Club activity ${index + 1}`}
+                        layout="fill"
+                        objectFit="cover"
+                        className="rounded-lg"
+                        />
+                    </div>
+                    ))}
+                </div>
+            </>
+            )}
+          <div>
+            {clubInfo.blogs && clubInfo.blogs.length > 0 && (
+            <h2 className="text-2xl font-bold text-white mb-2">Blogs</h2>
+            )}
+            <div className="flex flex-col lg:flex-row gap-8">
+              {clubInfo.blogs.map((blog) => (
+                <div key={blog.id} className="rounded-lg p-9 transition-shadow duration-300 bg-[#2A2A2A] lg:w-1/2">
+                  <div className='flex flex-row justify-between'>
+                    <h3 className="text-xl text-white font-bold">{blog.title}</h3>
+                  </div>
+                  <p className="text-sm text-gray-400 mt-1 mb-2">
+                    {blog.date.toLocaleDateString('en-US', {
+                      year: 'numeric',
+                      month: 'long',
+                      day: 'numeric',
+                    })}
+                  </p>
+                  <p className="text-gray-300">
+                    {blog.content.length > 200 ? `${blog.content.substring(0, 200)}...` : blog.content}
+                  </p>
                 </div>
               ))}
             </div>
+          </div>
           </div>
         </div>
       </main>
@@ -254,4 +418,4 @@ const ClubPage = () => {
   );
 };
 
-export default ClubPage;
+export default EditClubPage;

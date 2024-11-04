@@ -11,7 +11,7 @@ import { doc, collection, setDoc, getDocs, updateDoc, arrayUnion, arrayRemove, d
 import { ref, uploadBytes, getDownloadURL, deleteObject } from 'firebase/storage';
 import { onAuthStateChanged } from 'firebase/auth';
 import { User as FirebaseUser } from 'firebase/auth';
-import { v4 as uuidv4 } from 'uuid'; // Import UUID for generating unique IDs
+import { nanoid } from 'nanoid';
 
 type User = Pick<FirebaseUser, 'uid' | 'email' | 'displayName'>;
 
@@ -71,6 +71,27 @@ interface ClubInfo {
   recurringEvents: RecurringEvent[];
   oneOffEvents: OneOffEvent[];
   blogs: Blog[];
+}
+
+function getNextMeetingDate(event: RecurringEvent) {
+  const today = new Date();
+  const eventDay = event.dayOfWeek;
+  let nextMeeting = new Date(today);
+
+  // Calculate the next occurrence of the event's day of the week
+  while (nextMeeting.getDay() !== eventDay) {
+    nextMeeting.setDate(nextMeeting.getDate() + 1);
+  }
+
+  // Check if the next meeting is within the event's date range
+  const startDate = new Date(event.startDate);
+  const endDate = new Date(event.endDate);
+  
+  if (nextMeeting >= startDate && nextMeeting <= endDate) {
+    return nextMeeting;
+  } else {
+    return null; // No upcoming meeting within the range
+  }
 }
 
 const EditClubPage = () => {
@@ -475,7 +496,7 @@ const EditClubPage = () => {
 
             const clubDocRef = doc(db, 'clubs', clubInfo.id);
             const newBlog = {
-                id: uuidv4(), // Generate a unique ID for the blog
+                id: nanoid(6),
                 title: newBlogTitle,
                 content: newBlogContent,
                 date: new Date(),
@@ -499,14 +520,22 @@ const EditClubPage = () => {
 
 const handleDeleteBlog = async (blogId: string) => {
   try {
-      const clubDocRef = doc(db, 'clubs', clubInfo.id);
-      await updateDoc(clubDocRef, {
-          blogs: arrayRemove(clubInfo.blogs.find(blog => blog.id === blogId)), // Find and remove the specific blog by ID
-      });
-      console.log('Blog deleted successfully');
-      fetchClubInfo(); // Refresh the club info to update UI
+    const clubDocRef = doc(db, 'clubs', clubInfo.id);
+
+    // Filter out the blog with the matching ID
+    const updatedBlogs = clubInfo.blogs.filter(blog => blog.id !== blogId);
+
+    // Update the document with the new blogs array
+    await updateDoc(clubDocRef, {
+      blogs: updatedBlogs,
+    });
+
+    console.log('Blog deleted successfully');
+    
+    // Refresh the club info to update UI
+    fetchClubInfo(); 
   } catch (error) {
-      console.error('Error deleting blog:', error);
+    console.error('Error deleting blog:', error);
   }
 };
 
@@ -621,8 +650,9 @@ const openDeleteBlogModal = (blog: Blog) => {
           </div>
         </div>
 
-        <div className="flex flex-col md:flex-row gap-8">
-          <div className="md:w-2/3">
+        <div className="flex flex-col lg:flex-row gap-8">
+          <div className={`lg:${(clubInfo.blogs && clubInfo.blogs.length > 0) || (clubInfo.images && clubInfo.images.length > 0) ? 'w-6/12' : 'w-10/12'}`}>
+          <h2 className="text-2xl font-bold text-white mb-2">Description</h2>
             {isEditing ? (
               <textarea
                 value={clubInfo.description}
@@ -825,29 +855,19 @@ const openDeleteBlogModal = (blog: Blog) => {
             </div>
 
             <div className="mb-8">
-              <h2 className="text-2xl font-bold text-white mb-2">More Information</h2>
-              <p className="text-grey">
-                For more information, please{' '}
-                <Link href="/contact" className="text-azul hover:underline">
-                  contact Mr. Dobson
-                </Link>.
-              </p>
-            </div>
-
-            <div className="mb-8">
               <h2 className="text-2xl font-bold text-white mb-2">One-off Events</h2>
-              {clubInfo.oneOffEvents.map((event, index) => (
-                <div key={index} className="mb-2 flex items-center">
-                  <span className="text-white mr-2">
-                    {new Date(event.date).toLocaleDateString()} - {event.title}
-                  </span>
-                  {isEditing && (
-                    <button onClick={() => handleRemoveOneOffEvent(index)} className="text-red-500">
-                      <FaTrash />
-                    </button>
+              {clubInfo.oneOffEvents.length > 0 ? (
+                    clubInfo.oneOffEvents.map((event, index) => (
+                      <div key={index} className="mb-4 flex items-center bg-gray-800 p-4 rounded-lg shadow-md lg:w-2/3">
+                        <FaCalendarAlt className="text-blue-400 mr-4" />
+                        <span className="text-white">
+                          {new Date(event.date).toLocaleDateString()} - {event.title}
+                        </span>
+                      </div>
+                    ))
+                  ) : (
+                    <p className="text-gray-300">No one-off events are scheduled at this time.</p>
                   )}
-                </div>
-              ))}
               {isEditing && (
                 <div className="flex items-center mt-2">
                   <input
@@ -871,130 +891,285 @@ const openDeleteBlogModal = (blog: Blog) => {
             </div>
 
             <div className="mb-8">
-              <h2 className="text-2xl font-bold text-white mb-2">Recurring Events</h2>
-              {(clubInfo.recurringEvents || []).map((event, index) => (
-                <div key={index} className="mb-4 p-4 bg-gray-800 rounded xl:w-2/3 text-white">
-                  <input
-                    type="text"
-                    value={event.title || ''}
-                    onChange={(e) => handleRecurringEventChange(index, 'title', e.target.value)}
-                    placeholder="Event Title"
-                    className="bg-gray-700 text-white p-2 rounded mr-2"
-                  />
-                  <button
-                    onClick={() => handleRemoveRecurringEvent(index)}
-                    className="bg-red-500 text-white px-2 py-1 rounded"
-                  >
-                    <FaTrash />
-                  </button>
-                  <div className='flex flex-row mt-4'>
-                    <select
-                      value={event.frequency}
-                      onChange={(e) => handleRecurringEventChange(index, 'frequency', e.target.value)}
-                      className="bg-gray-700 p-2 rounded mr-2"
-                    >
-                      <option value="weekly">Weekly</option>
-                      <option value="biweekly">Bi-weekly</option>
-                      <option value="monthly">Monthly</option>
-                    </select>
-                    <p className='flex items-center ml-1 mr-2'>
-                      {event.frequency === 'biweekly' ? 'every other' : 'every'}
-                    </p>
-                    <select
-                      value={event.dayOfWeek}
-                      onChange={(e) => handleRecurringEventChange(index, 'dayOfWeek', parseInt(e.target.value))}
-                      className="bg-gray-700 p-2 rounded mr-2"
-                    >
-                      {['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'].map((day, i) => (
-                        <option key={i} value={i}>{day}</option>
-                      ))}
-                    </select>
-                  </div>
-                  <div className='my-2 flex flex-row'>
-                    <p className='flex items-center mx-2'>From</p>
-                    <input
-                      type="date"
-                      value={event.startDate}
-                      onChange={(e) => handleRecurringEventChange(index, 'startDate', e.target.value)}
-                      className="bg-gray-700 text-white p-2 rounded mr-2"
-                    />
-                    <p className='flex items-center mx-2'>To</p>
-                    <input
-                      type="date"
-                      value={event.endDate}
-                      onChange={(e) => handleRecurringEventChange(index, 'endDate', e.target.value)}
-                      className="bg-gray-700 text-white p-2 rounded mr-2"
-                    />
-                  </div>
-                  <div className="mt-2">
-                    <h3 className="text-xl font-bold text-white mb-2">Exceptions</h3>
-                    {event.exceptions.map((exception, exceptionIndex) => (
-                      <div key={exceptionIndex} className="flex items-center mb-2">
-                        <span className="text-white mr-2">{exception}</span>
+              {isEditing ? (
+                <>
+                  <h2 className="text-2xl font-bold text-white mb-2">Recurring Events</h2>
+                  {(clubInfo.recurringEvents || []).map((event, index) => (
+                    <div key={index} className="mb-4 p-4 bg-gray-800 rounded lg:w-2/3 text-white">
+                      {/* Event Title Input */}
+                      <input
+                        type="text"
+                        value={event.title || ''}
+                        onChange={(e) => handleRecurringEventChange(index, 'title', e.target.value)}
+                        placeholder="Event Title"
+                        className="bg-gray-700 text-white p-2 rounded mr-2"
+                        disabled={!isEditing}
+                      />
+                      
+                      {/* Remove Event Button */}
+                      {isEditing && (
                         <button
-                          onClick={() => handleRemoveException(index, exceptionIndex)}
-                          className="text-red-500"
+                          onClick={() => handleRemoveRecurringEvent(index)}
+                          className="bg-red-500 text-white px-2 py-1 rounded"
                         >
                           <FaTrash />
                         </button>
+                      )}
+
+                      {/* Frequency and Day of Week Selectors */}
+                      <div className='flex flex-row mt-4'>
+                        <select
+                          value={event.frequency}
+                          onChange={(e) => handleRecurringEventChange(index, 'frequency', e.target.value)}
+                          className="bg-gray-700 p-2 rounded mr-2"
+                          disabled={!isEditing}
+                        >
+                          <option value="weekly">Weekly</option>
+                          <option value="biweekly">Bi-weekly</option>
+                          <option value="monthly">Monthly</option>
+                        </select>
+                        
+                        <p className='flex items-center ml-1 mr-2'>
+                          {event.frequency === 'biweekly' ? 'every other' : 'every'}
+                        </p>
+                        
+                        <select
+                          value={event.dayOfWeek}
+                          onChange={(e) => handleRecurringEventChange(index, 'dayOfWeek', parseInt(e.target.value))}
+                          className="bg-gray-700 p-2 rounded mr-2"
+                          disabled={!isEditing}
+                        >
+                          {['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'].map((day, i) => (
+                            <option key={i} value={i}>{day}</option>
+                          ))}
+                        </select>
                       </div>
-                    ))}
-                    <input
-                      type="date"
-                      onChange={(e) => handleAddException(index, e.target.value)}
-                      className="bg-gray-700 text-white p-2 rounded"
-                    />
-                  </div>
+
+                      {/* Start Date and End Date Inputs */}
+                      <div className='my-2 flex flex-row'>
+                        <p className='flex items-center mx-2'>From</p>
+                        <input
+                          type="date"
+                          value={event.startDate}
+                          onChange={(e) => handleRecurringEventChange(index, 'startDate', e.target.value)}
+                          className="bg-gray-700 text-white p-2 rounded mr-2"
+                          disabled={!isEditing}
+                        />
+                        
+                        <p className='flex items-center mx-2'>To</p>
+                        <input
+                          type="date"
+                          value={event.endDate}
+                          onChange={(e) => handleRecurringEventChange(index, 'endDate', e.target.value)}
+                          className="bg-gray-700 text-white p-2 rounded mr-2"
+                          disabled={!isEditing}
+                        />
+                      </div>
+
+                      {/* Exceptions Section */}
+                      <div className="mt-2">
+                        <h3 className="text-xl font-bold text-white mb-2">Exceptions</h3>
+                        
+                        {event.exceptions.map((exception, exceptionIndex) => (
+                          <div key={exceptionIndex} className="flex items-center mb-2">
+                            <span className="text-white mr-2">{exception}</span>
+                            
+                            {isEditing && (
+                              <button
+                                onClick={() => handleRemoveException(index, exceptionIndex)}
+                                className="text-red-500"
+                              >
+                                <FaTrash />
+                              </button>
+                            )}
+                          </div>
+                        ))}
+                        
+                        {isEditing && (
+                          <input
+                            type="date"
+                            onChange={(e) => handleAddException(index, e.target.value)}
+                            className="bg-gray-700 text-white p-2 rounded"
+                          />
+                        )}
+                      </div>
+                    </div>
+                  ))}
+
+                  {/* Add Recurring Event Button - only show when editing */}
+                  {isEditing && (
+                    <button
+                      onClick={handleAddRecurringEvent}
+                      className="bg-green-500 text-white px-2 py-1 rounded flex flex-row items-center"
+                    >
+                      <FaPlus className="mr-2" /> Add Recurring Event
+                    </button>
+                  )}
+                </>
+              ) : (
+                <>
+                  <h3 className="text-xl font-semibold text-white mb-3">Recurring Events</h3>
+                  {(clubInfo.recurringEvents || []).length > 0 ? (
+                    clubInfo.recurringEvents.map((event, index) => {
+                      const nextMeeting = getNextMeetingDate(event);
+                      return (
+                        <div key={index} className="mb-6 p-6 bg-gray-800 rounded-lg shadow-md text-white">
+                          {/* Event Title */}
+                          <p className="font-semibold text-lg">Event: {event.title || 'Untitled Event'}</p>
+
+                          {/* Frequency and Day of Week */}
+                          <p className="mt-2">
+                            This event occurs{' '}
+                            {event.frequency === 'biweekly' ? 'every other' : 'every'}{' '}
+                            {
+                              ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'][
+                                event.dayOfWeek
+                              ]
+                            }.
+                          </p>
+
+                          {/* Start Date, End Date, and Next Meeting */}
+                          <p className="mt-2">
+                            It runs from {new Date(event.startDate).toLocaleDateString()} to{' '}
+                            {new Date(event.endDate).toLocaleDateString()}.
+                          </p>
+                          
+                          <p className="mt-2 font-semibold text-blue-400">
+                            Next meeting: {nextMeeting ? nextMeeting.toLocaleDateString() : 'No upcoming meeting'}
+                          </p>
+
+                          {/* Display Exceptions */}
+                          {event.exceptions.length > 0 && (
+                            <div className="mt-4">
+                              <h4 className="text-lg font-bold text-white mb-2">Exceptions:</h4>
+                              <ul className="list-disc pl-5 text-gray-300">
+                                {event.exceptions.map((exception, exceptionIndex) => (
+                                  <li key={exceptionIndex}>{new Date(exception).toLocaleDateString()}</li>
+                                ))}
+                              </ul>
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })
+                  ) : (
+                    <p className="text-gray-300">No recurring events are currently scheduled.</p>
+                  )}
+                </>
+              )}
+
+              <div className="mb-8">
+                <h2 className="text-2xl font-bold text-white mb-2">More Information</h2>
+                <p className="text-grey">
+                  For more information, please{' '}
+                  <Link href="mailto:clubconnect.xyz" className="text-azul hover:underline">
+                    contact ClubConnect.
+                  </Link>.
+                </p>
+              </div>
+            </div>
+
+          </div>
+
+          <div className="lg:w-6/12 space-y-10">
+            <>
+              {(clubInfo.images && clubInfo.images.length > 0 || isEditing) && (
+                <div className="mb-8">
+                  <h2 className="text-2xl font-bold text-white -mb-8">Images</h2>
                 </div>
-              ))}
-              <button
-                onClick={handleAddRecurringEvent}
-                className="bg-green-500 text-white px-2 py-1 rounded flex flex-row items-center"
-              >
-                <FaPlus className="mr-2" /> Add Recurring Event
+              )}
+                <div className="grid grid-cols-2 gap-4">
+                  {clubInfo.images?.map((src: string, index: number) => (
+                    <div key={index} className="relative h-64">
+                      <Image
+                        src={src}
+                        alt={`Club activity ${index + 1}`}
+                        layout="fill"
+                        objectFit="cover"
+                        className="rounded-lg"
+                      />
+                      {isEditing && ( // Only show the trash can when in edit mode
+                        <button
+                          onClick={() => handleImageDelete(src)}
+                          className="absolute top-2 right-2 bg-red-500 text-white p-1 rounded-full"
+                        >
+                          <FaTrash />
+                        </button>
+                      )}
+                    </div>
+                  ))}
+                  {isEditing && ( // Show upload area only in edit mode
+                    <div className="relative h-64 flex items-center justify-center border-2 border-dashed border-gray-400 rounded-lg">
+                      <input
+                        type="file"
+                        onChange={handleImageUpload}
+                        className="absolute inset-0 opacity-0 cursor-pointer"
+                      />
+                      <FaPlus className="text-gray-400" />
+                    </div>
+                  )}
+                </div>
+            </>
+          <div>
+            
+          {isEditing && (
+            <div className="mb-4">
+              <h2 className="text-2xl font-bold text-white mb-2">Add New Blog</h2>
+              <input
+                type="text"
+                value={newBlogTitle} // Controlled input
+                onChange={(e) => setNewBlogTitle(e.target.value)}
+                placeholder="Blog Title"
+                className="bg-gray-800 text-white p-2 rounded mb-2 w-full"
+              />
+              <textarea
+                value={newBlogContent} // Controlled input
+                onChange={(e) => setNewBlogContent(e.target.value)}
+                placeholder="Blog Content"
+                className="bg-gray-800 text-white p-2 rounded mb-2 w-full h-40"
+              />
+              <button onClick={handleAddBlog} className="bg-green-500 text-white px-4 py-2 rounded">
+                Add Blog
               </button>
             </div>
+          )}
 
-            {/* Blog Input Form */}
-            <div className="mb-4">
-                <h2 className="text-2xl font-bold text-white mb-2">Add New Blog</h2>
-                <input
-                    type="text"
-                    value={newBlogTitle} // Controlled input
-                    onChange={(e) => setNewBlogTitle(e.target.value)}
-                    placeholder="Blog Title"
-                    className="bg-gray-800 text-white p-2 rounded mb-2 w-full"
-                />
-                <textarea
-                    value={newBlogContent} // Controlled input
-                    onChange={(e) => setNewBlogContent(e.target.value)}
-                    placeholder="Blog Content"
-                    className="bg-gray-800 text-white p-2 rounded mb-2 w-full h-40"
-                />
-                <button onClick={handleAddBlog} className="bg-green-500 text-white px-4 py-2 rounded">
-                    Add Blog
-                </button>
-            </div>
-
-            <div className="flex flex-col md:flex-row gap-8">
+            {(clubInfo.blogs && clubInfo.blogs.length > 0 || isEditing) && (
+              <div className="mb-8">
+                <h2 className="text-2xl font-bold text-white mb-2">Blogs</h2>
+                {/* Rest of the blogs section code */}
+              </div>
+            )}
+            <div className="flex flex-col lg:flex-row gap-8">
               {clubInfo.blogs.map((blog) => (
-                  <div key={blog.id} className="rounded-lg p-9 transition-shadow duration-300 bg-[#2A2A2A] md:w-1/2">
-                      <Link href={`/blogs/${blog.id}`} className="block">
-                          <h3 className="text-xl text-white font-bold">{blog.title}</h3>
-                          <p className="text-sm text-gray-400 mt-1 mb-2">
-                              {blog.date.toLocaleDateString('en-US', {
-                                  year: 'numeric',
-                                  month: 'long',
-                                  day: 'numeric',
-                              })}
-                          </p>
-                          <p className="text-gray-300">
-                              {blog.content.length > 200 ? `${blog.content.substring(0, 200)}...` : blog.content}
-                          </p>
+                <div key={blog.id} className="rounded-lg p-9 transition-shadow duration-300 bg-[#2A2A2A] lg:w-1/2">
+                  <div className='flex flex-row justify-between'>
+                    <h3 className="text-xl text-white font-bold">{blog.title}</h3>
+                    {isEditing ? (
+                      // Show the trash can when isEditing is true
+                      <button onClick={() => handleDeleteBlog(blog.id)} className="text-red-500">
+                        <FaTrash />
+                      </button>
+                    ) : (
+                      // Show the link when isEditing is false
+                      <Link href={`/blogs/${blog.id}`} className="text-blue-500 hover:underline">
+                        View
                       </Link>
+                    )}
                   </div>
+                  <p className="text-sm text-gray-400 mt-1 mb-2">
+                    {blog.date.toLocaleDateString('en-US', {
+                      year: 'numeric',
+                      month: 'long',
+                      day: 'numeric',
+                    })}
+                  </p>
+                  <p className="text-gray-300">
+                    {blog.content.length > 200 ? `${blog.content.substring(0, 200)}...` : blog.content}
+                  </p>
+                </div>
               ))}
-          </div>
+            </div>
 
             {/* Delete Confirmation Modal */}
             {isDeleteModalOpen && blogToDelete && (
@@ -1017,39 +1192,6 @@ const openDeleteBlogModal = (blog: Blog) => {
                         </div>
                     </div>
                 </div>
-            )}
-          </div>
-
-          <div className="md:w-1/3">
-          <div className="grid grid-cols-2 gap-4">
-            {clubInfo.images?.map((src: string, index: number) => (
-              <div key={index} className="relative h-48">
-                <Image
-                  src={src}
-                  alt={`Club activity ${index + 1}`}
-                  layout="fill"
-                  objectFit="cover"
-                  className="rounded-lg"
-                />
-                {isEditing && ( // Only show the trash can when in edit mode
-                  <button
-                    onClick={() => handleImageDelete(src)}
-                    className="absolute top-2 right-2 bg-red-500 text-white p-1 rounded-full"
-                  >
-                    <FaTrash />
-                  </button>
-                )}
-              </div>
-            ))}
-            {isEditing && ( // Show upload area only in edit mode
-              <div className="relative h-48 flex items-center justify-center border-2 border-dashed border-gray-400 rounded-lg">
-                <input
-                  type="file"
-                  onChange={handleImageUpload}
-                  className="absolute inset-0 opacity-0 cursor-pointer"
-                />
-                <FaPlus className="text-gray-400" />
-              </div>
             )}
           </div>
           </div>
