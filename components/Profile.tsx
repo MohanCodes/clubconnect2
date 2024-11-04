@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { auth, db } from '@/firebase/firebase';
 import { doc, updateDoc, arrayRemove, increment, getDoc } from 'firebase/firestore';
@@ -10,6 +10,7 @@ import Tile from '@/components/Tile'; // Import Tile component
 interface User {
   uid: string;
   displayName: string | null;
+
 }interface Advisor {
   name: string;
   email: string;
@@ -38,13 +39,6 @@ interface RecurringEvent {
   startDate: string; // Format: 'YYYY-MM-DD'
   endDate: string; // Format: 'YYYY-MM-DD'
   exceptions: string[]; // Array of 'YYYY-MM-DD' strings
-}
-
-interface Blog {
-  id: string; // Add ID property
-  title: string;
-  content: string;
-  date: Date;
 }
 
 interface ClubInfo {
@@ -94,7 +88,7 @@ const Profile: React.FC = () => {
     return () => unsubscribe();
   }, [router]);
 
-  const fetchUserData = async (userId: string) => {
+  const fetchUserData = useCallback(async (userId: string) => {
     try {
       const userDoc = await getDoc(doc(db, 'users', userId));
       if (userDoc.exists()) {
@@ -106,7 +100,8 @@ const Profile: React.FC = () => {
     } catch (error) {
       console.error("Error fetching user data:", error);
     }
-  };
+  }, []);
+
 
   const fetchClubs = async (clubIds: string[]) => {
     try {
@@ -162,7 +157,7 @@ const Profile: React.FC = () => {
               links={club.links}
               upvoteCount={club.upvoteCount || 0}
               isUpvoted={upvotedClubs.includes(club.id)}
-              onUpvoteClick={(e) => handleRemoveUpvote(club.id)} // Handle remove upvote
+              onUpvoteClick={() => handleRemoveUpvote(club.id)} // Handle remove upvote
               isUpvoteLoading={false} // You can manage loading state if needed
               showVoteButton={true} // Always show vote button for upvoted clubs
             />

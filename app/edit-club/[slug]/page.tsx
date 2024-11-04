@@ -655,7 +655,7 @@ const EditClubPage = () => {
               <span key={index} className="inline-block bg-blue-100 text-azul text-sm font-medium px-3 py-1 rounded-full mr-2 mb-2">
                 {tag}
                 {isEditing && (
-                  <button onClick={() => handleRemoveTag(index)} className="ml-2 text-red-500">×</button>
+                  <button onClick={() => handleRemoveTag(index)} className="ml-2 text-red-500 text-xl">×</button>
                 )}
               </span>
             ))}
@@ -695,7 +695,7 @@ const EditClubPage = () => {
                     placeholder="Club Description"
                   />
                 ) : (
-                  <p className="text-grey mb-">{clubInfo.description}</p>
+                  <p className="text-grey break-words">{clubInfo.description}</p>
                 )}
             </div>
 
