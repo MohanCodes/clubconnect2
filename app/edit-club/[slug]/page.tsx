@@ -1233,7 +1233,7 @@ const EditClubPage = () => {
                                 <FaTimes size={24} />
                             </button>
                         </div>
-                        <p className="mb-4">Are you sure you want to delete the blog titled "{blogToDelete.title}"? This action cannot be undone.</p>
+                        <p className="mb-4">Are you sure you want to delete the blog titled &quot;{blogToDelete.title}&quot;? This action cannot be undone.</p>
                         <div className="flex justify-end space-x-4">
                             <button onClick={() => setIsDeleteModalOpen(false)} className="bg-gray-300 text-black px-4 py-2 rounded hover:bg-gray-400">
                                 Cancel

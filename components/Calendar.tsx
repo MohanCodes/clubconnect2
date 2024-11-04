@@ -1,7 +1,6 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
-import dynamic from 'next/dynamic';
 import CalendarProp from '@/components/CalendarProp';
 import { auth, db } from '@/firebase/firebase';
 import { doc, getDoc } from 'firebase/firestore';

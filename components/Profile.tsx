@@ -10,13 +10,70 @@ import Tile from '@/components/Tile'; // Import Tile component
 interface User {
   uid: string;
   displayName: string | null;
+}interface Advisor {
+  name: string;
+  email: string;
+}
+
+interface StudentLead {
+  name: string;
+  role: string;
+  email: string;
+}
+
+interface ClubLink {
+  url: string;
+  platform: string;
+}
+
+interface OneOffEvent {
+  date: string; // Store as 'YYYY-MM-DD' string
+  title: string;
+}
+
+interface RecurringEvent {
+  title: string;
+  frequency: 'weekly' | 'biweekly' | 'monthly';
+  dayOfWeek: number;
+  startDate: string; // Format: 'YYYY-MM-DD'
+  endDate: string; // Format: 'YYYY-MM-DD'
+  exceptions: string[]; // Array of 'YYYY-MM-DD' strings
+}
+
+interface Blog {
+  id: string; // Add ID property
+  title: string;
+  content: string;
+  date: Date;
+}
+
+interface ClubInfo {
+  id: string;
+  isComplete: boolean;
+  name: string;
+  school: string;
+  tags: string[];
+  description: string;
+  length: string;
+  meetingTimes: string;
+  meetingSite: string;
+  eligibility: string;
+  costs: string;
+  advisors: Advisor[];
+  studentLeads: StudentLead[];
+  links: ClubLink[];
+  images: string[];
+  recurringEvents: RecurringEvent[];
+  oneOffEvents: OneOffEvent[];
+  blogIds: string[];
+  icon?: string; // Add this line for optional icon property
+  upvoteCount: number;
 }
 
 const Profile: React.FC = () => {
   const [user, setUser] = useState<User | null>(null);
-  const [selectedSchool, setSelectedSchool] = useState('');
   const [upvotedClubs, setUpvotedClubs] = useState<string[]>([]);
-  const [clubs, setClubs] = useState<any[]>([]); // State to hold club data
+  const [clubs, setClubs] = useState<ClubInfo[]>([]); // State to hold club data
   const router = useRouter();
 
   useEffect(() => {
@@ -55,9 +112,9 @@ const Profile: React.FC = () => {
     try {
       const clubsData = await Promise.all(clubIds.map(async (clubId) => {
         const clubDoc = await getDoc(doc(db, 'clubs', clubId));
-        return clubDoc.exists() ? { id: clubId, ...clubDoc.data() } : null;
+        return clubDoc.exists() ? { id: clubId, ...clubDoc.data() } as ClubInfo : null; // Cast to ClubInfo
       }));
-      setClubs(clubsData.filter(Boolean)); // Filter out any null values
+      setClubs(clubsData.filter((club): club is ClubInfo => club !== null)); // Filter out null values and assert type
     } catch (error) {
       console.error("Error fetching clubs:", error);
     }
