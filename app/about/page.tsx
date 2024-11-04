@@ -21,7 +21,7 @@ export default function About() {
               <div>
                 <h2 className="text-2xl font-semibold text-azul mb-4">What We Offer</h2>
                 <ul className="list-disc list-inside text-grey">
-                  <li>Comprehensive club database</li>
+                  <li>Comprehensive club platform</li>
                   <li>Easy-to-use search functionality</li>
                   <li>Direct links to club social media and websites</li>
                 </ul>

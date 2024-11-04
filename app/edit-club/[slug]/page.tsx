@@ -7,10 +7,11 @@ import { useRouter, useParams } from 'next/navigation';
 import { FaEnvelope, FaTimes, FaCalendarAlt, FaClock, FaMapMarkerAlt, FaUserGraduate, FaDollarSign, FaPlus, FaTrash, FaTwitter, FaInstagram, FaFacebook, FaLinkedin, FaYoutube, FaDiscord, FaGithub, FaTiktok, FaGlobe, FaUser, FaLink, FaCircleNotch } from 'react-icons/fa';
 import Navbar from '@/components/Navbar';
 import { auth, db, storage } from '@/firebase/firebase';
-import { doc, collection, setDoc, getDocs, updateDoc, arrayUnion, arrayRemove, deleteDoc } from 'firebase/firestore';
+import { doc, setDoc, getDoc, updateDoc, arrayUnion, arrayRemove, deleteDoc } from 'firebase/firestore';
 import { ref, uploadBytes, getDownloadURL, deleteObject } from 'firebase/storage';
 import { onAuthStateChanged } from 'firebase/auth';
 import { User as FirebaseUser } from 'firebase/auth';
+import { nanoid } from 'nanoid';
 
 type User = Pick<FirebaseUser, 'uid' | 'email' | 'displayName'>;
 
@@ -30,11 +31,32 @@ interface ClubLink {
   platform: string;
 }
 
+interface OneOffEvent {
+  date: string; // Store as 'YYYY-MM-DD' string
+  title: string;
+}
+
+interface RecurringEvent {
+  title: string;
+  frequency: 'weekly' | 'biweekly' | 'monthly';
+  dayOfWeek: number;
+  startDate: string; // Format: 'YYYY-MM-DD'
+  endDate: string; // Format: 'YYYY-MM-DD'
+  exceptions: string[]; // Array of 'YYYY-MM-DD' strings
+}
+
+interface Blog {
+  id: string; // Add ID property
+  title: string;
+  content: string;
+  date: Date;
+}
+
 interface ClubInfo {
   id: string;
-  isComplete: boolean,
+  isComplete: boolean;
   name: string;
-  school: string,
+  school: string;
   tags: string[];
   description: string;
   length: string;
@@ -45,12 +67,34 @@ interface ClubInfo {
   advisors: Advisor[];
   studentLeads: StudentLead[];
   links: ClubLink[];
-  images: string[]; // Added images property
+  images: string[];
+  recurringEvents: RecurringEvent[];
+  oneOffEvents: OneOffEvent[];
+  blogIds: string[];
+}
+
+function getNextMeetingDate(event: RecurringEvent) {
+  const today = new Date();
+  const eventDay = event.dayOfWeek;
+  let nextMeeting = new Date(today);
+
+  // Calculate the next occurrence of the event's day of the week
+  while (nextMeeting.getDay() !== eventDay) {
+    nextMeeting.setDate(nextMeeting.getDate() + 1);
+  }
+
+  // Check if the next meeting is within the event's date range
+  const startDate = new Date(event.startDate);
+  const endDate = new Date(event.endDate);
+  
+  if (nextMeeting >= startDate && nextMeeting <= endDate) {
+    return nextMeeting;
+  } else {
+    return null; // No upcoming meeting within the range
+  }
 }
 
 const EditClubPage = () => {
-  const params = useParams();
-  const slug = params.slug;
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isEditing, setIsEditing] = useState(true);
@@ -58,7 +102,14 @@ const EditClubPage = () => {
   const [newLink, setNewLink] = useState({ url: '', platform: '' });
   const [isUploading, setIsUploading] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
-
+  const [newOneOffEvent, setNewOneOffEvent] = useState<OneOffEvent>({
+    date: new Date().toISOString().split('T')[0], // This will give you 'YYYY-MM-DD'
+    title: ''
+  });
+  const [newBlogTitle, setNewBlogTitle] = useState<string>('');
+  const [newBlogContent, setNewBlogContent] = useState<string>('');
+  const [blogToDelete, setBlogToDelete] = useState<Blog | null>(null);
+  const [blogs, setBlogs] = useState<Blog[]>([]);
   const [clubInfo, setClubInfo] = useState<ClubInfo>({
     id: "",
     isComplete: false,
@@ -75,31 +126,54 @@ const EditClubPage = () => {
     studentLeads: [],
     links: [],
     images: [],
-  });
-
+    recurringEvents: [],
+    oneOffEvents: [],
+    blogIds: [],
+});
   const [newTag, setNewTag] = useState("");
+
   const router = useRouter();
+  const params = useParams();
+  const slug = params.slug;
 
   const fetchClubInfo = useCallback(async () => {
     setIsLoading(true);
     try {
-      const clubsCollectionRef = collection(db, 'clubs');
-      const clubsSnapshot = await getDocs(clubsCollectionRef);
-      const clubsData = clubsSnapshot.docs.map(doc => {
-        const data = doc.data();
-        return {
-          id: doc.id,
-          ...data,
-          tags: data.tags || [],
-          advisors: data.advisors || [],
-          studentLeads: data.studentLeads || [],
-          links: data.links || [],
-          images: data.images || []
-        } as ClubInfo;
-      });
-      const matchingClub = clubsData.find(club => club.id === slug);
-      if (matchingClub) {
-        setClubInfo(matchingClub);
+      if (typeof slug !== 'string') {
+        console.error('Invalid slug');
+        return;
+      }
+      const clubDocRef = doc(db, 'clubs', slug);;
+      const clubSnapshot = await getDoc(clubDocRef);
+  
+      if (clubSnapshot.exists()) {
+        const clubData = clubSnapshot.data() as ClubInfo;
+        
+        // Fetch blog data separately
+        if (clubData.blogIds && clubData.blogIds.length > 0) {
+          const blogPromises = clubData.blogIds.map(async (blogId) => {
+            const blogDocRef = doc(db, 'blogs', blogId);
+            const blogSnapshot = await getDoc(blogDocRef);
+            if (blogSnapshot.exists()) {
+              const blogData = blogSnapshot.data();
+              return {
+                id: blogId,
+                title: blogData.title,
+                content: blogData.content,
+                date: blogData.date ? new Date(blogData.date.seconds * 1000) : new Date(),
+              } as Blog;
+            }
+            return null;
+          });
+          const blogs = (await Promise.all(blogPromises)).filter((blog): blog is Blog => blog !== null);
+          setBlogs(blogs);
+        }
+  
+        setClubInfo({
+            ...clubData,
+            links: clubData.links || [], // Default to empty array if undefined
+            oneOffEvents: clubData.oneOffEvents || [],
+        });
       } else {
         console.error('Club not found');
       }
@@ -109,7 +183,7 @@ const EditClubPage = () => {
       setIsLoading(false);
     }
   }, [slug]);
-  
+
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
       setUser(currentUser);
@@ -133,13 +207,13 @@ const EditClubPage = () => {
       info[field] !== undefined && info[field] !== ''
     );
     
-    const hasAdvisor = info.advisors.length > 0 && 
+    const hasAdvisor = info.advisors && info.advisors.length > 0 && 
       info.advisors.every(advisor => advisor.name !== '' && advisor.email !== '');
     
-    const hasStudentLead = info.studentLeads.length > 0 && 
+    const hasStudentLead = info.studentLeads && info.studentLeads.length > 0 && 
       info.studentLeads.every(lead => lead.name !== '' && lead.role !== '' && lead.email !== '');
     
-    const hasLink = info.links.length > 0;
+    const hasLink = info.links && info.links.length > 0;
     
     return isAllFieldsFilled && hasAdvisor && hasStudentLead && hasLink;
   };
@@ -242,10 +316,31 @@ const EditClubPage = () => {
     setIsUploading(true);
     try {
       const clubDocRef = doc(db, 'clubs', clubInfo.id);
-      const clubData = {
+  
+      // Create the club data object
+      const clubData: any = {
         ...clubInfo,
-        isComplete: checkCompletion(clubInfo)
+        isComplete: checkCompletion(clubInfo),
       };
+  
+      // Only include recurringEvents if they exist
+      if (clubInfo.recurringEvents && clubInfo.recurringEvents.length > 0) {
+        clubData.recurringEvents = clubInfo.recurringEvents.map(event => ({
+          ...event,
+          startDate: event.startDate, // Assuming these are already in the correct format
+          endDate: event.endDate,
+          exceptions: event.exceptions,
+        }));
+      }
+  
+      // Only include oneOffEvents if they exist
+      if (clubInfo.oneOffEvents && clubInfo.oneOffEvents.length > 0) {
+        clubData.oneOffEvents = clubInfo.oneOffEvents.map(event => ({
+          ...event,
+          date: event.date, // Assuming these are already in the correct format
+        }));
+      }
+  
       await setDoc(clubDocRef, clubData);
       console.log('Club data uploaded successfully');
     } catch (error) {
@@ -257,7 +352,8 @@ const EditClubPage = () => {
 
   const handleDeleteClub = async () => {
     try {
-      const clubDocRef = doc(db, 'clubs', `${clubInfo.name}-${clubInfo.school}`);
+      const docId = `${clubInfo.name.replace(/\s+/g, '-')}-${clubInfo.school.replace(/\s+/g, '-')}`.toLowerCase();
+      const clubDocRef = doc(db, 'clubs', docId);
       await deleteDoc(clubDocRef);
       console.log('Club deleted successfully');
       router.push('/dashboard'); // Redirect to the clubs list page
@@ -330,6 +426,142 @@ const EditClubPage = () => {
     }
   };
 
+  const handleOneOffEventChange = (field: 'date' | 'title', value: string) => {
+    setNewOneOffEvent(prev => ({ ...prev, [field]: value }));
+  };
+  
+  const handleAddOneOffEvent = () => {
+    if (newOneOffEvent.title && newOneOffEvent.date) {
+      setClubInfo(prevState => ({
+        ...prevState,
+        oneOffEvents: [...prevState.oneOffEvents, newOneOffEvent]
+      }));
+      setNewOneOffEvent({ date: new Date().toISOString().split('T')[0], title: '' });
+    }
+  };
+  
+  // Similarly for recurring events when adding or updating
+  
+  const handleRemoveOneOffEvent = (index: number) => {
+    setClubInfo(prevState => ({
+      ...prevState,
+      oneOffEvents: prevState.oneOffEvents.filter((_, i) => i !== index)
+    }));
+  };
+
+  const handleRecurringEventChange = (index: number, field: keyof RecurringEvent, value: any) => {
+    const updatedEvents = [...clubInfo.recurringEvents];
+    updatedEvents[index] = { ...updatedEvents[index], [field]: value };
+    setClubInfo(prevState => ({ ...prevState, recurringEvents: updatedEvents }));
+  };
+  
+  const handleAddRecurringEvent = () => {
+    const today = new Date().toISOString().split('T')[0];
+    const oneYearLater = new Date(new Date().setFullYear(new Date().getFullYear() + 1)).toISOString().split('T')[0];
+    
+    setClubInfo(prevState => ({
+        ...prevState,
+        recurringEvents: [
+            ...(prevState.recurringEvents || []), // Ensure this defaults to an empty array if undefined
+            {
+                title: '',
+                frequency: 'weekly',
+                dayOfWeek: 1,
+                startDate: today,
+                endDate: oneYearLater,
+                exceptions: []
+            }
+        ]
+    }));
+  };
+  
+  const handleRemoveRecurringEvent = (index: number) => {
+    setClubInfo(prevState => ({
+      ...prevState,
+      recurringEvents: prevState.recurringEvents.filter((_, i) => i !== index)
+    }));
+  };
+  
+  const handleAddException = (eventIndex: number, date: string) => {
+    setClubInfo(prevState => {
+      const updatedEvents = [...prevState.recurringEvents];
+      updatedEvents[eventIndex].exceptions.push(date);
+      return { ...prevState, recurringEvents: updatedEvents };
+    });
+  };
+  
+  const handleRemoveException = (eventIndex: number, exceptionIndex: number) => {
+    setClubInfo(prevState => {
+      const updatedEvents = [...prevState.recurringEvents];
+      updatedEvents[eventIndex].exceptions = updatedEvents[eventIndex].exceptions.filter((_, i) => i !== exceptionIndex);
+      return { ...prevState, recurringEvents: updatedEvents };
+    });
+  };
+
+  const handleAddBlog = async () => {
+    if (newBlogTitle.trim() && newBlogContent.trim()) {
+      try {
+        if (!clubInfo.id) {
+          console.error('Invalid club ID:', clubInfo.id);
+          return;
+        }
+  
+        const blogId = nanoid(6);
+        const newBlog = {
+          id: blogId,
+          title: newBlogTitle,
+          content: newBlogContent,
+          date: new Date(),
+          clubId: clubInfo.id,
+          clubName: clubInfo.name
+        };
+  
+        // Add the blog to the 'blogs' collection
+        const blogDocRef = doc(db, 'blogs', blogId);
+        await setDoc(blogDocRef, newBlog);
+  
+        // Update the club document with just the blog ID
+        const clubDocRef = doc(db, 'clubs', clubInfo.id);
+        await updateDoc(clubDocRef, {
+          blogIds: arrayUnion(blogId)
+        });
+  
+        setNewBlogTitle('');
+        setNewBlogContent('');
+        fetchClubInfo();
+      } catch (error) {
+        console.error('Error adding blog:', error);
+      }
+    } else {
+      console.error('Title and content cannot be empty');
+    }
+  };
+
+  const handleDeleteBlog = async (blogId: string) => {
+    try {
+      const clubDocRef = doc(db, 'clubs', clubInfo.id);
+      const blogDocRef = doc(db, 'blogs', blogId);
+  
+      // Remove the blog ID from the club document
+      await updateDoc(clubDocRef, {
+        blogIds: arrayRemove(blogId)
+      });
+  
+      // Delete the blog document from the 'blogs' collection
+      await deleteDoc(blogDocRef);
+
+      setClubInfo(prevState => ({
+      ...prevState,
+      blogIds: prevState.blogIds.filter(id => id !== blogId)
+    }));
+  
+      console.log('Blog deleted successfully');
+      fetchClubInfo();
+    } catch (error) {
+      console.error('Error deleting blog:', error);
+    }
+  };
+
   if (!user) {
     return null; // Prevent rendering if user is not authenticated
   }
@@ -347,7 +579,7 @@ const EditClubPage = () => {
         </div>
       )}
       {isDeleteModalOpen && (
-        <div className="fixed inset-0 bg-black backdrop-blur bg-opacity-50 flex items-center justify-center">
+        <div className="fixed inset-0 z-50 bg-black backdrop-blur bg-opacity-50 flex items-center justify-center">
           <div className="bg-white p-6 rounded-lg w-96">
             <div className="flex justify-between items-center mb-4">
               <h2 className="text-2xl font-bold">Delete Club</h2>
@@ -376,7 +608,7 @@ const EditClubPage = () => {
           </div>
         </div>
       )}
-        <div className="flex justify-between items-center mb-4">
+        <div className="flex justify-between items-center pb-8 pt-2 sticky top-20 z-40 bg-cblack">
           <h1 className="text-4xl font-bold text-white">{clubInfo.name == "" ? 'Enter Club Name Here' : clubInfo.name}</h1>
           <div className='space-x-4'>
             <button
@@ -390,7 +622,7 @@ const EditClubPage = () => {
               className="bg-azul text-white text-sm px-4 py-2 rounded-full"
               disabled={isUploading}
             >
-              {isUploading ? <p>Uploading...</p> : <p>Upload Page</p>}
+              {isUploading ? <p>Uploading...</p> : <p>Save Changes</p>}
             </button>
             <button
               onClick={() => setIsDeleteModalOpen(true)}
@@ -436,20 +668,23 @@ const EditClubPage = () => {
           </div>
         </div>
 
-        <div className="flex flex-col md:flex-row gap-8">
-          <div className="md:w-2/3">
-            {isEditing ? (
-              <textarea
-                value={clubInfo.description}
-                onChange={(e) => handleChange(e, 'description')}
-                className="w-full h-40 p-2 text-grey bg-gray-800 rounded mb-4"
-                placeholder="Club Description"
-              />
-            ) : (
-              <p className="text-grey mb-4">{clubInfo.description}</p>
-            )}
+        <div className="flex flex-col lg:flex-row gap-8 grid lg:grid-cols-2">
+          <div className="space-y-8">
+            <div>
+              <h2 className="text-2xl font-bold text-white mb-2">Description</h2>
+                {isEditing ? (
+                  <textarea
+                    value={clubInfo.description}
+                    onChange={(e) => handleChange(e, 'description')}
+                    className="w-full h-40 p-2 text-grey bg-gray-800 rounded mb-4"
+                    placeholder="Club Description"
+                  />
+                ) : (
+                  <p className="text-grey mb-">{clubInfo.description}</p>
+                )}
+            </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-grey mb-8">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-grey">
               <div className="flex items-center">
                 <FaCalendarAlt className="mr-2 text-azul" />
                 {isEditing ? (
@@ -522,7 +757,7 @@ const EditClubPage = () => {
               </div>
             </div>
 
-            <div className="mb-8">
+            <div>
               <h2 className="text-2xl font-bold text-white mb-2">Advisors</h2>
               {(clubInfo.advisors || []).map((advisor, index) => (
                 <div key={index} className="mb-2">
@@ -566,7 +801,7 @@ const EditClubPage = () => {
               )}
             </div>
 
-            <div className="mb-8">
+            <div>
               <h2 className="text-2xl font-bold text-white mb-2">Student Leads</h2>
               {(clubInfo.studentLeads || []).map((lead, index) => (
                 <div key={index} className="mb-2">
@@ -617,7 +852,7 @@ const EditClubPage = () => {
               )}
             </div>
 
-            <div className="mb-8">
+            <div>
               <h2 className="text-2xl font-bold text-white mb-2">Links</h2>
               {(clubInfo.links || []).map((link, index) => (
                 <div key={index} className="flex items-center mb-2">
@@ -639,47 +874,361 @@ const EditClubPage = () => {
               )}
             </div>
 
-            <div className="mt-8">
-              <h2 className="text-2xl font-bold text-white mb-2">More Information</h2>
-              <p className="text-grey">
-                For more information, please{' '}
-                <Link href="/contact" className="text-azul hover:underline">
-                  contact Mr. Dobson
-                </Link>.
-              </p>
+            <div>
+              <h2 className="text-2xl font-bold text-white mb-2">One-off Events</h2>
+              {isEditing && (
+                  <p className="grey">
+                    Leave blank if there are no events
+                  </p>
+              )}
+              {clubInfo.oneOffEvents && clubInfo.oneOffEvents.length > 0 ? (
+                clubInfo.oneOffEvents.map((event, index) => (
+                  <div key={index} className="mb-4 flex items-center justify-between bg-gray-800 p-4 rounded-lg shadow-md lg:w-2/3">
+                    <div className="flex items-center">
+                      <FaCalendarAlt className="text-blue-400 mr-4" />
+                      <span className="text-white">
+                        {new Date(event.date).toLocaleDateString()} - {event.title}
+                      </span>
+                    </div>
+                    {isEditing && (
+                      <button
+                        onClick={() => handleRemoveOneOffEvent(index)}
+                        className="bg-red-500 text-white px-2 py-1 rounded"
+                      >
+                        <FaTrash />
+                      </button>
+                      )}
+                  </div>
+                ))
+              ) : (
+                <p className="text-gray-300">No one-off events are scheduled at this time.</p>
+              )}
+              {isEditing && (
+                <div className="flex items-center mt-2">
+                  <input
+                    type="date"
+                    value={newOneOffEvent.date}
+                    onChange={(e) => handleOneOffEventChange('date', e.target.value)}
+                    className="bg-gray-800 text-white p-1 rounded mr-2"
+                  />
+                  <input
+                    type="text"
+                    value={newOneOffEvent.title}
+                    onChange={(e) => handleOneOffEventChange('title', e.target.value)}
+                    placeholder="Event Title"
+                    className="bg-gray-800 text-white p-1 rounded mr-2"
+                  />
+                  <button onClick={handleAddOneOffEvent} className="bg-green-500 text-white px-2 py-1 rounded">
+                    Add Event
+                  </button>
+                </div>
+              )}
             </div>
+
+            <div>
+              {isEditing ? (
+                <>
+                  <h2 className="text-2xl font-bold text-white mb-2">Recurring Events</h2>
+                  {(clubInfo.recurringEvents || []).map((event, index) => (
+                    <div key={index} className="mb-4 p-4 bg-gray-800 rounded lg:w-2/3 text-white">
+                      {/* Event Title Input */}
+                      <input
+                        type="text"
+                        value={event.title || ''}
+                        onChange={(e) => handleRecurringEventChange(index, 'title', e.target.value)}
+                        placeholder="Event Title"
+                        className="bg-gray-700 text-white p-2 rounded mr-2"
+                        disabled={!isEditing}
+                      />
+                      
+                      {/* Remove Event Button */}
+                      {isEditing && (
+                        <button
+                          onClick={() => handleRemoveRecurringEvent(index)}
+                          className="bg-red-500 text-white px-2 py-1 rounded"
+                        >
+                          <FaTrash />
+                        </button>
+                      )}
+
+                      {/* Frequency and Day of Week Selectors */}
+                      <div className='flex flex-row mt-4'>
+                        <select
+                          value={event.frequency}
+                          onChange={(e) => handleRecurringEventChange(index, 'frequency', e.target.value)}
+                          className="bg-gray-700 p-2 rounded mr-2"
+                          disabled={!isEditing}
+                        >
+                          <option value="weekly">Weekly</option>
+                          <option value="biweekly">Bi-weekly</option>
+                          <option value="monthly">Monthly</option>
+                        </select>
+                        
+                        <p className='flex items-center ml-1 mr-2'>
+                          {event.frequency === 'biweekly' ? 'every other' : 'every'}
+                        </p>
+                        
+                        <select
+                          value={event.dayOfWeek}
+                          onChange={(e) => handleRecurringEventChange(index, 'dayOfWeek', parseInt(e.target.value))}
+                          className="bg-gray-700 p-2 rounded mr-2"
+                          disabled={!isEditing}
+                        >
+                          {['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'].map((day, i) => (
+                            <option key={i} value={i}>{day}</option>
+                          ))}
+                        </select>
+                      </div>
+
+                      {/* Start Date and End Date Inputs */}
+                      <div className='my-2 flex flex-row'>
+                        <p className='flex items-center mx-2'>From</p>
+                        <input
+                          type="date"
+                          value={event.startDate}
+                          onChange={(e) => handleRecurringEventChange(index, 'startDate', e.target.value)}
+                          className="bg-gray-700 text-white p-2 rounded mr-2"
+                          disabled={!isEditing}
+                        />
+                        
+                        <p className='flex items-center mx-2'>To</p>
+                        <input
+                          type="date"
+                          value={event.endDate}
+                          onChange={(e) => handleRecurringEventChange(index, 'endDate', e.target.value)}
+                          className="bg-gray-700 text-white p-2 rounded mr-2"
+                          disabled={!isEditing}
+                        />
+                      </div>
+
+                      {/* Exceptions Section */}
+                      <div className="mt-2">
+                        <h3 className="text-xl font-bold text-white mb-2">Exceptions</h3>
+                        
+                        {event.exceptions.map((exception, exceptionIndex) => (
+                          <div key={exceptionIndex} className="flex items-center mb-2">
+                            <span className="text-white mr-2">{exception}</span>
+                            
+                            {isEditing && (
+                              <button
+                                onClick={() => handleRemoveException(index, exceptionIndex)}
+                                className="text-red-500"
+                              >
+                                <FaTrash />
+                              </button>
+                            )}
+                          </div>
+                        ))}
+                        
+                        {isEditing && (
+                          <input
+                            type="date"
+                            onChange={(e) => handleAddException(index, e.target.value)}
+                            className="bg-gray-700 text-white p-2 rounded"
+                          />
+                        )}
+                      </div>
+                    </div>
+                  ))}
+
+                  {/* Add Recurring Event Button - only show when editing */}
+                  {isEditing && (
+                    <button
+                      onClick={handleAddRecurringEvent}
+                      className="bg-green-500 text-white px-2 py-1 rounded flex flex-row items-center"
+                    >
+                      <FaPlus className="mr-2" /> Add Recurring Event
+                    </button>
+                  )}
+                </>
+              ) : (
+                <>
+                  <h3 className="text-xl font-semibold text-white mb-3">Recurring Events</h3>
+                  {(clubInfo.recurringEvents || []).length > 0 ? (
+                    clubInfo.recurringEvents.map((event, index) => {
+                      const nextMeeting = getNextMeetingDate(event);
+                      return (
+                        <div key={index} className="mb-6 p-6 bg-gray-800 rounded-lg shadow-md text-white">
+                          {/* Event Title */}
+                          <p className="font-semibold text-lg">Event: {event.title || 'Untitled Event'}</p>
+
+                          {/* Frequency and Day of Week */}
+                          <p className="mt-2">
+                            This event occurs{' '}
+                            {event.frequency === 'biweekly' ? 'every other' : 'every'}{' '}
+                            {
+                              ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'][
+                                event.dayOfWeek
+                              ]
+                            }.
+                          </p>
+
+                          {/* Start Date, End Date, and Next Meeting */}
+                          <p className="mt-2">
+                            It runs from {new Date(event.startDate).toLocaleDateString()} to{' '}
+                            {new Date(event.endDate).toLocaleDateString()}.
+                          </p>
+                          
+                          <p className="mt-2 font-semibold text-blue-400">
+                            Next meeting: {nextMeeting ? nextMeeting.toLocaleDateString() : 'No upcoming meeting'}
+                          </p>
+
+                          {/* Display Exceptions */}
+                          {event.exceptions.length > 0 && (
+                            <div className="mt-4">
+                              <h4 className="text-lg font-bold text-white mb-2">Exceptions:</h4>
+                              <ul className="list-disc pl-5 text-gray-300">
+                                {event.exceptions.map((exception, exceptionIndex) => (
+                                  <li key={exceptionIndex}>{new Date(exception).toLocaleDateString()}</li>
+                                ))}
+                              </ul>
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })
+                  ) : (
+                    <p className="text-gray-300">No recurring events are currently scheduled.</p>
+                  )}
+                </>
+              )}
+
+              <div className="mt-8">
+                <h2 className="text-2xl font-bold text-white mb-2">More Information</h2>
+                <p className="text-grey">
+                  For more information, please{' '}
+                  <Link href="mailto:clubconnect.xyz" className="text-azul hover:underline">
+                    contact ClubConnect.
+                  </Link>.
+                </p>
+              </div>
+            </div>
+
           </div>
 
-          <div className="md:w-1/3">
-          <div className="grid grid-cols-2 gap-4">
-            {clubInfo.images?.map((src: string, index: number) => (
-              <div key={index} className="relative h-48">
-                <Image
-                  src={src}
-                  alt={`Club activity ${index + 1}`}
-                  layout="fill"
-                  objectFit="cover"
-                  className="rounded-lg"
-                />
-                {isEditing && ( // Only show the trash can when in edit mode
-                  <button
-                    onClick={() => handleImageDelete(src)}
-                    className="absolute top-2 right-2 bg-red-500 text-white p-1 rounded-full"
-                  >
-                    <FaTrash />
-                  </button>
-                )}
+          <div className="space-y-10">
+            <>
+              {(clubInfo.images && clubInfo.images.length > 0 || isEditing) && (
+                <div className="mb-8">
+                  <h2 className="text-2xl font-bold text-white -mb-8">Images</h2>
+                </div>
+              )}
+                <div className="grid grid-cols-2 gap-4">
+                  {clubInfo.images?.map((src: string, index: number) => (
+                    <div key={index} className="relative h-64">
+                      <Image
+                        src={src}
+                        alt={`Club activity ${index + 1}`}
+                        layout="fill"
+                        objectFit="cover"
+                        className="rounded-lg"
+                      />
+                      {isEditing && ( // Only show the trash can when in edit mode
+                        <button
+                          onClick={() => handleImageDelete(src)}
+                          className="absolute top-2 right-2 bg-red-500 text-white p-1 rounded-full"
+                        >
+                          <FaTrash />
+                        </button>
+                      )}
+                    </div>
+                  ))}
+                  {isEditing && ( // Show upload area only in edit mode
+                    <div className="relative h-64 flex items-center justify-center border-2 border-dashed border-gray-400 rounded-lg">
+                      <input
+                        type="file"
+                        onChange={handleImageUpload}
+                        className="absolute inset-0 opacity-0 cursor-pointer"
+                      />
+                      <FaPlus className="text-gray-400" />
+                    </div>
+                  )}
+                </div>
+            </>
+          <div>
+            
+          {isEditing && (
+            <div className="mb-8">
+              <h2 className="text-2xl font-bold text-white mb-2">Add New Blog</h2>
+              <input
+                type="text"
+                value={newBlogTitle}
+                onChange={(e) => setNewBlogTitle(e.target.value)}
+                placeholder="Blog Title"
+                className="w-full p-2 mb-2 text-grey bg-gray-800 rounded"
+              />
+              <textarea
+                value={newBlogContent}
+                onChange={(e) => setNewBlogContent(e.target.value)}
+                placeholder="Blog Content (Markdown supported)"
+                className="w-full h-40 p-2 mb-2 text-grey bg-gray-800 rounded"
+              />
+              <button
+                onClick={handleAddBlog}
+                className="bg-green-500 text-white px-4 py-2 rounded"
+              >
+                Add Blog
+              </button>
+            </div>
+          )}
+
+            {(blogs && blogs.length > 0 || isEditing) && (
+              <div className="mb-8">
+                <h2 className="text-2xl font-bold text-white mb-2">Blogs</h2>
               </div>
-            ))}
-            {isEditing && ( // Show upload area only in edit mode
-              <div className="relative h-48 flex items-center justify-center border-2 border-dashed border-gray-400 rounded-lg">
-                <input
-                  type="file"
-                  onChange={handleImageUpload}
-                  className="absolute inset-0 opacity-0 cursor-pointer"
-                />
-                <FaPlus className="text-gray-400" />
-              </div>
+            )}
+            <div className="flex flex-col lg:flex-row gap-8">
+              {blogs.map((blog) => (
+                <div key={blog.id} className="rounded-lg p-9 transition-shadow duration-300 bg-[#2A2A2A] lg:w-1/2">
+                  <div className='flex flex-row justify-between'>
+                    <h3 className="text-xl text-white font-bold">{blog.title}</h3>
+                    {isEditing ? (
+                      // Show the trash can when isEditing is true
+                      <button onClick={() => handleDeleteBlog(blog.id)} className="text-red-500">
+                        <FaTrash />
+                      </button>
+                    ) : (
+                      // Show the link when isEditing is false
+                      <Link href={`/blog/${blog.id}`} className="text-blue-500 hover:underline">
+                        View
+                      </Link>
+                    )}
+                  </div>
+                  <p className="text-sm text-gray-400 mt-1 mb-2">
+                    {blog.date.toLocaleDateString('en-US', {
+                      year: 'numeric',
+                      month: 'long',
+                      day: 'numeric',
+                    })}
+                  </p>
+                  <p className="text-gray-300">
+                    {blog.content.length > 200 ? `${blog.content.substring(0, 200)}...` : blog.content}
+                  </p>
+                </div>
+              ))}
+            </div>
+
+            {/* Delete Confirmation Modal */}
+            {isDeleteModalOpen && blogToDelete && (
+                <div className="fixed inset-0 bg-black backdrop-blur bg-opacity-50 flex items-center justify-center">
+                    <div className="bg-white p-6 rounded-lg w-96">
+                        <div className="flex justify-between items-center mb-4">
+                            <h2 className="text-2xl font-bold">Delete Blog</h2>
+                            <button onClick={() => setIsDeleteModalOpen(false)} className="text-gray-500 hover:text-gray-700">
+                                <FaTimes size={24} />
+                            </button>
+                        </div>
+                        <p className="mb-4">Are you sure you want to delete the blog titled "{blogToDelete.title}"? This action cannot be undone.</p>
+                        <div className="flex justify-end space-x-4">
+                            <button onClick={() => setIsDeleteModalOpen(false)} className="bg-gray-300 text-black px-4 py-2 rounded hover:bg-gray-400">
+                                Cancel
+                            </button>
+                            <button onClick={() => handleDeleteBlog(blogToDelete.id)} className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600">
+                                Delete
+                            </button>
+                        </div>
+                    </div>
+                </div>
             )}
           </div>
           </div>

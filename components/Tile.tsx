@@ -10,7 +10,9 @@ import {
   FaGithub,
   FaDiscord,
   FaTiktok,
-  FaLink
+  FaLink,
+  FaStar,
+  FaRegStar
 } from 'react-icons/fa';
 
 interface TileProps {
@@ -18,45 +20,61 @@ interface TileProps {
   clubName: string;
   description: string;
   tags: string[];
-  links: { platform: string; url: string; }[];
+  links: { platform: string; url: string }[];
+  upvoteCount: number;
+  isUpvoted: boolean;
+  onUpvoteClick: (e: React.MouseEvent<HTMLButtonElement>) => void;
+  isUpvoteLoading: boolean;
+  showVoteButton: boolean; // New prop added here
 }
 
 const schoolColors: { [key: string]: { bg: string; text: string } } = {
-  'wayzata': { bg: 'bg-blue-500', text: 'text-yellow-400' },
-  'minnetonka': { bg: 'bg-blue-600', text: 'text-white' },
-  'edina': { bg: 'bg-maroon-600', text: 'text-yellow-400' },
-  'hopkins': { bg: 'bg-green-600', text: 'text-yellow-400' },
-  'st-louis park': { bg: 'bg-blue-500', text: 'text-yellow-300' },
-  'osseo': { bg: 'bg-blue-600', text: 'text-white' },
-  'robbinsdale': { bg: 'bg-red-600', text: 'text-white' },
-  'anoka-hennepin': { bg: 'bg-blue-500', text: 'text-yellow-400' },
-};
+    'wayzata': { bg: 'bg-yellow-400', text: 'text-blue-500' },
+    'minnetonka': { bg: 'bg-blue-600', text: 'text-white' },
+    'edina': { bg: 'bg-green-700', text: 'text-white' },
+    'hopkins': { bg: 'bg-gray-200', text: 'text-blue-500' },
+    'st-louis-park': { bg: 'bg-orange-500', text: 'text-black' },
+    'osseo': { bg: 'bg-orange-600', text: 'text-white' },
+    'robbinsdale': { bg: 'bg-cyan-600', text: 'text-white' },
+    'anoka-hennepin': { bg: 'bg-blue-900', text: 'text-white' },
+  };
 
-const Tile: React.FC<TileProps> = ({ icon, clubName, description, tags, links }) => {
+const Tile: React.FC<TileProps> = ({ 
+  icon, 
+  clubName, 
+  description, 
+  tags, 
+  links, 
+  upvoteCount, 
+  isUpvoted,
+  onUpvoteClick,
+  isUpvoteLoading,
+  showVoteButton,
+}) => {
   const renderIcon = (platform: string) => {
     switch (platform.toLowerCase()) {
       case 'twitter':
-        return <FaTwitter className="text-azul w-5 h-5" />;
+        return <FaTwitter className="text-azul w-6 h-6" />;
       case 'instagram':
-        return <FaInstagram className="text-azul w-5 h-5" />;
+        return <FaInstagram className="text-azul w-6 h-6" />;
       case 'facebook':
-        return <FaFacebook className="text-azul w-5 h-5" />;
+        return <FaFacebook className="text-azul w-6 h-6" />;
       case 'linkedin':
-        return <FaLinkedin className="text-azul w-5 h-5" />;
+        return <FaLinkedin className="text-azul w-6 h-6" />;
       case 'youtube':
-        return <FaYoutube className="text-azul w-5 h-5" />;
+        return <FaYoutube className="text-azul w-6 h-6" />;
       case 'github':
-        return <FaGithub className="text-azul w-5 h-5" />;
+        return <FaGithub className="text-azul w-6 h-6" />;
       case 'discord':
-        return <FaDiscord className="text-azul w-5 h-5" />;
+        return <FaDiscord className="text-azul w-6 h-6" />;
       case 'tiktok':
-        return <FaTiktok className="text-azul w-5 h-5" />;
+        return <FaTiktok className="text-azul w-6 h-6" />;
       case 'website':
       case 'personal':
       case 'link':
-        return <FaLink className="text-azul w-5 h-5" />;
+        return <FaLink className="text-azul w-6 h-6" />;
       default:
-        return <FaLink className="text-azul w-5 h-5" />; // Use a default icon instead of null
+        return <FaLink className="text-azul w-6 h-6" />;
     }
   };
 
@@ -74,7 +92,29 @@ const Tile: React.FC<TileProps> = ({ icon, clubName, description, tags, links })
   });
 
   return (
-    <div className="rounded-lg p-9 transition-shadow duration-300 bg-[#2A2A2A]">
+    <div className="rounded-lg p-9 transition-shadow duration-300 bg-[#2A2A2A] relative">
+        <div className="absolute top-10 right-0 flex items-center">
+          <div className="flex items-center">
+            {showVoteButton && ( // Check if showVoteButton is true
+              <button
+                onClick={onUpvoteClick}
+                className={`flex items-center ${isUpvoted ? 'text-azul' : 'text-gray-500'} hover:text-blue-500 transition-colors duration-300`}
+                disabled={isUpvoteLoading}
+              >
+                {isUpvoteLoading ? (
+                  <FaStar className="animate-spin w-6 h-6" />
+                ) : isUpvoted ? (
+                  <FaStar className="w-6 h-6" />     
+                ) : (
+                  <FaRegStar className="w-6 h-6" />
+                )}
+              </button>
+            )}
+          </div>
+          <div className="w-10 text-right">
+            <span className="text-white hidden">{upvoteCount > 0 ? upvoteCount : ''}</span>
+          </div>
+        </div>
       {/* Icon and Club Name */}
       <div className="flex items-center mb-4">
         <Image src={icon} alt="Club Icon" width={40} height={40} className="mr-4" />
@@ -121,7 +161,7 @@ const Tile: React.FC<TileProps> = ({ icon, clubName, description, tags, links })
             </Link>
           ))}
         </div>
-      </div>
+      </div>      
     </div>
   );
 };
