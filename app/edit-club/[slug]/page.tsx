@@ -7,7 +7,7 @@ import { useRouter, useParams } from 'next/navigation';
 import { FaEnvelope, FaTimes, FaCalendarAlt, FaClock, FaMapMarkerAlt, FaUserGraduate, FaDollarSign, FaPlus, FaTrash, FaTwitter, FaInstagram, FaFacebook, FaLinkedin, FaYoutube, FaDiscord, FaGithub, FaTiktok, FaGlobe, FaUser, FaLink, FaCircleNotch } from 'react-icons/fa';
 import Navbar from '@/components/Navbar';
 import { auth, db, storage } from '@/firebase/firebase';
-import { doc, collection, setDoc, getDocs, updateDoc, arrayUnion, arrayRemove, deleteDoc } from 'firebase/firestore';
+import { doc, setDoc, getDoc, updateDoc, arrayUnion, arrayRemove, deleteDoc } from 'firebase/firestore';
 import { ref, uploadBytes, getDownloadURL, deleteObject } from 'firebase/storage';
 import { onAuthStateChanged } from 'firebase/auth';
 import { User as FirebaseUser } from 'firebase/auth';
@@ -70,7 +70,7 @@ interface ClubInfo {
   images: string[];
   recurringEvents: RecurringEvent[];
   oneOffEvents: OneOffEvent[];
-  blogs: Blog[];
+  blogIds: string[];
 }
 
 function getNextMeetingDate(event: RecurringEvent) {
@@ -108,8 +108,8 @@ const EditClubPage = () => {
   });
   const [newBlogTitle, setNewBlogTitle] = useState<string>('');
   const [newBlogContent, setNewBlogContent] = useState<string>('');
-  const [isBlogDeleteModalOpen, setIsBlogDeleteModalOpen] = useState(false);
   const [blogToDelete, setBlogToDelete] = useState<Blog | null>(null);
+  const [blogs, setBlogs] = useState<Blog[]>([]);
   const [clubInfo, setClubInfo] = useState<ClubInfo>({
     id: "",
     isComplete: false,
@@ -128,7 +128,7 @@ const EditClubPage = () => {
     images: [],
     recurringEvents: [],
     oneOffEvents: [],
-    blogs: [],
+    blogIds: [],
 });
   const [newTag, setNewTag] = useState("");
 
@@ -139,35 +139,44 @@ const EditClubPage = () => {
   const fetchClubInfo = useCallback(async () => {
     setIsLoading(true);
     try {
-        const clubsCollectionRef = collection(db, 'clubs');
-        const clubsSnapshot = await getDocs(clubsCollectionRef);
-        const clubsData = clubsSnapshot.docs.map(doc => {
-            const data = doc.data();
-            return {
-                id: doc.id,
-                ...data,
-                tags: data.tags || [],
-                advisors: data.advisors || [],
-                studentLeads: data.studentLeads || [],
-                links: data.links || [],
-                images: data.images || [],
-                oneOffEvents: data.oneOffEvents || [],
-                blogs: (data.blogs || []).map((blog: any) => ({
-                    ...blog,
-                    date: blog.date ? new Date(blog.date.seconds * 1000) : new Date(), // Convert Firestore timestamp to Date
-                })) || []
-            } as ClubInfo;
-        });
-        const matchingClub = clubsData.find(club => club.id === slug);
-        if (matchingClub) {
-            setClubInfo(matchingClub);
-        } else {
-            console.error('Club not found');
+      if (typeof slug !== 'string') {
+        console.error('Invalid slug');
+        return;
+      }
+      const clubDocRef = doc(db, 'clubs', slug);;
+      const clubSnapshot = await getDoc(clubDocRef);
+  
+      if (clubSnapshot.exists()) {
+        const clubData = clubSnapshot.data() as ClubInfo;
+        
+        // Fetch blog data separately
+        if (clubData.blogIds && clubData.blogIds.length > 0) {
+          const blogPromises = clubData.blogIds.map(async (blogId) => {
+            const blogDocRef = doc(db, 'blogs', blogId);
+            const blogSnapshot = await getDoc(blogDocRef);
+            if (blogSnapshot.exists()) {
+              const blogData = blogSnapshot.data();
+              return {
+                id: blogId,
+                title: blogData.title,
+                content: blogData.content,
+                date: blogData.date ? new Date(blogData.date.seconds * 1000) : new Date(),
+              } as Blog;
+            }
+            return null;
+          });
+          const blogs = (await Promise.all(blogPromises)).filter((blog): blog is Blog => blog !== null);
+          setBlogs(blogs);
         }
+  
+        setClubInfo(clubData);
+      } else {
+        console.error('Club not found');
+      }
     } catch (error) {
-        console.error('Error fetching club data:', error);
+      console.error('Error fetching club data:', error);
     } finally {
-        setIsLoading(false);
+      setIsLoading(false);
     }
   }, [slug]);
 
@@ -487,62 +496,67 @@ const EditClubPage = () => {
 
   const handleAddBlog = async () => {
     if (newBlogTitle.trim() && newBlogContent.trim()) {
-        try {
-            // Check if clubInfo.id is valid
-            if (!clubInfo.id) {
-                console.error('Invalid club ID:', clubInfo.id);
-                return; // Exit if the ID is not valid
-            }
-
-            const clubDocRef = doc(db, 'clubs', clubInfo.id);
-            const newBlog = {
-                id: nanoid(6),
-                title: newBlogTitle,
-                content: newBlogContent,
-                date: new Date(),
-            };
-
-            await updateDoc(clubDocRef, {
-                blogs: arrayUnion(newBlog),
-            });
-
-            // Reset blog inputs
-            setNewBlogTitle(''); // Reset title
-            setNewBlogContent(''); // Reset content
-            fetchClubInfo(); // Refresh the club info to update blogs
-        } catch (error) {
-            console.error('Error adding blog:', error);
+      try {
+        if (!clubInfo.id) {
+          console.error('Invalid club ID:', clubInfo.id);
+          return;
         }
+  
+        const blogId = nanoid(6);
+        const newBlog = {
+          id: blogId,
+          title: newBlogTitle,
+          content: newBlogContent,
+          date: new Date(),
+          clubId: clubInfo.id,
+          clubName: clubInfo.name
+        };
+  
+        // Add the blog to the 'blogs' collection
+        const blogDocRef = doc(db, 'blogs', blogId);
+        await setDoc(blogDocRef, newBlog);
+  
+        // Update the club document with just the blog ID
+        const clubDocRef = doc(db, 'clubs', clubInfo.id);
+        await updateDoc(clubDocRef, {
+          blogIds: arrayUnion(blogId)
+        });
+  
+        setNewBlogTitle('');
+        setNewBlogContent('');
+        fetchClubInfo();
+      } catch (error) {
+        console.error('Error adding blog:', error);
+      }
     } else {
-        console.error('Title and content cannot be empty');
+      console.error('Title and content cannot be empty');
     }
-};
+  };
 
-const handleDeleteBlog = async (blogId: string) => {
-  try {
-    const clubDocRef = doc(db, 'clubs', clubInfo.id);
+  const handleDeleteBlog = async (blogId: string) => {
+    try {
+      const clubDocRef = doc(db, 'clubs', clubInfo.id);
+      const blogDocRef = doc(db, 'blogs', blogId);
+  
+      // Remove the blog ID from the club document
+      await updateDoc(clubDocRef, {
+        blogIds: arrayRemove(blogId)
+      });
+  
+      // Delete the blog document from the 'blogs' collection
+      await deleteDoc(blogDocRef);
 
-    // Filter out the blog with the matching ID
-    const updatedBlogs = clubInfo.blogs.filter(blog => blog.id !== blogId);
-
-    // Update the document with the new blogs array
-    await updateDoc(clubDocRef, {
-      blogs: updatedBlogs,
-    });
-
-    console.log('Blog deleted successfully');
-    
-    // Refresh the club info to update UI
-    fetchClubInfo(); 
-  } catch (error) {
-    console.error('Error deleting blog:', error);
-  }
-};
-
-const openDeleteBlogModal = (blog: Blog) => {
-    setBlogToDelete(blog);
-    setIsBlogDeleteModalOpen(true);
-};
+      setClubInfo(prevState => ({
+      ...prevState,
+      blogIds: prevState.blogIds.filter(id => id !== blogId)
+    }));
+  
+      console.log('Blog deleted successfully');
+      fetchClubInfo();
+    } catch (error) {
+      console.error('Error deleting blog:', error);
+    }
+  };
 
   if (!user) {
     return null; // Prevent rendering if user is not authenticated
@@ -561,7 +575,7 @@ const openDeleteBlogModal = (blog: Blog) => {
         </div>
       )}
       {isDeleteModalOpen && (
-        <div className="fixed inset-0 bg-black backdrop-blur bg-opacity-50 flex items-center justify-center">
+        <div className="fixed inset-0 z-50 bg-black backdrop-blur bg-opacity-50 flex items-center justify-center">
           <div className="bg-white p-6 rounded-lg w-96">
             <div className="flex justify-between items-center mb-4">
               <h2 className="text-2xl font-bold">Delete Club</h2>
@@ -590,7 +604,7 @@ const openDeleteBlogModal = (blog: Blog) => {
           </div>
         </div>
       )}
-        <div className="flex justify-between items-center mb-4">
+        <div className="flex justify-between items-center pb-8 pt-2 sticky top-20 z-40 bg-cblack">
           <h1 className="text-4xl font-bold text-white">{clubInfo.name == "" ? 'Enter Club Name Here' : clubInfo.name}</h1>
           <div className='space-x-4'>
             <button
@@ -604,7 +618,7 @@ const openDeleteBlogModal = (blog: Blog) => {
               className="bg-azul text-white text-sm px-4 py-2 rounded-full"
               disabled={isUploading}
             >
-              {isUploading ? <p>Uploading...</p> : <p>Upload Page</p>}
+              {isUploading ? <p>Uploading...</p> : <p>Save Changes</p>}
             </button>
             <button
               onClick={() => setIsDeleteModalOpen(true)}
@@ -651,7 +665,7 @@ const openDeleteBlogModal = (blog: Blog) => {
         </div>
 
         <div className="flex flex-col lg:flex-row gap-8">
-          <div className={`lg:${(clubInfo.blogs && clubInfo.blogs.length > 0) || (clubInfo.images && clubInfo.images.length > 0) ? 'w-6/12' : 'w-10/12'}`}>
+          <div className={`lg:${(blogs && blogs.length > 0) || (clubInfo.images && clubInfo.images.length > 0) ? 'w-6/12' : 'w-10/12'}`}>
           <h2 className="text-2xl font-bold text-white mb-2">Description</h2>
             {isEditing ? (
               <textarea
@@ -856,18 +870,28 @@ const openDeleteBlogModal = (blog: Blog) => {
 
             <div className="mb-8">
               <h2 className="text-2xl font-bold text-white mb-2">One-off Events</h2>
-              {clubInfo.oneOffEvents.length > 0 ? (
-                    clubInfo.oneOffEvents.map((event, index) => (
-                      <div key={index} className="mb-4 flex items-center bg-gray-800 p-4 rounded-lg shadow-md lg:w-2/3">
-                        <FaCalendarAlt className="text-blue-400 mr-4" />
-                        <span className="text-white">
-                          {new Date(event.date).toLocaleDateString()} - {event.title}
-                        </span>
-                      </div>
-                    ))
-                  ) : (
-                    <p className="text-gray-300">No one-off events are scheduled at this time.</p>
-                  )}
+              {clubInfo.oneOffEvents && clubInfo.oneOffEvents.length > 0 ? (
+                clubInfo.oneOffEvents.map((event, index) => (
+                  <div key={index} className="mb-4 flex items-center justify-between bg-gray-800 p-4 rounded-lg shadow-md lg:w-2/3">
+                    <div className="flex items-center">
+                      <FaCalendarAlt className="text-blue-400 mr-4" />
+                      <span className="text-white">
+                        {new Date(event.date).toLocaleDateString()} - {event.title}
+                      </span>
+                    </div>
+                    {isEditing && (
+                      <button
+                        onClick={() => handleRemoveOneOffEvent(index)}
+                        className="bg-red-500 text-white px-2 py-1 rounded"
+                      >
+                        <FaTrash />
+                      </button>
+                      )}
+                  </div>
+                ))
+              ) : (
+                <p className="text-gray-300">No one-off events are scheduled at this time.</p>
+              )}
               {isEditing && (
                 <div className="flex items-center mt-2">
                   <input
@@ -1058,7 +1082,7 @@ const openDeleteBlogModal = (blog: Blog) => {
                 </>
               )}
 
-              <div className="mb-8">
+              <div className="mt-8">
                 <h2 className="text-2xl font-bold text-white mb-2">More Information</h2>
                 <p className="text-grey">
                   For more information, please{' '}
@@ -1113,35 +1137,37 @@ const openDeleteBlogModal = (blog: Blog) => {
           <div>
             
           {isEditing && (
-            <div className="mb-4">
+            <div className="mb-8">
               <h2 className="text-2xl font-bold text-white mb-2">Add New Blog</h2>
               <input
                 type="text"
-                value={newBlogTitle} // Controlled input
+                value={newBlogTitle}
                 onChange={(e) => setNewBlogTitle(e.target.value)}
                 placeholder="Blog Title"
-                className="bg-gray-800 text-white p-2 rounded mb-2 w-full"
+                className="w-full p-2 mb-2 text-grey bg-gray-800 rounded"
               />
               <textarea
-                value={newBlogContent} // Controlled input
+                value={newBlogContent}
                 onChange={(e) => setNewBlogContent(e.target.value)}
-                placeholder="Blog Content"
-                className="bg-gray-800 text-white p-2 rounded mb-2 w-full h-40"
+                placeholder="Blog Content (Markdown supported)"
+                className="w-full h-40 p-2 mb-2 text-grey bg-gray-800 rounded"
               />
-              <button onClick={handleAddBlog} className="bg-green-500 text-white px-4 py-2 rounded">
+              <button
+                onClick={handleAddBlog}
+                className="bg-green-500 text-white px-4 py-2 rounded"
+              >
                 Add Blog
               </button>
             </div>
           )}
 
-            {(clubInfo.blogs && clubInfo.blogs.length > 0 || isEditing) && (
+            {(blogs && blogs.length > 0 || isEditing) && (
               <div className="mb-8">
                 <h2 className="text-2xl font-bold text-white mb-2">Blogs</h2>
-                {/* Rest of the blogs section code */}
               </div>
             )}
             <div className="flex flex-col lg:flex-row gap-8">
-              {clubInfo.blogs.map((blog) => (
+              {blogs.map((blog) => (
                 <div key={blog.id} className="rounded-lg p-9 transition-shadow duration-300 bg-[#2A2A2A] lg:w-1/2">
                   <div className='flex flex-row justify-between'>
                     <h3 className="text-xl text-white font-bold">{blog.title}</h3>
@@ -1152,7 +1178,7 @@ const openDeleteBlogModal = (blog: Blog) => {
                       </button>
                     ) : (
                       // Show the link when isEditing is false
-                      <Link href={`/blogs/${blog.id}`} className="text-blue-500 hover:underline">
+                      <Link href={`/blog/${blog.id}`} className="text-blue-500 hover:underline">
                         View
                       </Link>
                     )}

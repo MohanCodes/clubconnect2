@@ -103,6 +103,7 @@ const YourClubs: React.FC = () => {
                 const newClubRef = collection(db, 'clubs');
                 const docId = `${newClubName.replace(/\s+/g, '-')}-${newClubSchool.replace(/\s+/g, '-')}`.toLowerCase();
                 await setDoc(doc(newClubRef, docId), {
+                    id: docId,
                     name: newClubName,
                     school: newClubSchool,
                     creatorId: user.uid,

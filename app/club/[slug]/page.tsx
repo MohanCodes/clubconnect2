@@ -4,14 +4,14 @@ import React, { useState, useEffect, useCallback } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter, useParams } from 'next/navigation';
-import { FaEnvelope, FaTimes, FaCalendarAlt, FaClock, FaMapMarkerAlt, FaUserGraduate, FaDollarSign, FaPlus, FaTrash, FaTwitter, FaInstagram, FaFacebook, FaLinkedin, FaYoutube, FaDiscord, FaGithub, FaTiktok, FaGlobe, FaUser, FaLink, FaCircleNotch } from 'react-icons/fa';
+import { FaEnvelope, FaCalendarAlt, FaClock, FaMapMarkerAlt, FaUserGraduate, FaDollarSign, FaTwitter, FaInstagram, FaFacebook, FaLinkedin, FaYoutube, FaDiscord, FaGithub, FaTiktok, FaGlobe, FaUser, FaLink, FaCircleNotch } from 'react-icons/fa';
 import Navbar from '@/components/Navbar';
 import { auth, db, storage } from '@/firebase/firebase';
-import { doc, collection, setDoc, getDocs, updateDoc, arrayUnion, arrayRemove, deleteDoc } from 'firebase/firestore';
-import { ref, uploadBytes, getDownloadURL, deleteObject } from 'firebase/storage';
+import { doc, getDoc } from 'firebase/firestore';
 import { onAuthStateChanged } from 'firebase/auth';
 import { User as FirebaseUser } from 'firebase/auth';
 import { nanoid } from 'nanoid';
+import ClubNotFound from '@/components/ClubNotFound';
 
 type User = Pick<FirebaseUser, 'uid' | 'email' | 'displayName'>;
 
@@ -70,7 +70,7 @@ interface ClubInfo {
   images: string[];
   recurringEvents: RecurringEvent[];
   oneOffEvents: OneOffEvent[];
-  blogs: Blog[];
+  blogIds: string[];
 }
 
 function getNextMeetingDate(event: RecurringEvent) {
@@ -97,6 +97,7 @@ function getNextMeetingDate(event: RecurringEvent) {
 const EditClubPage = () => {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [blogs, setBlogs] = useState<Blog[]>([]);
   const [clubInfo, setClubInfo] = useState<ClubInfo>({
     id: "",
     isComplete: false,
@@ -115,7 +116,7 @@ const EditClubPage = () => {
     images: [],
     recurringEvents: [],
     oneOffEvents: [],
-    blogs: [],
+    blogIds: [],
   });
 
   const router = useRouter();
@@ -125,35 +126,44 @@ const EditClubPage = () => {
   const fetchClubInfo = useCallback(async () => {
     setIsLoading(true);
     try {
-        const clubsCollectionRef = collection(db, 'clubs');
-        const clubsSnapshot = await getDocs(clubsCollectionRef);
-        const clubsData = clubsSnapshot.docs.map(doc => {
-            const data = doc.data();
-            return {
-                id: doc.id,
-                ...data,
-                tags: data.tags || [],
-                advisors: data.advisors || [],
-                studentLeads: data.studentLeads || [],
-                links: data.links || [],
-                images: data.images || [],
-                oneOffEvents: data.oneOffEvents || [],
-                blogs: (data.blogs || []).map((blog: any) => ({
-                    ...blog,
-                    date: blog.date ? new Date(blog.date.seconds * 1000) : new Date(), // Convert Firestore timestamp to Date
-                })) || []
-            } as ClubInfo;
-        });
-        const matchingClub = clubsData.find(club => club.id === slug);
-        if (matchingClub) {
-            setClubInfo(matchingClub);
+      if (typeof slug !== 'string') {
+        console.error('Invalid slug');
+        return;
+      }
+      const clubDocRef = doc(db, 'clubs', slug);;
+      const clubSnapshot = await getDoc(clubDocRef);
+  
+      if (clubSnapshot.exists()) {
+        const clubData = clubSnapshot.data() as ClubInfo;
+        if (clubData.isComplete === false) {
+          null;
         } else {
-            console.error('Club not found');
+          if (clubData.blogIds && clubData.blogIds.length > 0) {
+            const blogPromises = clubData.blogIds.map(async (blogId) => {
+              const blogDocRef = doc(db, 'blogs', blogId);
+              const blogSnapshot = await getDoc(blogDocRef);
+              if (blogSnapshot.exists()) {
+                const blogData = blogSnapshot.data();
+                return {
+                  id: blogId,
+                  title: blogData.title,
+                  content: blogData.content,
+                  date: blogData.date ? new Date(blogData.date.seconds * 1000) : new Date(),
+                } as Blog;
+              }
+              return null;
+            });
+            const blogs = (await Promise.all(blogPromises)).filter((blog): blog is Blog => blog !== null);
+            setBlogs(blogs);
+          } setClubInfo(clubData);
         }
+      } else {
+        console.error('Club not found');
+      }
     } catch (error) {
-        console.error('Error fetching club data:', error);
+      console.error('Error fetching club data:', error);
     } finally {
-        setIsLoading(false);
+      setIsLoading(false);
     }
   }, [slug]);
 
@@ -190,6 +200,10 @@ const EditClubPage = () => {
     return null; // Prevent rendering if user is not authenticated
   }
 
+  if (!clubInfo.isComplete) {
+    return <div><Navbar /><ClubNotFound /></div>; // Don't render anything if club data is incomplete
+  }
+
   return (
     <div className="bg-cblack min-h-screen">
       <Navbar />
@@ -223,7 +237,7 @@ const EditClubPage = () => {
         </div>
 
         <div className="flex flex-col lg:flex-row gap-8">
-          <div className={`lg:${(clubInfo.blogs && clubInfo.blogs.length > 0) || (clubInfo.images && clubInfo.images.length > 0) ? 'w-6/12' : 'w-10/12'}`}>
+          <div className={`lg:${(clubInfo.blogIds && clubInfo.blogIds.length > 0) || (clubInfo.images && clubInfo.images.length > 0) ? 'w-6/12' : 'w-10/12'}`}>
           <h2 className="text-2xl font-bold text-white mb-2">Description</h2>
             <p className="text-grey mb-4">{clubInfo.description}</p>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-grey mb-8">
@@ -293,7 +307,7 @@ const EditClubPage = () => {
 
             <div className="mb-8">
               <h2 className="text-2xl font-bold text-white mb-2">One-off Events</h2>
-              {clubInfo.oneOffEvents.length > 0 ? (
+              {clubInfo.oneOffEvents && clubInfo.oneOffEvents.length > 0 ? (
                     clubInfo.oneOffEvents.map((event, index) => (
                       <div key={index} className="mb-4 flex items-center bg-gray-800 p-4 rounded-lg shadow-md lg:w-5/6">
                         <FaCalendarAlt className="text-blue-400 mr-4" />
@@ -356,7 +370,7 @@ const EditClubPage = () => {
                     <p className="text-gray-300">No recurring events are currently scheduled.</p>
                   )}
 
-                <div className="mb-8">
+                <div className="mt-8">
                     <h2 className="text-2xl font-bold text-white mb-2">More Information</h2>
                     <p className="text-grey">
                         For more information, please{' '}
@@ -388,11 +402,11 @@ const EditClubPage = () => {
             </>
             )}
           <div>
-            {clubInfo.blogs && clubInfo.blogs.length > 0 && (
+            {clubInfo.blogIds && clubInfo.blogIds.length > 0 && (
             <h2 className="text-2xl font-bold text-white mb-2">Blogs</h2>
             )}
             <div className="flex flex-col lg:flex-row gap-8">
-              {clubInfo.blogs.map((blog) => (
+              {blogs.map((blog) => (
                 <div key={blog.id} className="rounded-lg p-9 transition-shadow duration-300 bg-[#2A2A2A] lg:w-1/2">
                   <div className='flex flex-row justify-between'>
                     <h3 className="text-xl text-white font-bold">{blog.title}</h3>
