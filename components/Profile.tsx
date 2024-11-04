@@ -3,9 +3,8 @@
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { auth, db } from '@/firebase/firebase';
-import { doc, updateDoc, arrayRemove, increment, getDoc, getDocs, collection } from 'firebase/firestore';
+import { doc, updateDoc, arrayRemove, increment, getDoc } from 'firebase/firestore';
 import { onAuthStateChanged } from 'firebase/auth';
-import Navbar from '@/components/Navbar';
 import Tile from '@/components/Tile'; // Import Tile component
 
 interface User {
@@ -43,7 +42,6 @@ const Profile: React.FC = () => {
       const userDoc = await getDoc(doc(db, 'users', userId));
       if (userDoc.exists()) {
         const userData = userDoc.data();
-        setSelectedSchool(userData.selectedSchool || '');
         setUpvotedClubs(userData.upvotedClubs || []);
         // Fetch clubs based on upvotedClubs
         await fetchClubs(userData.upvotedClubs || []);

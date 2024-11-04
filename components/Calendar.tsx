@@ -9,11 +9,6 @@ import { onAuthStateChanged } from 'firebase/auth';
 import { FaCircleNotch } from 'react-icons/fa';
 import { User } from 'firebase/auth'; // Import User type
 
-// Dynamically import the Calendar component
-const Calendar = dynamic(() => import('@/components/CalendarProp'), {
-  loading: () => <p className="text-white">Loading Calendar...</p>,
-});
-
 interface Event {
   date: Date;
   title: string;
@@ -131,7 +126,7 @@ export default function CalendarPage() {
   }): Date[] => {
     console.log("Generating recurring dates for event:", event);
     const dates: Date[] = [];
-    let currentDate = new Date(event.startDate);
+    const currentDate = new Date(event.startDate);
     const endDate = new Date(event.endDate);
 
     while (currentDate.getDay() !== event.dayOfWeek) {

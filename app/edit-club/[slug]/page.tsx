@@ -76,7 +76,7 @@ interface ClubInfo {
 function getNextMeetingDate(event: RecurringEvent) {
   const today = new Date();
   const eventDay = event.dayOfWeek;
-  let nextMeeting = new Date(today);
+  const nextMeeting = new Date(today);
 
   // Calculate the next occurrence of the event's day of the week
   while (nextMeeting.getDay() !== eventDay) {
@@ -108,7 +108,7 @@ const EditClubPage = () => {
   });
   const [newBlogTitle, setNewBlogTitle] = useState<string>('');
   const [newBlogContent, setNewBlogContent] = useState<string>('');
-  const [blogToDelete, setBlogToDelete] = useState<Blog | null>(null);
+  const [blogToDelete] = useState<Blog | null>(null);
   const [blogs, setBlogs] = useState<Blog[]>([]);
   const [clubInfo, setClubInfo] = useState<ClubInfo>({
     id: "",
@@ -318,7 +318,7 @@ const EditClubPage = () => {
       const clubDocRef = doc(db, 'clubs', clubInfo.id);
   
       // Create the club data object
-      const clubData: any = {
+      const clubData: ClubInfo = {
         ...clubInfo,
         isComplete: checkCompletion(clubInfo),
       };
@@ -449,12 +449,27 @@ const EditClubPage = () => {
     }));
   };
 
-  const handleRecurringEventChange = (index: number, field: keyof RecurringEvent, value: any) => {
-    const updatedEvents = [...clubInfo.recurringEvents];
-    updatedEvents[index] = { ...updatedEvents[index], [field]: value };
-    setClubInfo(prevState => ({ ...prevState, recurringEvents: updatedEvents }));
-  };
-  
+  type RecurringEventFieldValue<K extends keyof RecurringEvent> = 
+    K extends 'title' ? string :
+    K extends 'frequency' ? 'weekly' | 'biweekly' | 'monthly' :
+    K extends 'dayOfWeek' ? number :
+    K extends 'startDate' | 'endDate' ? string : // Assuming dates are strings
+    K extends 'exceptions' ? string[] : 
+    never;
+
+    // Update the handleRecurringEventChange function
+    const handleRecurringEventChange = (index: number, field: keyof RecurringEvent, value: any) => {
+      const updatedEvents = [...clubInfo.recurringEvents];
+      
+      // Ensure that if the field is 'frequency', value is one of the allowed strings
+      if (field === 'frequency' && !['weekly', 'biweekly', 'monthly'].includes(value)) {
+        throw new Error("Invalid frequency value");
+      }
+    
+      updatedEvents[index] = { ...updatedEvents[index], [field]: value };
+      setClubInfo(prevState => ({ ...prevState, recurringEvents: updatedEvents }));
+    };
+    
   const handleAddRecurringEvent = () => {
     const today = new Date().toISOString().split('T')[0];
     const oneYearLater = new Date(new Date().setFullYear(new Date().getFullYear() + 1)).toISOString().split('T')[0];

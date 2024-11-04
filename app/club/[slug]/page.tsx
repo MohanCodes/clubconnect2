@@ -6,11 +6,10 @@ import Link from 'next/link';
 import { useRouter, useParams } from 'next/navigation';
 import { FaEnvelope, FaCalendarAlt, FaClock, FaMapMarkerAlt, FaUserGraduate, FaDollarSign, FaTwitter, FaInstagram, FaFacebook, FaLinkedin, FaYoutube, FaDiscord, FaGithub, FaTiktok, FaGlobe, FaUser, FaLink, FaCircleNotch } from 'react-icons/fa';
 import Navbar from '@/components/Navbar';
-import { auth, db, storage } from '@/firebase/firebase';
+import { auth, db } from '@/firebase/firebase';
 import { doc, getDoc } from 'firebase/firestore';
 import { onAuthStateChanged } from 'firebase/auth';
 import { User as FirebaseUser } from 'firebase/auth';
-import { nanoid } from 'nanoid';
 import ClubNotFound from '@/components/ClubNotFound';
 
 type User = Pick<FirebaseUser, 'uid' | 'email' | 'displayName'>;
@@ -76,7 +75,7 @@ interface ClubInfo {
 function getNextMeetingDate(event: RecurringEvent) {
   const today = new Date();
   const eventDay = event.dayOfWeek;
-  let nextMeeting = new Date(today);
+  const nextMeeting = new Date(today);
 
   // Calculate the next occurrence of the event's day of the week
   while (nextMeeting.getDay() !== eventDay) {
@@ -136,7 +135,8 @@ const EditClubPage = () => {
       if (clubSnapshot.exists()) {
         const clubData = clubSnapshot.data() as ClubInfo;
         if (clubData.isComplete === false) {
-          null;
+          console.log('Club data is incomplete');
+          return; // Early exit if club data is incomplete
         } else {
           if (clubData.blogIds && clubData.blogIds.length > 0) {
             const blogPromises = clubData.blogIds.map(async (blogId) => {
