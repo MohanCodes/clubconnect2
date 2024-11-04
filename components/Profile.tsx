@@ -10,8 +10,9 @@ import Tile from '@/components/Tile'; // Import Tile component
 interface User {
   uid: string;
   displayName: string | null;
+}
 
-}interface Advisor {
+interface Advisor {
   name: string;
   email: string;
 }
@@ -60,7 +61,7 @@ interface ClubInfo {
   recurringEvents: RecurringEvent[];
   oneOffEvents: OneOffEvent[];
   blogIds: string[];
-  icon?: string; // Add this line for optional icon property
+  icon?: string; // Optional icon property
   upvoteCount: number;
 }
 
@@ -69,24 +70,6 @@ const Profile: React.FC = () => {
   const [upvotedClubs, setUpvotedClubs] = useState<string[]>([]);
   const [clubs, setClubs] = useState<ClubInfo[]>([]); // State to hold club data
   const router = useRouter();
-
-  useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
-      if (currentUser) {
-        const typedUser: User = {
-          uid: currentUser.uid,
-          displayName: currentUser.displayName,
-        };
-        setUser(typedUser);
-        fetchUserData(currentUser.uid);
-      } else {
-        setUser(null);
-        router.push('/signin');
-      }
-    });
-
-    return () => unsubscribe();
-  }, [router]);
 
   const fetchUserData = useCallback(async (userId: string) => {
     try {
@@ -102,8 +85,8 @@ const Profile: React.FC = () => {
     }
   }, []);
 
-
-  const fetchClubs = async (clubIds: string[]) => {
+  
+const fetchClubs = async (clubIds: string[]) => {
     try {
       const clubsData = await Promise.all(clubIds.map(async (clubId) => {
         const clubDoc = await getDoc(doc(db, 'clubs', clubId));
@@ -113,34 +96,53 @@ const Profile: React.FC = () => {
     } catch (error) {
       console.error("Error fetching clubs:", error);
     }
-  };
+};
 
-  const handleRemoveUpvote = async (clubId: string) => {
-    if (user) {
-      try {
-        await updateDoc(doc(db, 'users', user.uid), {
-          upvotedClubs: arrayRemove(clubId)
-        });
-        setUpvotedClubs(prevClubs => prevClubs.filter(id => id !== clubId));
-
-        const clubRef = doc(db, 'clubs', clubId);
-        await updateDoc(clubRef, {
-          upvoteCount: increment(-1)
-        });
-        
-        // Remove the club from local state
-        setClubs(prevClubs => prevClubs.filter(club => club.id !== clubId));
-      } catch (error) {
-        console.error("Error removing upvote:", error);
+  
+useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+      if (currentUser) {
+        const typedUser: User = {
+          uid: currentUser.uid,
+          displayName: currentUser.displayName,
+        };
+        setUser(typedUser);
+        fetchUserData(currentUser.uid); // Call fetchUserData
+      } else {
+        setUser(null);
+        router.push('/signin');
       }
+    });
+
+    return () => unsubscribe();
+}, [router, fetchUserData]); // Include fetchUserData in the dependency array
+
+const handleRemoveUpvote = async (clubId:string) => { 
+    if (user) { 
+        try { 
+            await updateDoc(doc(db, 'users', user.uid), { 
+                upvotedClubs: arrayRemove(clubId)
+            }); 
+            setUpvotedClubs(prevClubs => prevClubs.filter(id => id !== clubId));
+
+            const clubRef = doc(db, 'clubs', clubId);
+            await updateDoc(clubRef, { 
+                upvoteCount: increment(-1)
+            });
+            
+            // Remove the club from local state
+            setClubs(prevClubs => prevClubs.filter(club => club.id !== clubId));
+        } catch (error) { 
+            console.error("Error removing upvote:", error); 
+        } 
     }
-  };
+};
 
-  if (!user) {
-    return null;
-  }
+if (!user) {
+    return null; 
+}
 
-  return (
+return (
     <div className="container mx-auto px-4 py-8">
       <h1 className="text-3xl font-bold text-white mb-6">Your Profile</h1>
       
