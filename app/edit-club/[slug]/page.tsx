@@ -682,7 +682,7 @@ const EditClubPage = () => {
                     placeholder="Club Description"
                   />
                 ) : (
-                  <p className="text-grey break-words">{clubInfo.description}</p>
+                  <p className="text-grey break-words mb-4">{clubInfo.description}</p>
                 )}
             </div>
 

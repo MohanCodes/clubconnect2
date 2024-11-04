@@ -122,7 +122,7 @@ const Tile: React.FC<TileProps> = ({
       </div>
 
       {/* Club Description */}
-      <p className="text-grey mb-4 text-left">
+      <p className="text-grey mb-4 text-left break-words">
         {description.length > 150 ? `${description.slice(0, 150)}...` : description}
       </p>
 

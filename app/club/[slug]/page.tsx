@@ -250,7 +250,7 @@ const EditClubPage = () => {
         <div className="space-y-8">
             <div>
               <h2 className="text-2xl font-bold text-white mb-2">Description</h2>
-              <p className="text-grey mb-4">{clubInfo.description}</p>
+              <p className="text-grey mb-4 break-words">{clubInfo.description}</p>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-grey">
               <div className="flex items-center">
