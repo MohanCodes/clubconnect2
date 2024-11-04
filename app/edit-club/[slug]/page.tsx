@@ -449,10 +449,12 @@ const EditClubPage = () => {
     }));
   };
 
-  const handleRecurringEventChange = (index: number, field: keyof RecurringEvent, value: any) => {
-    const updatedEvents = [...clubInfo.recurringEvents];
-    updatedEvents[index] = { ...updatedEvents[index], [field]: value };
-    setClubInfo(prevState => ({ ...prevState, recurringEvents: updatedEvents }));
+  type RecurringEventValueType = string | number | 'weekly' | 'biweekly' | 'monthly';
+
+  const handleRecurringEventChange = (index: number, field: keyof RecurringEvent, value: RecurringEventValueType) => {
+      const updatedEvents = [...clubInfo.recurringEvents];
+      updatedEvents[index] = { ...updatedEvents[index], [field]: value };
+      setClubInfo(prevState => ({ ...prevState, recurringEvents: updatedEvents }));
   };
     
   const handleAddRecurringEvent = () => {
