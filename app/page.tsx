@@ -203,7 +203,7 @@ const Home: React.FC = () => {
           </div>
         </div>
         <div className="flex flex-col items-center">
-          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-6 p-6 max-w-full overflow-x-auto">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 p-6 max-w-full overflow-x-auto">
             {[0, 1, 2, 3, 4].map((columnIndex) => (
               <div key={columnIndex} className="grid auto-rows-max gap-6">
                 {filteredClubs
