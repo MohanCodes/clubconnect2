@@ -610,30 +610,30 @@ const EditClubPage = () => {
           </div>
         </div>
       )}
-        <div className="flex flex-col lg:flex-row justify-between items-center pb-8 pt-2 sticky lg:-mt-0 -mt-20 top-20 z-40 bg-cblack break-words">
-          <h1 className="text-2xl lg:text-4xl font-bold text-white mb-4 lg:mb-0">
+        <div className="flex flex-col pb-4 pt-2 sticky top-0 z-40 bg-cblack break-words">
+          <h1 className="text-xl sm:text-2xl lg:text-4xl font-bold text-white mb-4 text-center lg:text-left">
             {clubInfo.name === "" ? 'Enter Club Name Here' : clubInfo.name}
           </h1>
           
-          <div className='space-x-4 w-auto'>
+          <div className='flex flex-wrap justify-center lg:justify-end gap-2 w-full'>
             <button
               onClick={isEditing ? handleSave : handleEdit}
-              className="bg-azul text-white text-sm px-4 py-2 rounded-full w-auto"
+              className="bg-azul text-white text-xs sm:text-sm px-3 sm:px-4 py-2 rounded-full flex-grow lg:flex-grow-0"
             >
-              {isEditing ? <p>Render Page</p> : <p>Edit Page</p>}
+              {isEditing ? 'Render Page' : 'Edit Page'}
             </button>
             
             <button
               onClick={handleUpload}
-              className="bg-azul text-white text-sm px-4 py-2 rounded-full w-auto"
+              className="bg-azul text-white text-xs sm:text-sm px-3 sm:px-4 py-2 rounded-full flex-grow lg:flex-grow-0"
               disabled={isUploading}
             >
-              {isUploading ? <p>Uploading...</p> : <p>Save Changes</p>}
+              {isUploading ? 'Uploading...' : 'Save Changes'}
             </button>
             
             <button
               onClick={() => setIsDeleteModalOpen(true)}
-              className="bg-red-500 text-white text-sm px-4 py-2 rounded-full w-auto"
+              className="bg-red-500 text-white text-xs sm:text-sm px-3 sm:px-4 py-2 rounded-full flex-grow lg:flex-grow-0"
             >
               Delete Club
             </button>
@@ -651,7 +651,7 @@ const EditClubPage = () => {
               </span>
             ))}
             {isEditing && (
-              <div className="flex items-center mt-2">
+              <div className="flex items-center mt-2 max-w-screen">
                 <input
                   type="text"
                   value={newTag}
