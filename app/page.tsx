@@ -173,7 +173,7 @@ const Home: React.FC = () => {
       <Navbar />
       <main className="relative flex min-h-screen flex-col items-center justify-center bg-cblack text-center -mt-20">
         <div className='max-w-lg flex flex-col justify-center h-screen items-center'>
-          <div className='font-semibold text-white text-2xl sm:text-3xl md:text-4xl lg:text-5xl text-center'>
+          <div className='font-semibold text-white text-3xl md:text-4xl lg:text-5xl text-center'>
             <span className='text-azul'>Connect</span> with your club community.
           </div>
           <p className="text-lg sm:text-xl my-4 sm:my-6 text-center text-grey px-4 sm:px-0 max-w-md mx-auto">
@@ -194,7 +194,7 @@ const Home: React.FC = () => {
                 const schoolStyle = schoolColors[tag.toLowerCase() as keyof typeof schoolColors] || { bg: 'bg-gray-200', text: 'text-black', ring: '' };
                 const isSelected = selectedTag === tag; // Check if the tag is selected
                 return (
-                    <button key={index} onClick={() => handleTagClick(tag)} className={`text-sm font-medium px-3 py-1 rounded-full break-words ${schoolStyle.bg} ${schoolStyle.text} ${isSelected ? `ring-2 ${schoolStyle.ring}` : ''}`}>
+                    <button key={index} onClick={() => handleTagClick(tag)} className={`md:text-sm text-xs text-sm font-medium px-3 py-1 rounded-full break-words ${schoolStyle.bg} ${schoolStyle.text} ${isSelected ? `ring-2 ${schoolStyle.ring}` : ''}`}>
                         {tag}
                     </button>
                 );

@@ -692,9 +692,9 @@ const EditClubPage = () => {
                     maxLength={1000}
                   />
                   <span className={`absolute bottom-6 right-2 text-sm ${
-                    clubInfo.description.length === 1000 ? 'text-red-500 font-bold' : 'text-grey'
+                    clubInfo.description?.length === 1000 ? 'text-red-500 font-bold' : 'text-grey'
                   }`}>
-                    {clubInfo.description.length}/1000
+                    {clubInfo.description ? clubInfo.description.length : 0}/1000
                   </span>
                 </div>
               ) : (

@@ -51,7 +51,7 @@ const CalendarProp: React.FC<CalendarProps> = ({ events = [] }) => {
           <div className="flex flex-col mt-1">
             {dayEvents.map((event, index) => (
               <Link key={index} href={event.link} className="text-xs text-white mt-1">
-                <div className='bg-[#2A2A2A] rounded p-1 inline-block hover:underline truncate'>{event.title}</div>
+                <div className='bg-[#2A2A2A] rounded p-1 inline-block hover:underline break-words w-full'>{event.title}</div>
               </Link>
             ))}
           </div>
@@ -60,7 +60,7 @@ const CalendarProp: React.FC<CalendarProps> = ({ events = [] }) => {
     }
   
     return (
-      <div className="grid grid-cols-1 sm:grid-cols-7 gap-1"> {/* Adjusted grid layout */}
+      <div className="grid grid-cols-1 sm:grid-cols-7 gap-1">
         {days}
       </div>
     );
@@ -80,12 +80,12 @@ const CalendarProp: React.FC<CalendarProps> = ({ events = [] }) => {
       const dayEvents = events.filter(event => event.date.toDateString() === date.toDateString());
 
       days.push(
-        <div key={day} className="h-32 border border-gray-700 p-2 rounded">
+        <div key={day} className="h-32 border border-gray-700 p-2 rounded overflow-y-auto">
           <div className="text-right text-gray-400">{day}</div>
           <div className="flex flex-col">
             {dayEvents.map((event, index) => (
               <Link key={index} href={event.link} className="text-xs text-white mt-1">
-                <div className='bg-[#2A2A2A] rounded p-2 inline-block hover:underline truncate'>{event.title}</div>
+                <div className='bg-[#2A2A2A] rounded p-2 inline-block hover:underline break-words w-full'>{event.title}</div>
               </Link>
             ))}
           </div>
