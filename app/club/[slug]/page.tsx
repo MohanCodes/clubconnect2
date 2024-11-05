@@ -195,10 +195,6 @@ const EditClubPage = () => {
       default: return <FaLink />;
     }
   };
-
-  if (!user) {
-    return null; // Prevent rendering if user is not authenticated
-  }
   
   if (isLoading) {
     <div className="fixed inset-0 bg-black flex items-center justify-center z-50">
