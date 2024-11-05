@@ -6,13 +6,9 @@ import Link from 'next/link';
 import { useRouter, useParams } from 'next/navigation';
 import { FaEnvelope, FaCalendarAlt, FaClock, FaMapMarkerAlt, FaUserGraduate, FaDollarSign, FaTwitter, FaInstagram, FaFacebook, FaLinkedin, FaYoutube, FaDiscord, FaGithub, FaTiktok, FaGlobe, FaUser, FaLink, FaCircleNotch } from 'react-icons/fa';
 import Navbar from '@/components/Navbar';
-import { auth, db } from '@/firebase/firebase';
+import { db } from '@/firebase/firebase';
 import { doc, getDoc } from 'firebase/firestore';
-import { onAuthStateChanged } from 'firebase/auth';
-import { User as FirebaseUser } from 'firebase/auth';
 import ClubNotFound from '@/components/ClubNotFound';
-
-type User = Pick<FirebaseUser, 'uid' | 'email' | 'displayName'>;
 
 interface Advisor {
   name: string;
@@ -45,7 +41,7 @@ interface RecurringEvent {
 }
 
 interface Blog {
-  id: string; // Add ID property
+  id: string;
   title: string;
   content: string;
   date: Date;
@@ -77,24 +73,21 @@ function getNextMeetingDate(event: RecurringEvent) {
   const eventDay = event.dayOfWeek;
   const nextMeeting = new Date(today);
 
-  // Calculate the next occurrence of the event's day of the week
   while (nextMeeting.getDay() !== eventDay) {
     nextMeeting.setDate(nextMeeting.getDate() + 1);
   }
 
-  // Check if the next meeting is within the event's date range
   const startDate = new Date(event.startDate);
   const endDate = new Date(event.endDate);
-  
+
   if (nextMeeting >= startDate && nextMeeting <= endDate) {
     return nextMeeting;
   } else {
-    return null; // No upcoming meeting within the range
+    return null;
   }
 }
 
 const EditClubPage = () => {
-  const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [blogs, setBlogs] = useState<Blog[]>([]);
   const [clubInfo, setClubInfo] = useState<ClubInfo>({
@@ -129,14 +122,13 @@ const EditClubPage = () => {
         console.error('Invalid slug');
         return;
       }
-      const clubDocRef = doc(db, 'clubs', slug);;
+      const clubDocRef = doc(db, 'clubs', slug);
       const clubSnapshot = await getDoc(clubDocRef);
-  
       if (clubSnapshot.exists()) {
         const clubData = clubSnapshot.data() as ClubInfo;
         if (clubData.isComplete === false) {
           console.log('Club data is incomplete');
-          return; // Early exit if club data is incomplete
+          return;
         } else {
           if (clubData.blogIds && clubData.blogIds.length > 0) {
             const blogPromises = clubData.blogIds.map(async (blogId) => {
@@ -155,7 +147,8 @@ const EditClubPage = () => {
             });
             const blogs = (await Promise.all(blogPromises)).filter((blog): blog is Blog => blog !== null);
             setBlogs(blogs);
-          } setClubInfo(clubData);
+          }
+          setClubInfo(clubData);
         }
       } else {
         console.error('Club not found');
@@ -168,17 +161,8 @@ const EditClubPage = () => {
   }, [slug]);
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
-      setUser(currentUser);
-      if (!currentUser) {
-        router.push('/signin');
-      } else {
-        fetchClubInfo();
-      }
-    });
-  
-    return () => unsubscribe();
-  }, [router, fetchClubInfo]);
+    fetchClubInfo();
+  }, [fetchClubInfo]);
 
   const getPlatformIcon = (platform: string) => {
     switch (platform) {
