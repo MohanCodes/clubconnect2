@@ -615,17 +615,17 @@ const EditClubPage = () => {
             {clubInfo.name === "" ? 'Enter Club Name Here' : clubInfo.name}
           </h1>
           
-          <div className='space-y-4 lg:space-y-0 lg:space-x-4 w-3/12 lg:w-auto'>
+          <div className='space-x-4 w-auto'>
             <button
               onClick={isEditing ? handleSave : handleEdit}
-              className="bg-azul text-white text-sm px-4 py-2 rounded-full w-full lg:w-auto"
+              className="bg-azul text-white text-sm px-4 py-2 rounded-full w-auto"
             >
               {isEditing ? <p>Render Page</p> : <p>Edit Page</p>}
             </button>
             
             <button
               onClick={handleUpload}
-              className="bg-azul text-white text-sm px-4 py-2 rounded-full w-full lg:w-auto"
+              className="bg-azul text-white text-sm px-4 py-2 rounded-full w-auto"
               disabled={isUploading}
             >
               {isUploading ? <p>Uploading...</p> : <p>Save Changes</p>}
@@ -633,7 +633,7 @@ const EditClubPage = () => {
             
             <button
               onClick={() => setIsDeleteModalOpen(true)}
-              className="bg-red-500 text-white text-sm px-4 py-2 rounded-full w-full lg:w-auto"
+              className="bg-red-500 text-white text-sm px-4 py-2 rounded-full w-auto"
             >
               Delete Club
             </button>
@@ -1117,7 +1117,7 @@ const EditClubPage = () => {
                   For more information, please{' '}
                   <Link href="mailto:clubconnect.xyz" className="text-azul hover:underline">
                     contact ClubConnect.
-                  </Link>.
+                  </Link>
                 </p>
               </div>
             </div>
