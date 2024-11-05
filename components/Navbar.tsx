@@ -99,7 +99,7 @@ const Navbar: React.FC = () => {
           {user ? (
             <button 
               onClick={() => setIsSignOutModalOpen(true)} 
-              className="rounded-full text-azul hover:opacity-70 md:pr-0 pr-4"
+              className="rounded-full text-azul hover:opacity-70 md:pr-0 lg:pr-4"
             >
               Sign Out
             </button>
