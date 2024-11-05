@@ -610,30 +610,34 @@ const EditClubPage = () => {
           </div>
         </div>
       )}
-        <div className="flex justify-between items-center pb-8 pt-2 sticky top-20 z-40 bg-cblack">
-          <h1 className="text-4xl font-bold text-white">{clubInfo.name == "" ? 'Enter Club Name Here' : clubInfo.name}</h1>
-          <div className='space-x-4'>
+        <div className="flex flex-col lg:flex-row justify-between items-center pb-8 pt-2 sticky top-20 z-40 bg-cblack">
+          <h1 className="text-2xl lg:text-4xl font-bold text-white mb-4 lg:mb-0">
+            {clubInfo.name === "" ? 'Enter Club Name Here' : clubInfo.name}
+          </h1>
+          
+          <div className='space-y-4 lg:space-y-0 lg:space-x-4 w-3/12 lg:w-auto'>
             <button
               onClick={isEditing ? handleSave : handleEdit}
-              className="bg-azul text-white text-sm px-4 py-2 rounded-full"
+              className="bg-azul text-white text-sm px-4 py-2 rounded-full w-full lg:w-auto"
             >
               {isEditing ? <p>Render Page</p> : <p>Edit Page</p>}
             </button>
+            
             <button
               onClick={handleUpload}
-              className="bg-azul text-white text-sm px-4 py-2 rounded-full"
+              className="bg-azul text-white text-sm px-4 py-2 rounded-full w-full lg:w-auto"
               disabled={isUploading}
             >
               {isUploading ? <p>Uploading...</p> : <p>Save Changes</p>}
             </button>
+            
             <button
               onClick={() => setIsDeleteModalOpen(true)}
-              className="bg-red-500 text-white text-sm px-4 py-2 rounded-full"
+              className="bg-red-500 text-white text-sm px-4 py-2 rounded-full w-full lg:w-auto"
             >
               Delete Club
             </button>
           </div>
-            
         </div>
 
         <div className="flex flex-wrap gap-2 mb-6">
@@ -674,16 +678,28 @@ const EditClubPage = () => {
           <div className="space-y-8">
             <div>
               <h2 className="text-2xl font-bold text-white mb-2">Description</h2>
-                {isEditing ? (
+              {isEditing ? (
+                <div className="relative">
                   <textarea
                     value={clubInfo.description}
-                    onChange={(e) => handleChange(e, 'description')}
-                    className="w-full h-40 p-2 text-grey bg-gray-800 rounded mb-4"
-                    placeholder="Club Description"
+                    onChange={(e) => {
+                      if (e.target.value.length <= 1000) {
+                        handleChange(e, 'description');
+                      }
+                    }}
+                    className="w-full h-60 p-2 text-grey bg-gray-800 rounded mb-4"
+                    placeholder="Club Description (One Paragraph for best results)"
+                    maxLength={1000}
                   />
-                ) : (
-                  <p className="text-grey break-words mb-4">{clubInfo.description}</p>
-                )}
+                  <span className={`absolute bottom-6 right-2 text-sm ${
+                    clubInfo.description.length === 1000 ? 'text-red-500 font-bold' : 'text-grey'
+                  }`}>
+                    {clubInfo.description.length}/1000
+                  </span>
+                </div>
+              ) : (
+                <p className="text-grey break-words mb-4">{clubInfo.description}</p>
+              )}
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-grey">
@@ -879,7 +895,7 @@ const EditClubPage = () => {
             <div>
               <h2 className="text-2xl font-bold text-white mb-2">One-off Events</h2>
               {isEditing && (
-                  <p className="grey">
+                  <p className="text-grey mb-2">
                     Leave blank if there are no events
                   </p>
               )}
@@ -932,7 +948,7 @@ const EditClubPage = () => {
                 <>
                   <h2 className="text-2xl font-bold text-white mb-2">Recurring Events</h2>
                   {(clubInfo.recurringEvents || []).map((event, index) => (
-                    <div key={index} className="mb-4 p-4 bg-gray-800 rounded lg:w-2/3 text-white">
+                    <div key={index} className="mb-4 p-4 bg-gray-800 rounded text-white">
                       {/* Event Title Input */}
                       <input
                         type="text"

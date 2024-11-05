@@ -118,11 +118,11 @@ const Tile: React.FC<TileProps> = ({
       {/* Icon and Club Name */}
       <div className="flex items-center mb-4">
         <Image src={icon} alt="Club Icon" width={40} height={40} className="mr-4" />
-        <h2 className="text-2xl font-semibold text-white">{clubName}</h2>
+        <h2 className="text-2xl font-semibold text-white text-left mr-4">{clubName}</h2>
       </div>
 
       {/* Club Description */}
-      <p className="text-grey mb-4 text-left line-clamp-5">
+      <p className="text-grey mb-4 text-left line-clamp-4">
         {description.length > 150 ? `${description.slice(0, 150)}...` : description}
       </p>
 
