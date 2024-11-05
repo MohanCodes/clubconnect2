@@ -92,7 +92,7 @@ const Tile: React.FC<TileProps> = ({
   });
 
   return (
-    <div className="rounded-lg p-9 transition-shadow duration-300 bg-[#2A2A2A] relative">
+    <div className="rounded-lg p-9 transition-shadow duration-300 bg-[#2A2A2A] relative max-w-4xl">
         <div className="absolute top-10 right-0 flex items-center">
           <div className="flex items-center">
             {showVoteButton && ( // Check if showVoteButton is true
@@ -122,7 +122,7 @@ const Tile: React.FC<TileProps> = ({
       </div>
 
       {/* Club Description */}
-      <p className="text-grey mb-4 text-left break-words">
+      <p className="text-grey mb-4 text-left line-clamp-5">
         {description.length > 150 ? `${description.slice(0, 150)}...` : description}
       </p>
 

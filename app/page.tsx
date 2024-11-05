@@ -203,16 +203,20 @@ const Home: React.FC = () => {
           </div>
         </div>
         <div className="flex flex-col items-center">
-          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-6 p-6 max-w-full overflow-x-auto items-center">
+          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-6 p-6 max-w-full overflow-x-auto">
             {[0, 1, 2, 3, 4].map((columnIndex) => (
               <div key={columnIndex} className="grid auto-rows-max gap-6">
                 {filteredClubs
-                  .filter((_, index) => index % (window.innerWidth >= 1536 ? 4 : window.innerWidth >= 768 ? 3 : window.innerWidth >= 640 ? 2 : 1) === columnIndex)
+                  .filter((_, index) => 
+                    index % 
+                  (window.innerWidth >= 1536 ? 4 :
+                    window.innerWidth >= 768 ? 3 :
+                    window.innerWidth >= 640 ? 2 :1) === columnIndex)
                   .map((club) => (
                     <div 
                       key={club.id} 
                       onClick={() => handleClubClick(club.id)}
-                      className="cursor-pointer"
+                      className="cursor-pointer overflow-hidden"
                     >
                       <Tile
                         icon={club.icon || "circles.svg"}
@@ -237,7 +241,7 @@ const Home: React.FC = () => {
                 <div 
                   key={club.id} 
                   onClick={() => handleClubClick(club.id)}
-                  className="cursor-pointer mx-3"
+                  className="cursor-pointer overflow-hidden"
                 >
                   <Tile
                     icon={club.icon || "circles.svg"}
