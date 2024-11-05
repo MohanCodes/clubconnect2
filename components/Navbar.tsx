@@ -45,7 +45,7 @@ const Navbar: React.FC = () => {
   };
 
   return (
-    <nav className="sticky top-0 z-10 bg-cblack">
+    <nav className="sticky top-0 z-50 bg-cblack">
       <div className="flex items-center justify-between p-6">
         <Link href="/" className="flex items-center space-x-4">
           <Image

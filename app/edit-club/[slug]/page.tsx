@@ -610,7 +610,7 @@ const EditClubPage = () => {
           </div>
         </div>
       )}
-        <div className="flex flex-col lg:flex-row justify-between items-center pb-8 pt-2 sticky top-20 z-9 bg-cblack">
+        <div className="flex flex-col lg:flex-row justify-between items-center pb-8 pt-2 sticky lg:-mt-0 -mt-20 top-20 z-40 bg-cblack break-words">
           <h1 className="text-2xl lg:text-4xl font-bold text-white mb-4 lg:mb-0">
             {clubInfo.name === "" ? 'Enter Club Name Here' : clubInfo.name}
           </h1>
