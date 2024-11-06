@@ -20,6 +20,7 @@ export const metadata: Metadata = {
         alt: "ClubConnect",
       },
     ],
+    site_name: "ClubConnect",
   },
   alternates: {
     canonical: "https://www.clubconnect.xyz",
