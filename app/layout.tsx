@@ -10,11 +10,11 @@ export const metadata: Metadata = {
   openGraph: {
     title: "ClubConnect - Connect with Your Club Community",
     description: "Join ClubConnect to discover, communicate, and collaborate with student clubs.",
-    url: "https://www.clubconnect.xyz",
+    url: "https://www.mnclubconnect.com",
     type: "website",
     images: [
       {
-        url: "https://www.clubconnect.xyz/og-image.jpg",
+        url: "https://www.mnclubconnect.com/og-image.jpg",
         width: 1200,
         height: 630,
         alt: "ClubConnect",
@@ -23,7 +23,7 @@ export const metadata: Metadata = {
     site_name: "ClubConnect",
   },
   alternates: {
-    canonical: "https://www.clubconnect.xyz",
+    canonical: "https://www.mnclubconnect.com",
   },
 };
 
