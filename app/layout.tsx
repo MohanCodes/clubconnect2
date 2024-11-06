@@ -4,12 +4,12 @@ import { Sora } from 'next/font/google'
 import { AuthProvider } from '../firebase/context/AuthContext';
 
 export const metadata: Metadata = {
-  title: "ClubConnect - Connect with Your Club Community",
-  description: "Join ClubConnect to discover, communicate, and collaborate with student clubs.",
-  keywords: "club, community, student, connect, ClubConnect",
+  title: "MNClubConnect - Connect with Your Club Community",
+  description: "Join MNClubConnect to discover, communicate, and collaborate with student clubs.",
+  keywords: "club, community, student, connect, MNClubConnect",
   openGraph: {
-    title: "ClubConnect - Connect with Your Club Community",
-    description: "Join ClubConnect to discover, communicate, and collaborate with student clubs.",
+    title: "MNClubConnect - Connect with Your Club Community",
+    description: "Join MNClubConnect to discover, communicate, and collaborate with student clubs.",
     url: "https://www.mnclubconnect.com",
     type: "website",
     images: [
@@ -17,10 +17,10 @@ export const metadata: Metadata = {
         url: "https://www.mnclubconnect.com/og-image.jpg",
         width: 1200,
         height: 630,
-        alt: "ClubConnect",
+        alt: "MNClubConnect",
       },
     ],
-    site_name: "ClubConnect",
+    site_name: "MNClubConnect",
   },
   alternates: {
     canonical: "https://www.mnclubconnect.com",
