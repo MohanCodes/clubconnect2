@@ -1,5 +1,7 @@
-import Navbar from '@/components/Navbar'
-import UnderDevelopment from '@/components/UnderDevelopment'
+import dynamic from 'next/dynamic';
+
+const Navbar = dynamic(() => import('@/components/Navbar'));
+const UnderDevelopment = dynamic(() => import('@/components/UnderDevelopment'));
 
 export default function About() {
   return (

@@ -1,4 +1,6 @@
-import Navbar from '@/components/Navbar'
+import dynamic from 'next/dynamic';
+
+const Navbar = dynamic(() => import('@/components/Navbar'));
 
 export default function About() {
   return (

@@ -1,7 +1,10 @@
 "use client";
 
-import Link from 'next/link';
-import Image from 'next/image';
+import dynamic from 'next/dynamic';
+
+const Link = dynamic(() => import('next/link'));
+const Image = dynamic(() => import('next/image'));
+
 import { useEffect, useState } from 'react';
 import { auth } from '@/firebase/firebase';
 import { signOut, User } from 'firebase/auth';

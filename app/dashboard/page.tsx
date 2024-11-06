@@ -1,9 +1,10 @@
 "use client";
-import React from 'react';
-import Navbar from '@/components/Navbar';
-import YourClubs from '@/components/YourClubs';
-import Calendar from '@/components/Calendar';
-import Profile from '@/components/Profile';
+import dynamic from 'next/dynamic';
+
+const Navbar = dynamic(() => import('@/components/Navbar'));
+const YourClubs = dynamic(() => import('@/components/YourClubs'));
+const Calendar = dynamic(() => import('@/components/Calendar'));
+const Profile = dynamic(() => import('@/components/Profile'));
 
 const Dashboard: React.FC = () => {
 
