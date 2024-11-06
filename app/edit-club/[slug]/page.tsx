@@ -610,8 +610,8 @@ const EditClubPage = () => {
           </div>
         </div>
       )}
-        <div className="flex flex-col pb-4 pt-2 sticky top-0 z-40 bg-cblack break-words">
-          <h1 className="text-xl sm:text-2xl lg:text-4xl font-bold text-white mb-4 text-center lg:text-left">
+        <div className="flex flex-col lg:flex-row items-center justify-between pb-4 pt-2 sticky top-0 z-40 bg-cblack break-words">
+          <h1 className="text-2xl lg:text-4xl font-bold text-white mb-4 text-center lg:text-left">
             {clubInfo.name === "" ? 'Enter Club Name Here' : clubInfo.name}
           </h1>
           
@@ -665,7 +665,7 @@ const EditClubPage = () => {
               </div>
             )}
           </div>
-          <div className="flex-shrink-0 w-1/3 text-right">
+          <div className="flex-shrink-0 max-w-full md:w-1/3 md:text-right">
             <p className={`text-${clubInfo.isComplete ? 'white' : 'red-500'} ${clubInfo.isComplete ? '' : 'whitespace-normal'}`}>
               {clubInfo.isComplete 
                 ? 'Club information is complete!' 
@@ -687,11 +687,11 @@ const EditClubPage = () => {
                         handleChange(e, 'description');
                       }
                     }}
-                    className="w-full h-60 p-2 text-grey bg-gray-800 rounded mb-4"
-                    placeholder="Club Description (One Paragraph for best results)"
+                    className="w-full max-w-full box-border h-60 p-2 text-grey bg-gray-800 rounded mb-4 overflow-x-hidden"
+                    placeholder="One paragraph club description"
                     maxLength={1000}
                   />
-                  <span className={`absolute bottom-6 right-2 text-sm ${
+                  <span className={`absolute bottom-6 left-2 text-sm ${
                     clubInfo.description?.length === 1000 ? 'text-red-500 font-bold' : 'text-grey'
                   }`}>
                     {clubInfo.description ? clubInfo.description.length : 0}/1000

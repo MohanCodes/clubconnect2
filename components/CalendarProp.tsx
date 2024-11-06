@@ -13,7 +13,7 @@ const CalendarProp: React.FC<CalendarProps> = ({ events = [] }) => {
 
   useEffect(() => {
     const handleResize = () => {
-      setIsWeeklyView(window.innerWidth < 640); // Switch to weekly view below 640px
+      setIsWeeklyView(window.innerWidth < 768); // Switch to weekly view below 640px
     };
 
     handleResize(); // Initial check
@@ -60,7 +60,7 @@ const CalendarProp: React.FC<CalendarProps> = ({ events = [] }) => {
     }
   
     return (
-      <div className="grid grid-cols-1 sm:grid-cols-7 gap-1">
+      <div className="grid grid-cols-1 md:grid-cols-7 gap-1">
         {days}
       </div>
     );
@@ -108,16 +108,16 @@ const CalendarProp: React.FC<CalendarProps> = ({ events = [] }) => {
   return (
     <div className="bg-cblack text-white p-6 rounded-lg shadow-lg">
       <div className="flex justify-between items-center mb-4">
-        <button onClick={prevPeriod} className="text-azul hover:text-blue-400">
+        <button onClick={prevPeriod} className="text-azul hover:text-blue-400 text-lg">
           &lt; Prev
         </button>
-        <h2 className="text-2xl font-semibold">
+        <h2 className="text-2xl font-semibold text-center">
           {isWeeklyView 
             ? `Week of ${currentDate.toLocaleDateString()}`
             : `${monthNames[currentDate.getMonth()]} ${currentDate.getFullYear()}`
           }
         </h2>
-        <button onClick={nextPeriod} className="text-azul hover:text-blue-400">
+        <button onClick={nextPeriod} className="text-azul hover:text-blue-400 text-lg">
           Next &gt;
         </button>
       </div>
