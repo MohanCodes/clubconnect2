@@ -7,7 +7,7 @@ export default function About() {
   return (
     <div className="bg-cblack">
       <Navbar />
-      <main>
+      <main role="main">
         <UnderDevelopment />
       </main>
     </div>

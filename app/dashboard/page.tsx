@@ -9,9 +9,9 @@ const Profile = dynamic(() => import('@/components/Profile'));
 const Dashboard: React.FC = () => {
 
     return (
-        <main className="bg-cblack min-h-screen">
+        <div className="bg-cblack min-h-screen">
             <Navbar />
-            <div className="container mx-auto px-4 py-8">
+            <main className="container mx-auto px-4 py-8">
                 <div className='text-5xl pb-10 font-semibold text-white'>
                     Your <span className="text-azul">Dashboard</span>
                 </div>
@@ -21,12 +21,12 @@ const Dashboard: React.FC = () => {
                         Here, you can also find your personalized club <span className='text-white font-semibold'>calendar</span>, featuring all the clubs you like and those you&apos;ve <span className='text-white font-semibold'>starred</span> for quick reference.<br/><br/>If you&apos;re a club <span className='text-white font-semibold'>owner</span>, this is also your opportunity to <span className='text-white font-semibold'>promote</span> your club by creating a dedicated <span className='text-white font-semibold'>page</span> that showcases its unique offerings and events. Stay organized and engaged with your favorite clubs all in one convenient location!
                     </p>
                 </div>
-            </div>
-            <Calendar />
-            <Profile />
-            <YourClubs />
-            <div className='pb-20'></div>
-        </main>
+                <Calendar />
+                <Profile />
+                <YourClubs />
+                <div className='pb-20'></div>
+            </main>
+        </div>
     );
 };
 
