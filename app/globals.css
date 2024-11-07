@@ -5,3 +5,12 @@
 body {
     font-family: var(--font-sora);
 }
+
+.bubble-text {
+    font-family: 'Rubik Bubbles', sans-serif; /* Bubble font */
+    font-size: 60px; /* Adjust size as needed */
+    color: black; /* Text color */
+    -webkit-text-stroke: 1px white; /* White outline */
+    text-stroke: 1px white; /* For non-WebKit browsers */
+    text-shadow: 2px 2px 0 rgba(255, 255, 255, 0.5); /* Optional shadow for depth */
+}
