@@ -687,7 +687,7 @@ const EditClubPage = () => {
                         handleChange(e, 'description');
                       }
                     }}
-                    className="w-full max-w-full box-border h-60 p-2 text-grey bg-gray-800 rounded mb-4 overflow-x-hidden"
+                    className="w-full box-border h-60 p-2 text-grey bg-gray-800 rounded mb-4 overflow-x-hidden"
                     placeholder="One paragraph club description"
                     maxLength={1000}
                   />
@@ -919,7 +919,7 @@ const EditClubPage = () => {
                   </div>
                 ))
               ) : (
-                <p className="text-gray-300">No one-off events are scheduled at this time.</p>
+                !isEditing && <p className="text-gray-300">No one-off events are scheduled at this time.</p>
               )}
               {isEditing && (
                 <div>
@@ -935,7 +935,7 @@ const EditClubPage = () => {
                       value={newOneOffEvent.title}
                       onChange={(e) => handleOneOffEventChange('title', e.target.value)}
                       placeholder="Event Title"
-                      className="bg-gray-800 text-white p-1 rounded mr-2"
+                      className="bg-gray-800 text-white p-1 rounded md:w-auto w-1/2"
                     />
                   </div>
                   <button onClick={handleAddOneOffEvent} className="bg-green-500 text-white px-2 py-1 mt-2 rounded">

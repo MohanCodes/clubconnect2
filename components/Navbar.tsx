@@ -50,16 +50,16 @@ const Navbar: React.FC = () => {
   return (
     <nav className="sticky top-0 z-50 bg-cblack">
       <div className="flex items-center justify-between p-6">
-        <Link href="/" className="flex items-center space-x-4">
+        <Link href="/" className="flex items-center md:space-x-4">
           <Image
             src="/circles.svg"
             alt="Logo"
             width={60}
             height={60}
-            className="h-10"
+            className="h-9 md:h-10"
             priority
           />
-          <span className="text-3xl font-bold text-white">
+          <span className="text-xl md:text-3xl font-bold text-white">
             <span className="text-grey">MN</span><span className="text-white">Club</span><span className="text-azul">Connect</span>
           </span>
         </Link>
