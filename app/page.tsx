@@ -3,8 +3,11 @@
 import { useEffect, useState } from 'react';
 import { collection, getDocs, query, where, updateDoc, doc, arrayUnion, arrayRemove, increment, getDoc } from 'firebase/firestore';
 import { db, auth } from '@/firebase/firebase'; // Adjust the path as necessary
-import Tile from '@/components/Tile';
-import Navbar from '@/components/Navbar';
+import dynamic from 'next/dynamic';
+
+const Tile = dynamic(() => import('@/components/Tile'));
+const Navbar = dynamic(() => import('@/components/Navbar'));
+
 import { useRouter } from 'next/navigation';
 import { onAuthStateChanged } from 'firebase/auth';
 import { User as FirebaseUser } from 'firebase/auth';

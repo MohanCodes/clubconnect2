@@ -1,7 +1,10 @@
 "use client";
 
-import Link from 'next/link';
-import Image from 'next/image';
+import dynamic from 'next/dynamic';
+
+const Link = dynamic(() => import('next/link'));
+const Image = dynamic(() => import('next/image'));
+
 import { useEffect, useState } from 'react';
 import { auth } from '@/firebase/firebase';
 import { signOut, User } from 'firebase/auth';
@@ -54,9 +57,10 @@ const Navbar: React.FC = () => {
             width={60}
             height={60}
             className="h-10"
+            priority
           />
           <span className="text-3xl font-bold text-white">
-            Club<span className="text-azul">Connect</span>
+            <span className="text-azul">MN</span><span className="text-white">Club</span><span className="text-azul">Connect</span>
           </span>
         </Link>
 

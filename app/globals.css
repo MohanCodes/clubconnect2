@@ -5,3 +5,12 @@
 body {
     font-family: var(--font-sora);
 }
+
+.bubble-text {
+    color: #0F0F0F;
+    text-shadow: 
+      -1px -1px 0 white,
+      1px -1px 0 white,
+      -1px 1px 0 white,
+      1px 1px 0 white;
+  }
