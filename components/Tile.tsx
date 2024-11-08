@@ -13,8 +13,6 @@ import {
   FaLink,
   FaStar,
   FaRegStar,
-  FaCheckDouble,
-  FaCheckSquare,
   FaCheckCircle
 } from 'react-icons/fa';
 
