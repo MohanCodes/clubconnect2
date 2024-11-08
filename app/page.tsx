@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { collection, getDocs, query, where, updateDoc, doc, arrayUnion, arrayRemove, increment, getDoc } from 'firebase/firestore';
 import { db, auth } from '@/firebase/firebase'; // Adjust the path as necessary
 import dynamic from 'next/dynamic';
+import BlurFade from '@/components/ui/blur-fade';
 
 const Tile = dynamic(() => import('@/components/Tile'));
 const Navbar = dynamic(() => import('@/components/Navbar'));
@@ -174,36 +175,40 @@ const Home: React.FC = () => {
   return (
     <div className="bg-cblack">
       <Navbar />
-      <main className="relative flex min-h-screen flex-col items-center justify-center bg-cblack text-center -mt-20">
+      <main className="relative flex min-h-screen flex-col items-center justify-center bg-cblack text-center -mt-16">
         <div className='max-w-lg flex flex-col justify-center h-screen items-center'>
-          <div className='font-semibold text-white text-3xl md:text-4xl lg:text-5xl text-center'>
-            <span className='text-azul'>Connect</span> with your club community.
-          </div>
-          <p className="text-lg sm:text-xl my-4 sm:my-6 text-center text-grey px-4 sm:px-0 max-w-md mx-auto">
-            Currently a club platform for students located in the west metro.
-          </p>
-          <div className="space-y-4 sm:space-y-0 sm:space-x-4 pt-4 flex flex-col sm:flex-row px-4 sm:px-0">
-            <input
-              type="text"
-              placeholder="Search for a club:"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="px-5 py-3 rounded-full border-none outline-none w-full sm:w-96 text-gray-700"
-            />
-          </div>
-          <div className='mt-8 flex'>
-            <div className="flex flex-wrap gap-2 justify-center">
-            {tags.map((tag, index) => {
-                const schoolStyle = schoolColors[tag.toLowerCase() as keyof typeof schoolColors] || { bg: 'bg-gray-200', text: 'text-black', ring: '' };
-                const isSelected = selectedTag === tag; // Check if the tag is selected
-                return (
-                    <button key={index} onClick={() => handleTagClick(tag)} className={`md:text-sm text-xs text-sm font-medium px-3 py-1 rounded-full break-words ${schoolStyle.bg} ${schoolStyle.text} ${isSelected ? `ring-2 ${schoolStyle.ring}` : ''}`}>
-                        {tag}
-                    </button>
-                );
-            })}
+          <BlurFade delay={0.1}>
+            <div className='font-semibold text-white text-3xl md:text-4xl lg:text-5xl text-center'>
+              <span className='text-azul'>Connect</span> with your club community.
             </div>
-          </div>
+          </BlurFade>
+          <BlurFade delay={0.3}>
+            <p className="text-lg sm:text-xl my-4 sm:my-6 text-center text-grey px-4 sm:px-0 max-w-md mx-auto">
+              Currently a club platform for students located in the west metro.
+            </p>
+            <div className="flex justify-center space-y-4 sm:space-y-0 sm:space-x-4 pt-4 flex flex-col sm:flex-row px-4 sm:px-0">
+              <input
+                type="text"
+                placeholder="Search for a club:"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="px-5 py-3 rounded-full border-none outline-none w-full sm:w-96 text-gray-700"
+              />
+            </div>
+            <div className='mt-8 flex'>
+              <div className="flex flex-wrap gap-2 justify-center">
+              {tags.map((tag, index) => {
+                  const schoolStyle = schoolColors[tag.toLowerCase() as keyof typeof schoolColors] || { bg: 'bg-gray-200', text: 'text-black', ring: '' };
+                  const isSelected = selectedTag === tag; // Check if the tag is selected
+                  return (
+                      <button key={index} onClick={() => handleTagClick(tag)} className={`md:text-sm text-xs text-sm font-medium px-3 py-1 rounded-full break-words ${schoolStyle.bg} ${schoolStyle.text} ${isSelected ? `ring-2 ${schoolStyle.ring}` : ''}`}>
+                          {tag}
+                      </button>
+                  );
+              })}
+              </div>
+            </div>
+          </BlurFade>
         </div>
         <div className="flex flex-col items-center">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 p-6 max-w-full overflow-x-auto">
