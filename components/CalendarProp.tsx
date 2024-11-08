@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
+import { FaAngleLeft, FaAngleRight } from 'react-icons/fa';
 
 interface CalendarProps {
   events?: { date: Date; title: string; link: string }[];
@@ -108,17 +109,19 @@ const CalendarProp: React.FC<CalendarProps> = ({ events = [] }) => {
   return (
     <div className="bg-cblack text-white p-6 rounded-lg shadow-lg">
       <div className="flex justify-between items-center mb-4">
-        <button onClick={prevPeriod} className="text-azul hover:text-blue-400 text-lg">
-          &lt; Prev
-        </button>
+      <button onClick={prevPeriod} className="text-azul hover:text-blue-400 text-xl flex items-center space-x-2">
+        <FaAngleLeft size={40}/> 
+        <span>Prev</span>
+      </button>
         <h2 className="text-2xl font-semibold text-center">
           {isWeeklyView 
             ? `Week of ${currentDate.toLocaleDateString()}`
             : `${monthNames[currentDate.getMonth()]} ${currentDate.getFullYear()}`
           }
         </h2>
-        <button onClick={nextPeriod} className="text-azul hover:text-blue-400 text-lg">
-          Next &gt;
+        <button onClick={nextPeriod} className="text-azul hover:text-blue-400 text-xl flex items-center space-x-2">
+          <span>Next</span>
+          <FaAngleRight size={40}/> 
         </button>
       </div>
       {isWeeklyView ? renderWeeklyView() : renderMonthlyView()}

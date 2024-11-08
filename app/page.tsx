@@ -184,7 +184,7 @@ const Home: React.FC = () => {
             </div>
           </BlurFade>
           <BlurFade delay={0.3}>
-            <p className="text-lg sm:text-xl my-4 sm:my-6 text-center text-grey px-4 sm:px-0 max-w-md mx-auto">
+            <p className="text-lg sm:text-xl my-2 sm:my-4 text-center text-grey px-4 sm:px-0 max-w-md mx-auto">
               Currently a club platform for students located in the west metro.
             </p>
             <div className="flex justify-center space-y-4 sm:space-y-0 sm:space-x-4 pt-4 flex flex-col sm:flex-row px-4 sm:px-0">
@@ -196,20 +196,22 @@ const Home: React.FC = () => {
                 className="px-5 py-3 rounded-full border-none outline-none w-full sm:w-96 text-gray-700"
               />
             </div>
+          </BlurFade>
             <div className='mt-8 flex'>
               <div className="flex flex-wrap gap-2 justify-center">
               {tags.map((tag, index) => {
-                  const schoolStyle = schoolColors[tag.toLowerCase() as keyof typeof schoolColors] || { bg: 'bg-gray-200', text: 'text-black', ring: '' };
+                const schoolStyle = schoolColors[tag.toLowerCase() as keyof typeof schoolColors] || { bg: 'bg-gray-200', text: 'text-black', ring: '' };
                   const isSelected = selectedTag === tag; // Check if the tag is selected
                   return (
-                      <button key={index} onClick={() => handleTagClick(tag)} className={`md:text-sm text-xs text-sm font-medium px-3 py-1 rounded-full break-words ${schoolStyle.bg} ${schoolStyle.text} ${isSelected ? `ring-2 ${schoolStyle.ring}` : ''}`}>
+                    <BlurFade key={index} delay={0.4 + index * 0.05} inView>
+                    <button onClick={() => handleTagClick(tag)} className={`md:text-sm text-xs text-sm font-medium px-3 py-1 rounded-full break-words ${schoolStyle.bg} ${schoolStyle.text} ${isSelected ? `ring-2 ${schoolStyle.ring}` : ''}`}>
                           {tag}
                       </button>
+                    </BlurFade>
                   );
               })}
               </div>
             </div>
-          </BlurFade>
         </div>
         <div className="flex flex-col items-center">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 p-6 max-w-full overflow-x-auto">

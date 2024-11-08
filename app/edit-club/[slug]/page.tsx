@@ -836,14 +836,14 @@ const EditClubPage = () => {
                         type="text"
                         value={lead.role}
                         onChange={(e) => handleStudentLeadChange(index, 'role', e.target.value)}
-                        className="bg-gray-800 text-white p-1 rounded mr-2"
+                        className="bg-gray-800 text-white p-1 rounded mr-2 mt-2"
                         placeholder="Student Role"
                       />
                       <input
                         type="email"
                         value={lead.email}
                         onChange={(e) => handleStudentLeadChange(index, 'email', e.target.value)}
-                        className="bg-gray-800 text-white p-1 rounded mr-2"
+                        className="bg-gray-800 text-white p-1 rounded mr-2 mt-2"
                         placeholder="Student Email"
                       />
                       <button onClick={() => handleRemoveStudentLead(index)} className="text-red-500">
