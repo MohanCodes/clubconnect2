@@ -610,22 +610,22 @@ const EditClubPage = () => {
           </div>
         </div>
       )}
-        <div className="flex flex-col lg:flex-row items-center justify-between pb-4 pt-2 sticky top-0 z-40 bg-cblack break-words">
-          <h1 className="text-2xl lg:text-4xl font-bold text-white mb-4 text-center lg:text-left">
+        <div className="flex flex-col md:flex-row items-center justify-between pb-4 pt-2 sticky top-0 z-40 bg-cblack break-words">
+          <h1 className="text-2xl md:text-4xl font-bold text-white mb-4 text-center md:text-left">
             {clubInfo.name === "" ? 'Enter Club Name Here' : clubInfo.name}
           </h1>
           
-          <div className='flex flex-wrap justify-center lg:justify-end gap-2 w-full'>
+          <div className='flex flex-wrap justify-center md:justify-end gap-2 w-full'>
             <button
               onClick={isEditing ? handleSave : handleEdit}
-              className="bg-azul text-white text-xs sm:text-sm px-3 sm:px-4 py-2 rounded-full flex-grow lg:flex-grow-0"
+              className="bg-azul text-white text-xs sm:text-sm px-3 sm:px-4 py-2 rounded-full flex-grow md:flex-grow-0"
             >
               {isEditing ? 'Render Page' : 'Edit Page'}
             </button>
             
             <button
               onClick={handleUpload}
-              className="bg-azul text-white text-xs sm:text-sm px-3 sm:px-4 py-2 rounded-full flex-grow lg:flex-grow-0"
+              className="bg-azul text-white text-xs sm:text-sm px-3 sm:px-4 py-2 rounded-full flex-grow md:flex-grow-0"
               disabled={isUploading}
             >
               {isUploading ? 'Uploading...' : 'Save Changes'}
@@ -633,7 +633,7 @@ const EditClubPage = () => {
             
             <button
               onClick={() => setIsDeleteModalOpen(true)}
-              className="bg-red-500 text-white text-xs sm:text-sm px-3 sm:px-4 py-2 rounded-full flex-grow lg:flex-grow-0"
+              className="bg-red-500 text-white text-xs sm:text-sm px-3 sm:px-4 py-2 rounded-full flex-grow md:flex-grow-0"
             >
               Delete Club
             </button>
@@ -922,21 +922,23 @@ const EditClubPage = () => {
                 <p className="text-gray-300">No one-off events are scheduled at this time.</p>
               )}
               {isEditing && (
-                <div className="flex items-center mt-2">
-                  <input
-                    type="date"
-                    value={newOneOffEvent.date}
-                    onChange={(e) => handleOneOffEventChange('date', e.target.value)}
-                    className="bg-gray-800 text-white p-1 rounded mr-2"
-                  />
-                  <input
-                    type="text"
-                    value={newOneOffEvent.title}
-                    onChange={(e) => handleOneOffEventChange('title', e.target.value)}
-                    placeholder="Event Title"
-                    className="bg-gray-800 text-white p-1 rounded mr-2"
-                  />
-                  <button onClick={handleAddOneOffEvent} className="bg-green-500 text-white px-2 py-1 rounded">
+                <div>
+                  <div className="flex items-center mt-2">
+                    <input
+                      type="date"
+                      value={newOneOffEvent.date}
+                      onChange={(e) => handleOneOffEventChange('date', e.target.value)}
+                      className="bg-gray-800 text-white p-1 rounded mr-2"
+                    />
+                    <input
+                      type="text"
+                      value={newOneOffEvent.title}
+                      onChange={(e) => handleOneOffEventChange('title', e.target.value)}
+                      placeholder="Event Title"
+                      className="bg-gray-800 text-white p-1 rounded mr-2"
+                    />
+                  </div>
+                  <button onClick={handleAddOneOffEvent} className="bg-green-500 text-white px-2 py-1 mt-2 rounded">
                     Add Event
                   </button>
                 </div>

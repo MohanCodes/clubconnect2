@@ -7,10 +7,10 @@ body {
 }
 
 .bubble-text {
-    font-family: 'Rubik Bubbles', sans-serif; /* Bubble font */
-    font-size: 60px; /* Adjust size as needed */
-    color: black; /* Text color */
-    -webkit-text-stroke: 1px white; /* White outline */
-    text-stroke: 1px white; /* For non-WebKit browsers */
-    text-shadow: 2px 2px 0 rgba(255, 255, 255, 0.5); /* Optional shadow for depth */
-}
+    color: #0F0F0F;
+    text-shadow: 
+      -1px -1px 0 white,
+      1px -1px 0 white,
+      -1px 1px 0 white,
+      1px 1px 0 white;
+  }

@@ -57,6 +57,7 @@ const Navbar: React.FC = () => {
             width={60}
             height={60}
             className="h-10"
+            priority
           />
           <span className="text-3xl font-bold text-white">
             <span className="text-azul">MN</span><span className="text-white">Club</span><span className="text-azul">Connect</span>
