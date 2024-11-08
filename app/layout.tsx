@@ -4,6 +4,12 @@ import { Sora } from 'next/font/google'
 import { AuthProvider } from '../firebase/context/AuthContext';
 import Footer from '@/components/Footer';
 
+const sora = Sora({
+  variable: '--font-sora',
+  subsets: ['latin'],
+  display: 'swap',
+})
+
 export const metadata: Metadata = {
   title: "MNClubConnect - Connect with Your Club Community",
   description: "Join MNClubConnect to discover, communicate, and collaborate with student clubs.",
@@ -27,12 +33,6 @@ export const metadata: Metadata = {
     canonical: "https://www.mnclubconnect.com",
   },
 };
-
-const sora = Sora({
-  variable: '--font-sora',
-  subsets: ['latin'],
-  display: 'swap',
-})
 
 export const revalidate = 60;
 

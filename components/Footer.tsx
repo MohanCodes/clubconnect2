@@ -4,7 +4,7 @@ import { FaInstagram } from 'react-icons/fa';
 const Footer: React.FC = () => {
 
   const socialLinks = [
-    { href: 'https://instagram.com', icon: <FaInstagram size={24} /> },
+    { href: 'https://instagram.com/mnclubconnect', icon: <FaInstagram size={24} /> },
   ];
 
   return (
