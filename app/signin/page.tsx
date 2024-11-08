@@ -68,7 +68,7 @@ export default function Signin() {
             </div>
             
             <Image src="/circles.svg" alt="MNClubConnect Logo" width={60} height={60} className="relative z-10 mx-auto mb-10 mt-6" />
-            <h1 className="text-3xl font-semibold text-white">Sign In to <span className="text-azul">MN</span><span className="text-white">Club</span><span className="text-azul">Connect</span></h1>
+            <h1 className="text-3xl font-semibold text-white">Sign In to MNClubConnect</h1>
             <p className="text-grey mt-2">Access your club community</p>
           </div>
           <div className="p-8">
