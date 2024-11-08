@@ -1,21 +1,32 @@
+import React from 'react';
 import Link from 'next/link';
+import { FaTwitter, FaInstagram, FaFacebook, FaLinkedin } from 'react-icons/fa';
 
 const Footer: React.FC = () => {
+
+  const socialLinks = [
+    { href: 'https://instagram.com', icon: <FaInstagram size={24} /> },
+  ];
+
   return (
     <footer className="bg-cblack text-white py-8">
       <div className="container mx-auto px-4">
-        <div className="flex flex-col md:flex-row justify-between items-center">
-          <div className="flex space-x-4">
-            <Link href="/" className="hover:text-azul">Home</Link>
-            <Link href="/about" className="hover:text-azul">About</Link>
-            <Link href="/blog" className="hover:text-azul">Blog</Link>
-            <Link href="/dashboard" className="hover:text-azul">Dashboard</Link>
-            <Link href="/signin" className="hover:text-azul">Sign In</Link>
-            <Link href="/signup" className="hover:text-azul">Sign Up</Link>
+        <div className="flex flex-col items-center">
+          <div className="flex space-x-4 mb-4">
+            {socialLinks.map((social) => (
+              <a
+                key={social.href}
+                href={social.href}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="hover:text-azul"
+              >
+                {social.icon}
+              </a>
+            ))}
           </div>
-          <div className="mt-4 md:mt-0">
-            <p className="text-sm text-grey">&copy; {new Date().getFullYear()} MNClubConnect. All rights reserved.</p>
-          </div>
+          <p className="text-center text-sm">© {new Date().getFullYear()} MNClubConnect. All rights reserved.</p>
+          <p className="text-center text-sm mb-2">Made with 💙 by Mohan</p>
         </div>
       </div>
     </footer>
