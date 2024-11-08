@@ -60,7 +60,7 @@ const Navbar: React.FC = () => {
             priority
           />
           <span className="text-3xl font-bold text-white">
-            <span className="text-azul">MN</span><span className="text-white">Club</span><span className="text-azul">Connect</span>
+            <span className="text-grey">MN</span><span className="text-white">Club</span><span className="text-azul">Connect</span>
           </span>
         </Link>
 

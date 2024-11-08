@@ -9,19 +9,19 @@ export default function About() {
       <main className="flex-grow flex items-center justify-center px-4 py-16">
         <div className='max-w-3xl w-full'>
           <h1 className='font-semibold text-white text-5xl mb-12 text-center'>
-            <span className='text-grey'>MN</span>Club<span className="text-azul">Connect</span>
+            About <span className='text-grey'>MN</span>Club<span className="text-azul">Connect</span>
           </h1>
           
           <div className="space-y-12">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
               <div>
-                <h2 className="text-2xl font-semibold text-azul mb-4">Our Mission</h2>
+                <h2 className="text-2xl font-semibold text-white mb-4">Our <span className='text-azul'>Mission</span></h2>
                 <p className="text-grey">
                   To foster a thriving ecosystem of student clubs by providing a centralized platform for discovery, communication, and collaboration.
                 </p>
               </div>
               <div>
-                <h2 className="text-2xl font-semibold text-azul mb-4">What We Offer</h2>
+                <h2 className="text-2xl font-semibold text-white mb-4">What We <span className='text-azul'>Offer</span></h2>
                 <ul className="list-disc list-inside text-grey">
                   <li>Comprehensive club platform</li>
                   <li>Easy-to-use search functionality</li>
@@ -31,21 +31,21 @@ export default function About() {
             </div>
 
             <div>
-              <h2 className="text-2xl font-semibold text-azul mb-4">Club Leaders</h2>
+              <h2 className="text-2xl font-semibold text-white mb-4">Club <span className='text-azul'>Leaders</span></h2>
               <p className="text-grey">
                 Club leaders play a crucial role in organizing and managing club activities. They are responsible for ensuring the smooth functioning of the club and engaging members in meaningful ways.
               </p>
             </div>
 
             <div>
-              <h2 className="text-2xl font-semibold text-azul mb-4">Club Members</h2>
+              <h2 className="text-2xl font-semibold text-white mb-4">Club <span className='text-azul'>Members</span></h2>
               <p className="text-grey">
                 Club members are the heart of any club. They participate in activities, contribute ideas, and help in achieving the club&apos;s goals.
               </p>
             </div>
 
             <div>
-              <h2 className="text-2xl font-semibold text-azul mb-4">How to Use MNClubConnect</h2>
+              <h2 className="text-2xl font-semibold text-white mb-4">How to Use <span className='text-azul'>MNClubConnect</span></h2>
               <p className="text-grey mb-6">
                 Follow these steps to make the most out of MNClubConnect:
               </p>
@@ -59,7 +59,7 @@ export default function About() {
             </div>
 
             <div>
-              <h2 className="text-2xl font-semibold text-azul mb-4">Get Involved</h2>
+              <h2 className="text-2xl font-semibold text-white mb-4">Get <span className='text-azul'>Involved</span></h2>
               <p className="text-grey mb-6">
                 Whether you&apos;re looking to join a club or promote your own, MNClubConnect is here to help. Join our community today!
               </p>
