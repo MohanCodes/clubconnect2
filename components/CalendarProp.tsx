@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { FaAngleLeft, FaAngleRight } from 'react-icons/fa';
+import { format, addDays, subDays, startOfWeek, endOfWeek, startOfMonth, endOfMonth, eachDayOfInterval, isSameDay } from 'date-fns';
 
 interface CalendarProps {
   events?: { date: Date; title: string; link: string }[];
@@ -22,77 +23,45 @@ const CalendarProp: React.FC<CalendarProps> = ({ events = [] }) => {
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
-  const monthNames = [
-    "January", "February", "March", "April", "May", "June",
-    "July", "August", "September", "October", "November", "December"
-  ];
-
   const prevPeriod = () => {
-    setCurrentDate(new Date(currentDate.setDate(currentDate.getDate() - (isWeeklyView ? 7 : currentDate.getDate()))));
+    setCurrentDate(isWeeklyView ? subDays(currentDate, 7) : subDays(currentDate, currentDate.getDate()));
   };
 
   const nextPeriod = () => {
-    setCurrentDate(new Date(currentDate.setDate(currentDate.getDate() + (isWeeklyView ? 7 : (32 - currentDate.getDate())))));
+    setCurrentDate(isWeeklyView ? addDays(currentDate, 7) : addDays(currentDate, 32 - currentDate.getDate()));
   };
 
   const renderWeeklyView = () => {
-    const weekStart = new Date(currentDate);
-    weekStart.setDate(currentDate.getDate() - currentDate.getDay());
-    const days = [];
-  
-    for (let i = 0; i < 7; i++) {
-      const date = new Date(weekStart);
-      date.setDate(weekStart.getDate() + i);
-      const dayEvents = events.filter(event => event.date.toDateString() === date.toDateString());
-  
-      days.push(
-        <div key={i} className="border border-gray-700 p-2 rounded">
-          <div className="text-right text-gray-400">{date.getDate()}</div>
-          <div className="text-xs text-gray-500">{['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'][i]}</div>
-          <div className="flex flex-col mt-1">
-            {dayEvents.map((event, index) => (
-              <Link key={index} href={event.link} className="text-xs text-white mt-1">
-                <div className='bg-[#2A2A2A] rounded p-1 inline-block hover:underline break-words w-full'>{event.title}</div>
-              </Link>
-            ))}
-          </div>
-        </div>
-      );
-    }
-  
+    const weekStart = startOfWeek(currentDate);
+    const weekEnd = endOfWeek(currentDate);
+    const days = eachDayOfInterval({ start: weekStart, end: weekEnd });
+
     return (
       <div className="grid grid-cols-1 md:grid-cols-7 gap-1">
-        {days}
+        {days.map((date, index) => {
+          const dayEvents = events.filter(event => isSameDay(event.date, date));
+          return (
+            <div key={index} className="border border-gray-700 p-2 rounded">
+              <div className="text-right text-gray-400">{format(date, 'd')}</div>
+              <div className="text-xs text-gray-500">{format(date, 'EEE')}</div>
+              <div className="flex flex-col mt-1">
+                {dayEvents.map((event, index) => (
+                  <Link key={index} href={event.link} className="text-xs text-white mt-1">
+                    <div className='bg-[#2A2A2A] rounded p-1 inline-block hover:underline break-words w-full'>{event.title}</div>
+                  </Link>
+                ))}
+              </div>
+            </div>
+          );
+        })}
       </div>
     );
   };
 
   const renderMonthlyView = () => {
-    const daysInMonth = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 0).getDate();
-    const firstDayOfMonth = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1).getDay();
-    const days = [];
-
-    for (let i = 0; i < firstDayOfMonth; i++) {
-      days.push(<div key={`empty-${i}`} className="h-24"></div>);
-    }
-
-    for (let day = 1; day <= daysInMonth; day++) {
-      const date = new Date(currentDate.getFullYear(), currentDate.getMonth(), day);
-      const dayEvents = events.filter(event => event.date.toDateString() === date.toDateString());
-
-      days.push(
-        <div key={day} className="h-32 border border-gray-700 p-2 rounded overflow-y-auto">
-          <div className="text-right text-gray-400">{day}</div>
-          <div className="flex flex-col">
-            {dayEvents.map((event, index) => (
-              <Link key={index} href={event.link} className="text-xs text-white mt-1">
-                <div className='bg-[#2A2A2A] rounded p-2 inline-block hover:underline break-words w-full'>{event.title}</div>
-              </Link>
-            ))}
-          </div>
-        </div>
-      );
-    }
+    const monthStart = startOfMonth(currentDate);
+    const monthEnd = endOfMonth(currentDate);
+    const days = eachDayOfInterval({ start: monthStart, end: monthEnd });
 
     return (
       <>
@@ -101,7 +70,23 @@ const CalendarProp: React.FC<CalendarProps> = ({ events = [] }) => {
             <div key={day} className="text-center text-gray-500">{day}</div>
           ))}
         </div>
-        <div className="grid grid-cols-7 gap-1">{days}</div>
+        <div className="grid grid-cols-7 gap-1">
+          {days.map((date, index) => {
+            const dayEvents = events.filter(event => isSameDay(event.date, date));
+            return (
+              <div key={index} className="h-32 border border-gray-700 p-2 rounded overflow-y-auto">
+                <div className="text-right text-gray-400">{format(date, 'd')}</div>
+                <div className="flex flex-col">
+                  {dayEvents.map((event, index) => (
+                    <Link key={index} href={event.link} className="text-xs text-white mt-1">
+                      <div className='bg-[#2A2A2A] rounded p-2 inline-block hover:underline break-words w-full'>{event.title}</div>
+                    </Link>
+                  ))}
+                </div>
+              </div>
+            );
+          })}
+        </div>
       </>
     );
   };
@@ -109,14 +94,14 @@ const CalendarProp: React.FC<CalendarProps> = ({ events = [] }) => {
   return (
     <div className="bg-cblack text-white p-6 rounded-lg shadow-lg">
       <div className="flex justify-between items-center mb-4">
-      <button onClick={prevPeriod} className="text-azul hover:text-blue-400 text-xl flex items-center space-x-2">
-        <FaAngleLeft size={40}/> 
-        <span>Prev</span>
-      </button>
+        <button onClick={prevPeriod} className="text-azul hover:text-blue-400 text-xl flex items-center space-x-2">
+          <FaAngleLeft size={40}/> 
+          <span>Prev</span>
+        </button>
         <h2 className="text-2xl font-semibold text-center">
           {isWeeklyView 
-            ? `Week of ${currentDate.toLocaleDateString()}`
-            : `${monthNames[currentDate.getMonth()]} ${currentDate.getFullYear()}`
+            ? `Week of ${format(currentDate, 'MM/dd/yyyy')}`
+            : `${format(currentDate, 'MMMM yyyy')}`
           }
         </h2>
         <button onClick={nextPeriod} className="text-azul hover:text-blue-400 text-xl flex items-center space-x-2">

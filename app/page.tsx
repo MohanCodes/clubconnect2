@@ -5,6 +5,7 @@ import { collection, getDocs, query, where, updateDoc, doc, arrayUnion, arrayRem
 import { db, auth } from '@/firebase/firebase'; // Adjust the path as necessary
 import dynamic from 'next/dynamic';
 import BlurFade from '@/components/ui/blur-fade';
+import { format, parseISO, isBefore, addDays, addWeeks, addMonths } from 'date-fns'; // Import date-fns functions
 
 const Tile = dynamic(() => import('@/components/Tile'));
 const Navbar = dynamic(() => import('@/components/Navbar'));

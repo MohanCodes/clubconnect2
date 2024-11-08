@@ -7,6 +7,7 @@ import { doc, getDoc } from 'firebase/firestore';
 import { onAuthStateChanged } from 'firebase/auth';
 import { FaCircleNotch } from 'react-icons/fa';
 import { User } from 'firebase/auth'; // Import User type
+import { parseISO, isBefore, addDays, addWeeks, addMonths, format } from 'date-fns'; // Import date-fns functions
 
 interface Event {
   date: Date;
@@ -73,7 +74,7 @@ export default function CalendarPage() {
             console.log("Processing one-off events...");
             clubData.oneOffEvents.forEach((event: { date: string; title: string }) => {
               fetchedEvents.push({
-                date: new Date(event.date),
+                date: parseISO(event.date),
                 title: `${clubName}: ${event.title}`,
                 link: `/club/${clubId}` // Create a link
               });
@@ -125,15 +126,15 @@ export default function CalendarPage() {
   }): Date[] => {
     console.log("Generating recurring dates for event:", event);
     const dates: Date[] = [];
-    const currentDate = new Date(event.startDate);
-    const endDate = new Date(event.endDate);
+    const currentDate = parseISO(event.startDate);
+    const endDate = parseISO(event.endDate);
 
     while (currentDate.getDay() !== event.dayOfWeek) {
       currentDate.setDate(currentDate.getDate() + 1);
     }
 
-    while (currentDate <= endDate) {
-      const currentDateString = currentDate.toISOString().split('T')[0];
+    while (isBefore(currentDate, endDate) || currentDate.getTime() === endDate.getTime()) {
+      const currentDateString = format(currentDate, 'yyyy-MM-dd');
       
       if (!event.exceptions.includes(currentDateString)) {
         dates.push(new Date(currentDate));
@@ -141,13 +142,13 @@ export default function CalendarPage() {
 
       switch (event.frequency) {
         case 'weekly':
-          currentDate.setDate(currentDate.getDate() + 7);
+          currentDate.setDate(addDays(currentDate, 7).getDate());
           break;
         case 'biweekly':
-          currentDate.setDate(currentDate.getDate() + 14);
+          currentDate.setDate(addWeeks(currentDate, 2).getDate());
           break;
         case 'monthly':
-          currentDate.setMonth(currentDate.getMonth() + 1);
+          currentDate.setMonth(addMonths(currentDate, 1).getMonth());
           break;
       }
     }
