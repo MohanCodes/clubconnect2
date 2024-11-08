@@ -207,7 +207,6 @@ const YourClubs: React.FC = () => {
                                 onUpvoteClick={(e) => handleUpvoteClick(e, club.id)} 
                                 isUpvoteLoading={isUpvoteLoading[club.id] || false}
                                 showVoteButton={false}
-                                isVerified={club.isVerified} // Pass isVerified to Tile component
                             />
                             {!club.isComplete && (
                                 <div className="absolute top-10 right-0 bg-yellow-500 text-black p-2 rounded-bl-lg rounded-tl-lg flex items-center">

@@ -178,20 +178,17 @@ const EditClubPage = () => {
       default: return <FaLink />;
     }
   };
-  
-  if (isLoading) {
-    <div className="fixed inset-0 bg-black flex items-center justify-center z-50">
-          <div className="bg-white p-6 rounded-lg flex flex-col items-center">
-            <FaCircleNotch className="animate-spin h-16 w-16 text-azul" />
-            <p className="mt-4 text-azul font-semibold">Loading club data...</p>
-          </div>
-    </div>
-  }
 
-  if (!clubInfo.isComplete) {
-    return <div><Navbar /><div className="-mt-20"><ClubNotFound /></div></div>; // Don't render anything if club data is incomplete
+  if (clubInfo && !clubInfo.isComplete) {
+    return (
+      <div>
+        <Navbar />
+        <div className="-mt-20">
+          <ClubNotFound />
+        </div>
+      </div>
+    );
   }
-
 
   return (
     <div className="bg-cblack min-h-screen">
@@ -401,19 +398,21 @@ const EditClubPage = () => {
             <div className="flex flex-col lg:flex-row gap-8">
               {blogs.map((blog) => (
                 <div key={blog.id} className="rounded-lg p-9 transition-shadow duration-300 bg-[#2A2A2A] lg:w-1/2">
-                  <div className='flex flex-row justify-between'>
-                    <h3 className="text-xl text-white font-bold">{blog.title}</h3>
-                  </div>
-                  <p className="text-sm text-gray-400 mt-1 mb-2">
-                    {blog.date.toLocaleDateString('en-US', {
-                      year: 'numeric',
-                      month: 'long',
-                      day: 'numeric',
-                    })}
-                  </p>
-                  <p className="text-gray-300">
-                    {blog.content.length > 200 ? `${blog.content.substring(0, 200)}...` : blog.content}
-                  </p>
+                  <Link href={`/blog/${blog.id}`} passHref>
+                    <div className='flex flex-row justify-between'>
+                      <h3 className="text-xl text-white font-bold">{blog.title}</h3>
+                    </div>
+                    <p className="text-sm text-gray-400 mt-1 mb-2">
+                      {blog.date.toLocaleDateString('en-US', {
+                        year: 'numeric',
+                        month: 'long',
+                        day: 'numeric',
+                      })}
+                    </p>
+                    <p className="text-gray-300">
+                      {blog.content.length > 200 ? `${blog.content.substring(0, 200)}...` : blog.content}
+                    </p>
+                  </Link>
                 </div>
               ))}
             </div>
@@ -423,6 +422,7 @@ const EditClubPage = () => {
       </main>
     </div>
   );
+
 };
 
 export default EditClubPage;

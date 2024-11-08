@@ -21,6 +21,7 @@ interface DisplayClub {
   tags: string[];
   links: { platform: string; url: string }[];
   isComplete: boolean;
+  isVerified: boolean;
   upvoteCount: number;
 }
 
@@ -237,6 +238,7 @@ const Home: React.FC = () => {
                         onUpvoteClick={(e) => handleUpvoteClick(e, club.id)}
                         isUpvoteLoading={isUpvoteLoading[club.id] || false}
                         showVoteButton={!!user}
+                        isVerified={club.isVerified}
                       />
                     </div>
                   ))}
