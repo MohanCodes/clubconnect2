@@ -12,6 +12,7 @@ import { ref, uploadBytes, getDownloadURL, deleteObject } from 'firebase/storage
 import { onAuthStateChanged } from 'firebase/auth';
 import { User as FirebaseUser } from 'firebase/auth';
 import { nanoid } from 'nanoid';
+import { parseISO, isBefore, isAfter, addDays, startOfWeek, nextMonday, format } from 'date-fns';
 
 type User = Pick<FirebaseUser, 'uid' | 'email' | 'displayName'>;
 
@@ -73,25 +74,53 @@ interface ClubInfo {
   blogIds: string[];
 }
 
-function getNextMeetingDate(event: RecurringEvent) {
+type Day = 0 | 1 | 2 | 3 | 4 | 5 | 6;
+
+function getNextMeetingDate(event: RecurringEvent): string {
   const today = new Date();
-  const eventDay = event.dayOfWeek;
-  const nextMeeting = new Date(today);
-
-  // Calculate the next occurrence of the event's day of the week
-  while (nextMeeting.getDay() !== eventDay) {
-    nextMeeting.setDate(nextMeeting.getDate() + 1);
-  }
-
-  // Check if the next meeting is within the event's date range
-  const startDate = new Date(event.startDate);
-  const endDate = new Date(event.endDate);
+  const startDate = parseISO(event.startDate);
+  const endDate = parseISO(event.endDate);
   
-  if (nextMeeting >= startDate && nextMeeting <= endDate) {
-    return nextMeeting;
-  } else {
-    return null; // No upcoming meeting within the range
+  // Check if today is past the end date
+  if (isAfter(today, endDate)) {
+    return "The event has ended.";
   }
+
+  let nextMeeting: Date;
+
+  // Calculate the next meeting date based on frequency
+  switch (event.frequency) {
+    case 'weekly':
+      nextMeeting = nextMonday(today);
+      break;
+    case 'biweekly':
+      nextMeeting = addDays(nextMonday(today), 14);
+      break;
+    case 'monthly':
+      nextMeeting = new Date(today.getFullYear(), today.getMonth() + 1, event.dayOfWeek);
+      break;
+    default:
+      throw new Error("Invalid frequency");
+  }
+
+  // Ensure the next meeting is after the start date
+  if (isBefore(nextMeeting, startDate)) {
+    nextMeeting = startOfWeek(startDate, { weekStartsOn: event.dayOfWeek as Day });
+    if (event.frequency === 'biweekly') {
+      nextMeeting = addDays(nextMeeting, 14);
+    }
+    if (event.frequency === 'monthly') {
+      nextMeeting.setMonth(nextMeeting.getMonth() + 1);
+    }
+  }
+
+  // Check if the next meeting is before the end date
+  if (isAfter(nextMeeting, endDate)) {
+    return "No more meetings scheduled.";
+  }
+
+  // Format and return the next meeting date
+  return format(nextMeeting, 'yyyy-MM-dd');
 }
 
 const EditClubPage = () => {
@@ -900,7 +929,7 @@ const EditClubPage = () => {
                     <div className="flex items-center">
                       <FaCalendarAlt className="text-blue-400 mr-4" />
                       <span className="text-white">
-                        {new Date(event.date).toLocaleDateString()} - {event.title}
+                        {format(parseISO(event.date), 'MMMM dd, yyyy')} - {event.title}
                       </span>
                     </div>
                     {isEditing && (
@@ -934,7 +963,7 @@ const EditClubPage = () => {
                     />
                   </div>
                   <button onClick={handleAddOneOffEvent} className="bg-green-500 text-white px-2 py-1 mt-2 rounded">
-                    Add Event
+                    Push Event
                   </button>
                 </div>
               )}
@@ -1000,7 +1029,7 @@ const EditClubPage = () => {
                         <p className='flex items-center mx-2'>From</p>
                         <input
                           type="date"
-                          value={event.startDate}
+                          value={format(parseISO(event.startDate), 'yyyy-MM-dd')}
                           onChange={(e) => handleRecurringEventChange(index, 'startDate', e.target.value)}
                           className="bg-gray-700 text-white p-2 rounded mr-2"
                           disabled={!isEditing}
@@ -1009,7 +1038,7 @@ const EditClubPage = () => {
                         <p className='flex items-center mx-2'>To</p>
                         <input
                           type="date"
-                          value={event.endDate}
+                          value={format(parseISO(event.endDate), 'yyyy-MM-dd')}
                           onChange={(e) => handleRecurringEventChange(index, 'endDate', e.target.value)}
                           className="bg-gray-700 text-white p-2 rounded mr-2"
                           disabled={!isEditing}
@@ -1080,12 +1109,12 @@ const EditClubPage = () => {
 
                           {/* Start Date, End Date, and Next Meeting */}
                           <p className="mt-2">
-                            It runs from {new Date(event.startDate).toLocaleDateString()} to{' '}
-                            {new Date(event.endDate).toLocaleDateString()}.
+                            It runs from {format(parseISO(event.startDate), 'MMMM dd, yyyy')} to{' '}
+                            {format(parseISO(event.endDate), 'MMMM dd, yyyy')}.
                           </p>
                           
                           <p className="mt-2 font-semibold text-blue-400">
-                            Next meeting: {nextMeeting ? nextMeeting.toLocaleDateString() : 'No upcoming meeting'}
+                            Next meeting: {nextMeeting ? format(parseISO(nextMeeting), 'MMMM dd, yyyy') : 'No upcoming meeting'}
                           </p>
 
                           {/* Display Exceptions */}
@@ -1187,7 +1216,7 @@ const EditClubPage = () => {
             </div>
           )}
 
-            {(blogs && blogs.length > 0) && (
+            {(blogs && blogs.length > 0 || isEditing) && (
               <div className="mb-8">
                 <h2 className="text-2xl font-bold text-white mb-2">Blogs</h2>
               </div>

@@ -9,6 +9,7 @@ import Navbar from '@/components/Navbar';
 import { db } from '@/firebase/firebase';
 import { doc, getDoc } from 'firebase/firestore';
 import ClubNotFound from '@/components/ClubNotFound';
+import { parseISO, isBefore, isAfter, addDays, startOfWeek, nextMonday, format } from 'date-fns';
 
 interface Advisor {
   name: string;
@@ -68,26 +69,56 @@ interface ClubInfo {
   blogIds: string[];
 }
 
-function getNextMeetingDate(event: RecurringEvent) {
+type Day = 0 | 1 | 2 | 3 | 4 | 5 | 6;
+
+function getNextMeetingDate(event: RecurringEvent): string {
   const today = new Date();
-  const eventDay = event.dayOfWeek;
-  const nextMeeting = new Date(today);
-
-  while (nextMeeting.getDay() !== eventDay) {
-    nextMeeting.setDate(nextMeeting.getDate() + 1);
+  const startDate = parseISO(event.startDate);
+  const endDate = parseISO(event.endDate);
+  
+  // Check if today is past the end date
+  if (isAfter(today, endDate)) {
+    return "The event has ended.";
   }
 
-  const startDate = new Date(event.startDate);
-  const endDate = new Date(event.endDate);
+  let nextMeeting: Date;
 
-  if (nextMeeting >= startDate && nextMeeting <= endDate) {
-    return nextMeeting;
-  } else {
-    return null;
+  // Calculate the next meeting date based on frequency
+  switch (event.frequency) {
+    case 'weekly':
+      nextMeeting = nextMonday(today);
+      break;
+    case 'biweekly':
+      nextMeeting = addDays(nextMonday(today), 14);
+      break;
+    case 'monthly':
+      nextMeeting = new Date(today.getFullYear(), today.getMonth() + 1, event.dayOfWeek);
+      break;
+    default:
+      throw new Error("Invalid frequency");
   }
+
+  // Ensure the next meeting is after the start date
+  if (isBefore(nextMeeting, startDate)) {
+    nextMeeting = startOfWeek(startDate, { weekStartsOn: event.dayOfWeek as Day });
+    if (event.frequency === 'biweekly') {
+      nextMeeting = addDays(nextMeeting, 14);
+    }
+    if (event.frequency === 'monthly') {
+      nextMeeting.setMonth(nextMeeting.getMonth() + 1);
+    }
+  }
+
+  // Check if the next meeting is before the end date
+  if (isAfter(nextMeeting, endDate)) {
+    return "No more meetings scheduled.";
+  }
+
+  // Format and return the next meeting date
+  return format(nextMeeting, 'yyyy-MM-dd');
 }
 
-const EditClubPage = () => {
+const ClubPage = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [blogs, setBlogs] = useState<Blog[]>([]);
   const [clubInfo, setClubInfo] = useState<ClubInfo>({
@@ -316,7 +347,7 @@ const EditClubPage = () => {
                       <div key={index} className="mb-4 flex items-center bg-gray-800 p-4 rounded-lg shadow-md lg:w-5/6">
                         <FaCalendarAlt className="text-blue-400 mr-4" />
                         <span className="text-white">
-                          {new Date(event.date).toLocaleDateString()} - {event.title}
+                          {format(parseISO(event.date), 'MMMM dd, yyyy')} - {event.title}
                         </span>
                       </div>
                     ))
@@ -348,12 +379,12 @@ const EditClubPage = () => {
 
                           {/* Start Date, End Date, and Next Meeting */}
                           <p className="mt-2">
-                            It runs from {new Date(event.startDate).toLocaleDateString()} to{' '}
-                            {new Date(event.endDate).toLocaleDateString()}.
+                            It runs from {format(parseISO(event.startDate), 'MMMM dd, yyyy')} to{' '}
+                            {format(parseISO(event.endDate), 'MMMM dd, yyyy')}.
                           </p>
                           
                           <p className="mt-2 font-semibold text-blue-400">
-                            Next meeting: {nextMeeting ? nextMeeting.toLocaleDateString() : 'No upcoming meeting'}
+                            Next meeting: {nextMeeting ? format(parseISO(event.endDate), 'MMMM dd, yyyy') : 'No upcoming meeting'}
                           </p>
 
                           {/* Display Exceptions */}
@@ -439,4 +470,4 @@ const EditClubPage = () => {
 
 };
 
-export default EditClubPage;
+export default ClubPage;
