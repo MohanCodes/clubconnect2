@@ -541,26 +541,21 @@ const EditClubPage = () => {
 
   const handleDeleteBlog = async (blogId: string) => {
     try {
-      const clubDocRef = doc(db, 'clubs', clubInfo.id);
-      const blogDocRef = doc(db, 'blogs', blogId);
-  
-      // Remove the blog ID from the club document
-      await updateDoc(clubDocRef, {
-        blogIds: arrayRemove(blogId)
-      });
-  
-      // Delete the blog document from the 'blogs' collection
-      await deleteDoc(blogDocRef);
-
-      setClubInfo(prevState => ({
-      ...prevState,
-      blogIds: prevState.blogIds.filter(id => id !== blogId)
-    }));
-  
-      console.log('Blog deleted successfully');
-      fetchClubInfo();
+        const clubDocRef = doc(db, 'clubs', clubInfo.id);
+        const blogDocRef = doc(db, 'blogs', blogId);
+        
+        // Remove the blog ID from the club document
+        await updateDoc(clubDocRef, { blogIds: arrayRemove(blogId) });
+        
+        // Delete the blog document from the 'blogs' collection
+        await deleteDoc(blogDocRef);
+        
+        // Update local state to reflect deletion
+        setBlogs(prevBlogs => prevBlogs.filter(blog => blog.id !== blogId));
+        
+        console.log('Blog deleted successfully');
     } catch (error) {
-      console.error('Error deleting blog:', error);
+        console.error('Error deleting blog:', error);
     }
   };
 
@@ -1192,7 +1187,7 @@ const EditClubPage = () => {
             </div>
           )}
 
-            {(blogs && blogs.length > 0 || isEditing) && (
+            {(blogs && blogs.length > 0) && (
               <div className="mb-8">
                 <h2 className="text-2xl font-bold text-white mb-2">Blogs</h2>
               </div>

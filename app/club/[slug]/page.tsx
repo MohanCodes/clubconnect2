@@ -117,45 +117,51 @@ const EditClubPage = () => {
   const fetchClubInfo = useCallback(async () => {
     setIsLoading(true);
     try {
-      if (typeof slug !== 'string') {
-        console.error('Invalid slug');
-        return;
-      }
-      const clubDocRef = doc(db, 'clubs', slug);
-      const clubSnapshot = await getDoc(clubDocRef);
-      if (clubSnapshot.exists()) {
-        const clubData = clubSnapshot.data() as ClubInfo;
-        if (clubData.isComplete === false) {
-          console.log('Club data is incomplete');
-          return;
-        } else {
-          if (clubData.blogIds && clubData.blogIds.length > 0) {
-            const blogPromises = clubData.blogIds.map(async (blogId) => {
-              const blogDocRef = doc(db, 'blogs', blogId);
-              const blogSnapshot = await getDoc(blogDocRef);
-              if (blogSnapshot.exists()) {
-                const blogData = blogSnapshot.data();
-                return {
-                  id: blogId,
-                  title: blogData.title,
-                  content: blogData.content,
-                  date: blogData.date ? new Date(blogData.date.seconds * 1000) : new Date(),
-                } as Blog;
-              }
-              return null;
-            });
-            const blogs = (await Promise.all(blogPromises)).filter((blog): blog is Blog => blog !== null);
-            setBlogs(blogs);
-          }
-          setClubInfo(clubData);
+        if (typeof slug !== 'string') {
+            console.error('Invalid slug');
+            return;
         }
-      } else {
-        console.error('Club not found');
-      }
+        const clubDocRef = doc(db, 'clubs', slug);
+        const clubSnapshot = await getDoc(clubDocRef);
+        
+        if (clubSnapshot.exists()) {
+            const clubData = clubSnapshot.data() as ClubInfo;
+
+            // Check if clubData is complete
+            if (!clubData.isComplete) {
+                console.log('Club data is incomplete');
+                return; // Exit if the data is incomplete
+            }
+
+            // Proceed to fetch blogs only if club data is complete
+            if (clubData.blogIds && clubData.blogIds.length > 0) {
+                const blogPromises = clubData.blogIds.map(async (blogId) => {
+                    const blogDocRef = doc(db, 'blogs', blogId);
+                    const blogSnapshot = await getDoc(blogDocRef);
+                    if (blogSnapshot.exists()) {
+                        const blogData = blogSnapshot.data();
+                        return {
+                            id: blogId,
+                            title: blogData.title,
+                            content: blogData.content,
+                            date: blogData.date ? new Date(blogData.date.seconds * 1000) : new Date(),
+                        } as Blog;
+                    }
+                    return null;
+                });
+                const blogs = (await Promise.all(blogPromises)).filter((blog): blog is Blog => blog !== null);
+                setBlogs(blogs);
+            }
+
+            // Set the complete club info
+            setClubInfo(clubData);
+        } else {
+            console.error('Club not found');
+        }
     } catch (error) {
-      console.error('Error fetching club data:', error);
+        console.error('Error fetching club data:', error);
     } finally {
-      setIsLoading(false);
+        setIsLoading(false);
     }
   }, [slug]);
 
@@ -183,6 +189,14 @@ const EditClubPage = () => {
     return (
       <div>
         <Navbar />
+        {isLoading && (
+          <div className="fixed inset-0 bg-black flex items-center justify-center z-50">
+            <div className="bg-white p-6 rounded-lg flex flex-col items-center">
+              <FaCircleNotch className="animate-spin h-16 w-16 text-azul" />
+              <p className="mt-4 text-azul font-semibold">Loading club data...</p>
+            </div>
+          </div>
+        )}
         <div className="-mt-20">
           <ClubNotFound />
         </div>

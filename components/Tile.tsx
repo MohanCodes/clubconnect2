@@ -124,7 +124,7 @@ const Tile: React.FC<TileProps> = ({
       <div className="flex items-center mb-4 mr-6 space-x-4">
         <Image src={icon} alt="Club Icon" width={40} height={40} className="" />
         <h2 className="text-2xl font-semibold text-white text-left">{clubName}</h2>
-        {isVerified && <FaCheckCircle className="text-green-500 w-6 h-6" />} {/* Display checkmark if isVerified is true */}
+        {isVerified && <FaCheckCircle className="text-green-500 w-4 h-4" />} {/* Display checkmark if isVerified is true */}
       </div>
 
       {/* Club Description */}
