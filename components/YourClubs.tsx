@@ -22,6 +22,7 @@ interface DashClub {
     isComplete: boolean;
     tags: string[];
     upvoteCount: number;
+    isVerified: boolean; // Added isVerified property
 }
 
 const schoolDistricts = [
@@ -73,7 +74,8 @@ const YourClubs: React.FC = () => {
                 ...doc.data(),
                 isComplete: doc.data().isComplete || false,
                 tags: doc.data().tags || [],
-                upvoteCount: doc.data().upvoteCount || 0
+                upvoteCount: doc.data().upvoteCount || 0,
+                isVerified: doc.data().isVerified || false // Ensure isVerified is included
             })) as DashClub[];
             setClubs(clubsData);
         } catch (error) {
@@ -111,6 +113,7 @@ const YourClubs: React.FC = () => {
                     isComplete: false,
                     tags: [newClubSchool], // Add tags if needed
                     upvoteCount: 0,
+                    isVerified: false // Add isVerified property
                 });
 
                 // Clear input fields after successful creation
@@ -204,6 +207,7 @@ const YourClubs: React.FC = () => {
                                 onUpvoteClick={(e) => handleUpvoteClick(e, club.id)} 
                                 isUpvoteLoading={isUpvoteLoading[club.id] || false}
                                 showVoteButton={false}
+                                isVerified={club.isVerified} // Pass isVerified to Tile component
                             />
                             {!club.isComplete && (
                                 <div className="absolute top-10 right-0 bg-yellow-500 text-black p-2 rounded-bl-lg rounded-tl-lg flex items-center">

@@ -12,7 +12,8 @@ import {
   FaTiktok,
   FaLink,
   FaStar,
-  FaRegStar
+  FaRegStar,
+  FaCheckCircle // Import checkmark icon
 } from 'react-icons/fa';
 
 interface TileProps {
@@ -26,6 +27,7 @@ interface TileProps {
   onUpvoteClick: (e: React.MouseEvent<HTMLButtonElement>) => void;
   isUpvoteLoading: boolean;
   showVoteButton: boolean; // New prop added here
+  isVerified?: boolean; // Add optional isVerified prop
 }
 
 const schoolColors: { [key: string]: { bg: string; text: string } } = {
@@ -50,6 +52,7 @@ const Tile: React.FC<TileProps> = ({
   onUpvoteClick,
   isUpvoteLoading,
   showVoteButton,
+  isVerified, // Add isVerified prop
 }) => {
   const renderIcon = (platform: string) => {
     switch (platform.toLowerCase()) {
@@ -119,6 +122,7 @@ const Tile: React.FC<TileProps> = ({
       <div className="flex items-center mb-4">
         <Image src={icon} alt="Club Icon" width={40} height={40} className="mr-4" />
         <h2 className="text-2xl font-semibold text-white text-left mr-4">{clubName}</h2>
+        {isVerified && <FaCheckCircle className="text-green-500 w-6 h-6" />} {/* Display checkmark if isVerified is true */}
       </div>
 
       {/* Club Description */}
