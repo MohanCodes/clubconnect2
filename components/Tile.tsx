@@ -57,27 +57,27 @@ const Tile: React.FC<TileProps> = ({
   const renderIcon = (platform: string) => {
     switch (platform.toLowerCase()) {
       case 'twitter':
-        return <FaTwitter className="text-azul w-6 h-6" />;
+        return <FaTwitter className="text-azul w-5 h-5" />;
       case 'instagram':
-        return <FaInstagram className="text-azul w-6 h-6" />;
+        return <FaInstagram className="text-azul w-5 h-5" />;
       case 'facebook':
-        return <FaFacebook className="text-azul w-6 h-6" />;
+        return <FaFacebook className="text-azul w-5 h-5" />;
       case 'linkedin':
-        return <FaLinkedin className="text-azul w-6 h-6" />;
+        return <FaLinkedin className="text-azul w-5 h-5" />;
       case 'youtube':
-        return <FaYoutube className="text-azul w-6 h-6" />;
+        return <FaYoutube className="text-azul w-5 h-5" />;
       case 'github':
-        return <FaGithub className="text-azul w-6 h-6" />;
+        return <FaGithub className="text-azul w-5 h-5" />;
       case 'discord':
-        return <FaDiscord className="text-azul w-6 h-6" />;
+        return <FaDiscord className="text-azul w-5 h-5" />;
       case 'tiktok':
-        return <FaTiktok className="text-azul w-6 h-6" />;
+        return <FaTiktok className="text-azul w-5 h-5" />;
       case 'website':
       case 'personal':
       case 'link':
-        return <FaLink className="text-azul w-6 h-6" />;
+        return <FaLink className="text-azul w-5 h-5" />;
       default:
-        return <FaLink className="text-azul w-6 h-6" />;
+        return <FaLink className="text-azul w-5 h-5" />;
     }
   };
 
@@ -105,11 +105,11 @@ const Tile: React.FC<TileProps> = ({
                 disabled={isUpvoteLoading}
               >
                 {isUpvoteLoading ? (
-                  <FaStar className="animate-spin w-6 h-6" />
+                  <FaStar className="animate-spin w-5 h-5" />
                 ) : isUpvoted ? (
-                  <FaStar className="w-6 h-6" />     
+                  <FaStar className="w-5 h-5" />     
                 ) : (
-                  <FaRegStar className="w-6 h-6" />
+                  <FaRegStar className="w-5 h-5" />
                 )}
               </button>
             )}
@@ -130,8 +130,28 @@ const Tile: React.FC<TileProps> = ({
         {description.length > 150 ? `${description.slice(0, 150)}...` : description}
       </p>
 
-      {/* Horizontal Line */}
-      <hr className="border-t border-gray-600 mb-4" />
+      <div className="flex items-center gap-4 mt-4 mb-6">
+        {/* Left HR */}
+        <hr className="flex-grow border-t border-gray-600" />
+
+        {/* Social Media Links */}
+        <div className="flex gap-4 justify-center">
+          {links.slice(0, 3).map((link, index) => (
+            <Link
+              key={index}
+              href={link.url}
+              className="flex items-center text-azul hover:text-blue-300"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              {renderIcon(link.platform)}
+            </Link>
+          ))}
+        </div>
+
+        {/* Right HR */}
+        <hr className="flex-grow border-t border-gray-600" />
+      </div>
 
       {/* Bottom section with tags and links */}
       <div className="grid grid-cols-[1fr,auto] gap-4 items-start">
@@ -151,20 +171,6 @@ const Tile: React.FC<TileProps> = ({
           ))}
         </div>
 
-        {/* Links - Only show the first three */}
-        <div className="flex flex-row gap-4 self-center">
-          {links.slice(0, 3).map((link, index) => (
-            <Link
-              key={index}
-              href={link.url}
-              className="flex items-center text-azul hover:text-blue-300"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              {renderIcon(link.platform)}
-            </Link>
-          ))}
-        </div>
       </div>      
     </div>
   );

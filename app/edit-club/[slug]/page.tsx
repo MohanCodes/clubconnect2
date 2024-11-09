@@ -848,7 +848,7 @@ const EditClubPage = () => {
               {(clubInfo.studentLeads || []).map((lead, index) => (
                 <div key={index} className="mb-2">
                   {isEditing ? (
-                    <>
+                    <div className=''>
                       <input
                         type="text"
                         value={lead.name}
@@ -863,17 +863,19 @@ const EditClubPage = () => {
                         className="bg-gray-800 text-white p-1 rounded mr-2 mt-2"
                         placeholder="Student Role"
                       />
-                      <input
-                        type="email"
-                        value={lead.email}
-                        onChange={(e) => handleStudentLeadChange(index, 'email', e.target.value)}
-                        className="bg-gray-800 text-white p-1 rounded mr-2 mt-2"
-                        placeholder="Student Email"
-                      />
-                      <button onClick={() => handleRemoveStudentLead(index)} className="text-red-500">
-                        <FaTrash />
-                      </button>
-                    </>
+                      <div>
+                        <input
+                          type="email"
+                          value={lead.email}
+                          onChange={(e) => handleStudentLeadChange(index, 'email', e.target.value)}
+                          className="bg-gray-800 text-white p-1 rounded mr-2 mt-2"
+                          placeholder="Student Email"
+                        />
+                        <button onClick={() => handleRemoveStudentLead(index)} className="text-red-500">
+                          <FaTrash />
+                        </button>
+                      </div>
+                    </div>
                   ) : (
                     <>
                       <p className="text-grey">{lead.name} - {lead.role}</p>
