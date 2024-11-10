@@ -140,6 +140,7 @@ const EditClubPage = () => {
   const [blogToDelete] = useState<Blog | null>(null);
   const [blogs, setBlogs] = useState<Blog[]>([]);
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
+  const [filledFieldsCount, setFilledFieldsCount] = useState(0);
   const [clubInfo, setClubInfo] = useState<ClubInfo>({
     id: "",
     isComplete: false,
@@ -600,6 +601,20 @@ const EditClubPage = () => {
     }
   };
 
+  const countFilledFields = (info: ClubInfo) => {
+    const requiredFields: (keyof ClubInfo)[] = [
+        'name', 'school', 'description', 'length', 
+        'meetingTimes', 'meetingSite', 'eligibility', 'costs'
+    ];
+    const filledCount = requiredFields.filter(field => info[field] !== undefined && info[field] !== '').length;
+    setFilledFieldsCount(filledCount);
+  };
+
+// Call this function whenever clubInfo changes
+useEffect(() => {
+    countFilledFields(clubInfo);
+}, [clubInfo]);
+
   if (!user) {
     return null; // Prevent rendering if user is not authenticated
   }
@@ -646,12 +661,17 @@ const EditClubPage = () => {
           </div>
         </div>
       )}
-        <div className="flex flex-col md:flex-row items-center justify-between pb-4 sticky top-20 z-40 bg-cblack break-words">
+        <div className="flex flex-col md:flex-row items-center justify-between py-4 sticky top-20 z-40 bg-cblack break-words">
           <h1 className="text-2xl md:text-4xl font-bold text-white mb-4 text-center md:text-left">
             {clubInfo.name === "" ? 'Enter Club Name Here' : clubInfo.name}
           </h1>
           
           <div className='flex flex-wrap justify-center md:justify-end gap-2 w-full'>
+            <div
+              className="hidden bg-azul text-white text-xs sm:text-sm px-3 sm:px-4 py-2 rounded-full flex-grow md:flex-grow-0"
+            >
+              <span className="text-white">{filledFieldsCount} / 8</span>
+            </div>
             <button
               onClick={isEditing ? handleSave : handleEdit}
               className="bg-azul text-white text-xs sm:text-sm px-3 sm:px-4 py-2 rounded-full flex-grow md:flex-grow-0"

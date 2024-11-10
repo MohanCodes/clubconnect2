@@ -130,27 +130,34 @@ const Tile: React.FC<TileProps> = ({
       </p>
 
       <div className="flex items-center gap-4 mt-4 mb-6">
-        {/* Left HR */}
-        <hr className="flex-grow border-t border-gray-600" />
+        {/* Conditional Rendering for HRs */}
+        {links.length === 0 ? (
+          <hr className="flex-grow border-t border-gray-600" />
+        ) : (
+          <>
+            {/* Left HR */}
+            <hr className="flex-grow border-t border-gray-600" />
 
-        {/* Social Media Links */}
-        <div className="flex gap-4 justify-center">
-          {links.slice(0, isVerified ? 3 : 4).map((link, index) => (
-            <Link
-              key={index}
-              href={link.url}
-              className="flex items-center text-azul hover:text-blue-300"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              {renderIcon(link.platform)}
-            </Link>
-          ))}
-          {isVerified && <FaCheckCircle className="text-green-500 w-5 h-5" />}
-        </div>
+            {/* Social Media Links */}
+            <div className="flex gap-4 justify-center">
+              {links.slice(0, isVerified ? 3 : 4).map((link, index) => (
+                <Link
+                  key={index}
+                  href={link.url}
+                  className="flex items-center text-azul hover:text-blue-300"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  {renderIcon(link.platform)}
+                </Link>
+              ))}
+              {isVerified && <FaCheckCircle className="text-green-500 w-5 h-5" />}
+            </div>
 
-        {/* Right HR */}
-        <hr className="flex-grow border-t border-gray-600" />
+            {/* Right HR */}
+            <hr className="flex-grow border-t border-gray-600" />
+          </>
+        )}
       </div>
 
       {/* Bottom section with tags and links */}
