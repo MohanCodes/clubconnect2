@@ -31,7 +31,7 @@ export default function Signup() {
         // Add any other initial user data you want to store
       });
 
-      router.push('/');
+      router.push('/dashboard');
     } catch (error) {
       setError('Failed to sign up. Please try again.');
       console.error('Error signing up:', error);
