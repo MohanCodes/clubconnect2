@@ -139,6 +139,7 @@ const EditClubPage = () => {
   const [newBlogContent, setNewBlogContent] = useState<string>('');
   const [blogToDelete] = useState<Blog | null>(null);
   const [blogs, setBlogs] = useState<Blog[]>([]);
+  const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
   const [clubInfo, setClubInfo] = useState<ClubInfo>({
     id: "",
     isComplete: false,
@@ -226,6 +227,18 @@ const EditClubPage = () => {
     return () => unsubscribe();
   }, [router, fetchClubInfo]);
 
+  useEffect(() => {
+    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+      if (hasUnsavedChanges) {
+        e.preventDefault();
+        e.returnValue = '';
+      }
+    };
+  
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    return () => window.removeEventListener('beforeunload', handleBeforeUnload);
+  }, [hasUnsavedChanges]);
+
   const checkCompletion = (info: ClubInfo): boolean => {
     const requiredFields: (keyof ClubInfo)[] = [
       'name', 'school', 'description', 'length', 'meetingTimes', 
@@ -253,10 +266,8 @@ const EditClubPage = () => {
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>, field: keyof ClubInfo) => {
     if (field !== 'name' && field !== 'school') {
       const updatedClubInfo = { ...clubInfo, [field]: e.target.value };
-      setClubInfo({
-        ...updatedClubInfo,
-        isComplete: checkCompletion(updatedClubInfo)
-      });
+      setClubInfo({ ...updatedClubInfo, isComplete: checkCompletion(updatedClubInfo) });
+      setHasUnsavedChanges(true);
     }
   };
 
@@ -371,6 +382,7 @@ const EditClubPage = () => {
       }
   
       await setDoc(clubDocRef, clubData);
+      setHasUnsavedChanges(false);
       console.log('Club data uploaded successfully');
     } catch (error) {
       console.error('Error uploading club data:', error);
@@ -634,7 +646,7 @@ const EditClubPage = () => {
           </div>
         </div>
       )}
-        <div className="flex flex-col md:flex-row items-center justify-between pb-4 pt-2 sticky top-0 z-40 bg-cblack break-words">
+        <div className="flex flex-col md:flex-row items-center justify-between pb-4 sticky top-20 z-40 bg-cblack break-words">
           <h1 className="text-2xl md:text-4xl font-bold text-white mb-4 text-center md:text-left">
             {clubInfo.name === "" ? 'Enter Club Name Here' : clubInfo.name}
           </h1>
@@ -647,19 +659,21 @@ const EditClubPage = () => {
               {isEditing ? 'Render Page' : 'Edit Page'}
             </button>
             
-            <button
-              onClick={handleUpload}
-              className="bg-azul text-white text-xs sm:text-sm px-3 sm:px-4 py-2 rounded-full flex-grow md:flex-grow-0"
+            <button 
+              onClick={handleUpload} 
+              className={`${isUploading ? 'bg-gray-500' : hasUnsavedChanges ? 'bg-red-500' : 'bg-azul'} text-white text-xs sm:text-sm px-3 sm:px-4 py-2 rounded-full flex-grow md:flex-grow-0`}
               disabled={isUploading}
             >
-              {isUploading ? 'Uploading...' : 'Save Changes'}
+              {isUploading ? 'Uploading...' : hasUnsavedChanges ? 'Save Changes' : 'Changes Saved'}
             </button>
             
             <button
               onClick={() => setIsDeleteModalOpen(true)}
-              className="bg-red-500 text-white text-xs sm:text-sm px-3 sm:px-4 py-2 rounded-full flex-grow md:flex-grow-0"
+              className="bg-red-500 text-white text-xs sm:text-sm py-2 px-4 rounded-full"
             >
-              Delete Club
+              <div>
+                <FaTrash />
+              </div>
             </button>
           </div>
         </div>
