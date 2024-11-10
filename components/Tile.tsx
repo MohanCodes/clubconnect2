@@ -120,13 +120,12 @@ const Tile: React.FC<TileProps> = ({
         </div>
       {/* Icon and Club Name */}
       <div className="flex items-center mb-4 mr-6 space-x-4">
-        <Image src={icon} alt="Club Icon" width={40} height={40} className="" />
-        <h2 className="text-2xl font-semibold text-white text-left pr-2">{clubName}</h2>
-        {isVerified && <FaCheckCircle className="text-green-500 w-4 h-4" />} {/* Display checkmark if isVerified is true */}
+        <Image src={icon} alt="Club Icon" width={45} height={45} className="" />
+        <h2 className="text-lg md:text-2xl font-semibold text-white text-left">{clubName}</h2>
       </div>
 
       {/* Club Description */}
-      <p className="text-grey mb-4 text-left line-clamp-4">
+      <p className="text-md text-grey mb-4 text-left line-clamp-4">
         {description.length > 150 ? `${description.slice(0, 150)}...` : description}
       </p>
 
@@ -136,7 +135,7 @@ const Tile: React.FC<TileProps> = ({
 
         {/* Social Media Links */}
         <div className="flex gap-4 justify-center">
-          {links.slice(0, 3).map((link, index) => (
+          {links.slice(0, isVerified ? 3 : 4).map((link, index) => (
             <Link
               key={index}
               href={link.url}
@@ -147,6 +146,7 @@ const Tile: React.FC<TileProps> = ({
               {renderIcon(link.platform)}
             </Link>
           ))}
+          {isVerified && <FaCheckCircle className="text-green-500 w-5 h-5" />}
         </div>
 
         {/* Right HR */}
@@ -160,7 +160,7 @@ const Tile: React.FC<TileProps> = ({
           {sortedTags.map((tag, index) => (
             <span 
               key={index} 
-              className={`text-sm font-medium px-3 py-1 rounded-full break-words ${
+              className={`text-xs md:text-sm font-medium px-3 py-1 rounded-full break-words ${
                 tag === schoolTag && schoolStyle
                   ? `${schoolStyle.bg} ${schoolStyle.text}`
                   : "bg-blue-100 text-azul"
