@@ -21,11 +21,6 @@ const googleProvider = new GoogleAuthProvider();
 
 // Initialize Cloud Firestore and get a reference to the service
 const db = getFirestore(app);
-
-// Add indexes on isComplete and tags fields in the Firestore database
-db.collection('clubs').createIndex({ isComplete: 1 });
-db.collection('clubs').createIndex({ tags: 1 });
-
 const storage = getStorage(app);
 
 export { auth, googleProvider, db, storage };
