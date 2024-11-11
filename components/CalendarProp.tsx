@@ -86,7 +86,7 @@ const CalendarProp: React.FC<CalendarProps> = ({ events = [] }) => {
       const dayEvents = events.filter(event => event.date.toDateString() === date.toDateString());
 
       days.push(
-        <div key={day} className={`h-42 border ${isToday(date) ? 'border-azul' : 'border-gray-700'} p-2 rounded overflow-y-auto ${isToday(date) ? 'outline outline-2 outline-azul' : ''}`}>
+        <div key={day} className={`min-h-40 border ${isToday(date) ? 'border-azul' : 'border-gray-700'} p-2 rounded overflow-y-auto ${isToday(date) ? 'outline outline-2 outline-azul' : ''}`}>
           <div className="text-right text-gray-400">{day}</div>
           <div className="flex flex-col">
             {dayEvents.map((event, index) => (

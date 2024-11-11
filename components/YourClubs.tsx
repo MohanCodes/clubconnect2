@@ -209,13 +209,13 @@ const YourClubs: React.FC = () => {
                                 showVoteButton={false}
                             />
                             {!club.isComplete && (
-                                <div className="absolute top-24 right-0 bg-yellow-500 text-black p-2 rounded-bl-lg rounded-tl-lg flex items-center">
+                                <div className="absolute top-0 right-0 bg-yellow-500 text-black p-2 rounded-tr-lg rounded-bl-lg flex items-center">
                                     <FaExclamationTriangle />
                                     <span className="text-sm hidden sm:inline ml-2">Incomplete</span> {/* Hidden on small screens */}
                                 </div>
                             )}
                             {club.isComplete && (
-                                <div className="absolute top-24 right-0 bg-green-500 text-black p-2 rounded-bl-lg rounded-tl-lg flex items-center">
+                                <div className="absolute top-0 right-0 bg-green-500 text-black p-2 rounded-tr-lg rounded-bl-lg flex items-center">
                                     <FaCheckCircle />
                                     <span className="text-sm hidden sm:inline ml-2">Complete</span> {/* Hidden on small screens */}
                                 </div>
