@@ -453,10 +453,10 @@ const ClubPage = () => {
             )}
             <div className="flex flex-col lg:flex-row gap-8">
               {blogs.map((blog) => (
-                <div key={blog.id} className="rounded-lg p-9 transition-shadow duration-300 bg-[#2A2A2A] lg:w-1/2">
+                <div key={blog.id} className="rounded-lg p-9 transition-shadow duration-300 bg-[#2A2A2A]">
                   <Link href={`/blog/${blog.id}`} passHref>
                     <div className='flex flex-row justify-between'>
-                      <h3 className="text-xl text-white font-bold">{blog.title}</h3>
+                      <h3 className="text-lg text-white font-bold">{blog.title}</h3>
                     </div>
                     <p className="text-sm text-gray-400 mt-1 mb-2">
                       {blog.date.toLocaleDateString('en-US', {
