@@ -99,19 +99,21 @@ const Tile: React.FC<TileProps> = ({
         <div className="absolute top-10 right-0 flex items-center">
           <div className="flex items-center">
             {showVoteButton && ( // Check if showVoteButton is true
-              <button
-                onClick={onUpvoteClick}
-                className={`flex items-center ${isUpvoted ? 'text-azul' : 'text-gray-500'} hover:text-blue-500 transition-colors duration-300`}
-                disabled={isUpvoteLoading}
-              >
-                {isUpvoteLoading ? (
-                  <FaStar className="animate-spin w-5 h-5" />
-                ) : isUpvoted ? (
-                  <FaStar className="w-5 h-5" />     
-                ) : (
-                  <FaRegStar className="w-5 h-5" />
-                )}
-              </button>
+              <div>
+                <button
+                  onClick={onUpvoteClick}
+                  className={`flex items-center ${isUpvoted ? 'text-azul' : 'text-gray-500'} hover:text-blue-500 transition-colors duration-300`}
+                  disabled={isUpvoteLoading}
+                >
+                  {isUpvoteLoading ? (
+                    <FaStar className="animate-spin w-5 h-5" />
+                  ) : isUpvoted ? (
+                    <FaStar className="w-5 h-5" />     
+                  ) : (
+                    <FaRegStar className="w-5 h-5" />
+                  )}
+                </button>
+              </div>
             )}
           </div>
           <div className="w-10 text-right">
@@ -120,8 +122,8 @@ const Tile: React.FC<TileProps> = ({
         </div>
       {/* Icon and Club Name */}
       <div className="flex items-center mb-4 mr-6 space-x-4">
-        <Image src={icon} alt="Club Icon" width={45} height={45} className="" />
-        <h2 className="text-lg md:text-2xl font-semibold text-white text-left">{clubName}</h2>
+        <Image src={icon} alt="Club Icon" width={60} height={60} className="" />
+        <h2 className="text-xl md:text-2xl font-semibold text-white text-left">{clubName}</h2>
       </div>
 
       {/* Club Description */}

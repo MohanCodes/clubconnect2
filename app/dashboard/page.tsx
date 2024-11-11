@@ -1,9 +1,9 @@
 import dynamic from 'next/dynamic';
 
 const Navbar = dynamic(() => import('@/components/Navbar'));
-const YourClubs = dynamic(() => import('@/components/YourClubs'));
 const Calendar = dynamic(() => import('@/components/Calendar'));
 const Profile = dynamic(() => import('@/components/Profile'));
+const YourClubs = dynamic(() => import('@/components/YourClubs'));
 
 const Dashboard: React.FC = () => {
 
