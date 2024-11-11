@@ -247,23 +247,23 @@ const ClubPage = () => {
           </div>
         </div>
       )}
-        <div className="flex justify-between items-center mb-4">
+        <div className="flex flex-col md:flex-row items-center justify-between py-4 sticky top-20 z-40 bg-cblack break-words">
           <h1 className="text-4xl font-bold text-white">{clubInfo.name == "" ? 'Enter Club Name Here' : clubInfo.name}</h1>
-          <div className='space-x-4'>
-          <button 
-            className="bg-azul text-white text-xs sm:text-sm px-3 sm:px-4 py-2 rounded-full flex-grow md:flex-grow-0"
-            onClick={() => {
-              navigator.clipboard.writeText(window.location.href)
-                .then(() => {
-                  alert('Link copied to clipboard!');
-                })
-                .catch(err => {
-                  console.error('Failed to copy link: ', err);
-                });
-            }}
-          >
-            Copy Page Link
-          </button>
+          <div className='flex flex-wrap justify-center md:justify-end gap-2 mt-2'>
+            <button 
+              className="bg-azul text-white text-xs sm:text-sm px-3 sm:px-4 py-2 rounded-full flex-grow md:flex-grow-0"
+              onClick={() => {
+                navigator.clipboard.writeText(window.location.href)
+                  .then(() => {
+                    alert('Link copied to clipboard!');
+                  })
+                  .catch(err => {
+                    console.error('Failed to copy link: ', err);
+                  });
+              }}
+            >
+              Copy Page Link
+            </button>
           </div>
             
         </div>
@@ -368,7 +368,7 @@ const ClubPage = () => {
             </div>
 
             <div>
-              <h3 className="text-xl font-semibold text-white mb-3">Recurring Events</h3>
+              <h3 className="text-2xl font-semibold text-white mb-3">Recurring Events</h3>
                   {(clubInfo.recurringEvents || []).length > 0 ? (
                     clubInfo.recurringEvents.map((event, index) => {
                       const nextMeeting = getNextMeetingDate(event);
