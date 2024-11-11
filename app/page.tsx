@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from 'react';
-import { collection, getDocs, query, where, updateDoc, doc, arrayUnion, arrayRemove, increment, getDoc, writeBatch, limit } from 'firebase/firestore';
+import { collection, getDocs, query, where, updateDoc, doc, arrayUnion, arrayRemove, increment, getDoc, limit } from 'firebase/firestore';
 import { db, auth } from '@/firebase/firebase'; // Adjust the path as necessary
 import dynamic from 'next/dynamic';
 import BlurFade from '@/components/ui/blur-fade';
