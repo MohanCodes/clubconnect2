@@ -11,10 +11,11 @@ interface CalendarProps {
 const CalendarProp: React.FC<CalendarProps> = ({ events = [] }) => {
   const [currentDate, setCurrentDate] = useState(new Date());
   const [isWeeklyView, setIsWeeklyView] = useState(false);
+  const [today] = useState(new Date());
 
   useEffect(() => {
     const handleResize = () => {
-      setIsWeeklyView(window.innerWidth < 768); // Switch to weekly view below 640px
+      setIsWeeklyView(window.innerWidth < 768); // Switch to weekly view below 768px
     };
 
     handleResize(); // Initial check
@@ -35,6 +36,10 @@ const CalendarProp: React.FC<CalendarProps> = ({ events = [] }) => {
     setCurrentDate(new Date(currentDate.setDate(currentDate.getDate() + (isWeeklyView ? 7 : (32 - currentDate.getDate())))));
   };
 
+  const isToday = (date: Date) => {
+    return date.toDateString() === today.toDateString();
+  };
+
   const renderWeeklyView = () => {
     const weekStart = new Date(currentDate);
     weekStart.setDate(currentDate.getDate() - currentDate.getDay());
@@ -46,7 +51,7 @@ const CalendarProp: React.FC<CalendarProps> = ({ events = [] }) => {
       const dayEvents = events.filter(event => event.date.toDateString() === date.toDateString());
   
       days.push(
-        <div key={i} className="border border-gray-700 p-2 rounded">
+        <div key={i} className={`border ${isToday(date) ? 'border-azul' : 'border-gray-700'} p-2 rounded ${isToday(date) ? 'outline outline-2 outline-azul' : ''}`}>
           <div className="text-right text-gray-400">{date.getDate()}</div>
           <div className="text-xs text-gray-500">{['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'][i]}</div>
           <div className="flex flex-col mt-1">
@@ -81,7 +86,7 @@ const CalendarProp: React.FC<CalendarProps> = ({ events = [] }) => {
       const dayEvents = events.filter(event => event.date.toDateString() === date.toDateString());
 
       days.push(
-        <div key={day} className="h-32 border border-gray-700 p-2 rounded overflow-y-auto">
+        <div key={day} className={`h-52 border ${isToday(date) ? 'border-azul' : 'border-gray-700'} p-2 rounded overflow-y-auto ${isToday(date) ? 'outline outline-2 outline-azul' : ''}`}>
           <div className="text-right text-gray-400">{day}</div>
           <div className="flex flex-col">
             {dayEvents.map((event, index) => (
@@ -109,10 +114,10 @@ const CalendarProp: React.FC<CalendarProps> = ({ events = [] }) => {
   return (
     <div className="bg-cblack text-white p-6 rounded-lg shadow-lg">
       <div className="flex justify-between items-center mb-4">
-      <button onClick={prevPeriod} className="text-azul hover:text-blue-400 text-xl flex items-center space-x-2">
-        <FaAngleLeft size={40}/> 
-        <span>Prev</span>
-      </button>
+        <button onClick={prevPeriod} className="text-azul hover:text-blue-400 text-xl flex items-center space-x-2">
+          <FaAngleLeft size={40}/> 
+          <span>Prev</span>
+        </button>
         <h2 className="text-2xl font-semibold text-center">
           {isWeeklyView 
             ? `Week of ${currentDate.toLocaleDateString()}`
