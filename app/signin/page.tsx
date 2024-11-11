@@ -39,7 +39,7 @@ export default function Signin() {
     try {
       const userCredential = await signInWithEmailAndPassword(auth, email, password);
       await updateUserData(userCredential.user);
-      router.push('/');
+      router.push('/dashboard');
     } catch (error) {
       setError('Failed to sign in. Please check your credentials and try again.');
       console.error('Error signing in:', error);

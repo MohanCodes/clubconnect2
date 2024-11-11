@@ -395,7 +395,7 @@ const ClubPage = () => {
                           </p>
                           
                           <p className="mt-2 font-semibold text-blue-400">
-                            Next meeting: {nextMeeting ? format(parseISO(event.endDate), 'MMMM dd, yyyy') : 'No upcoming meeting'}
+                          Next meeting: {nextMeeting ? format(parseISO(nextMeeting), 'MMMM dd, yyyy') : 'No upcoming meeting'}
                           </p>
 
                           {/* Display Exceptions */}

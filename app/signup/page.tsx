@@ -56,7 +56,7 @@ export default function Signup() {
         });
       }
 
-      router.push('/');
+      router.push('/dashboard');
     } catch (error) {
       setError('Failed to sign up with Google. Please try again.');
       console.error('Error signing up with Google:', error);
