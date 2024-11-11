@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from 'react';
-import { collection, getDocs, query, where, updateDoc, doc, arrayUnion, arrayRemove, increment, getDoc } from 'firebase/firestore';
+import { collection, getDocs, query, where, updateDoc, doc, arrayUnion, arrayRemove, increment, getDoc, writeBatch, limit } from 'firebase/firestore';
 import { db, auth } from '@/firebase/firebase'; // Adjust the path as necessary
 import dynamic from 'next/dynamic';
 import BlurFade from '@/components/ui/blur-fade';
@@ -62,7 +62,7 @@ const Home: React.FC = () => {
 
   useEffect(() => {
     const fetchClubs = async () => {
-      const q = query(collection(db, 'clubs'), where('isComplete', '==', true));
+      const q = query(collection(db, 'clubs'), where('isComplete', '==', true), limit(50));
       const querySnapshot = await getDocs(q);
       const clubsData = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })) as DisplayClub[];
       setClubs(clubsData);
