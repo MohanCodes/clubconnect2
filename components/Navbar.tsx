@@ -70,7 +70,7 @@ const Navbar: React.FC = () => {
           aria-expanded={isOpen}
           aria-label={isOpen ? "Close menu" : "Open menu"}
         >
-          {isOpen ? <FaTimes size={32} /> : <FaBars size={30} />}
+          {isOpen ? <FaTimes size={26} /> : <FaBars size={26} />}
         </button>
 
         <div 
@@ -86,7 +86,7 @@ const Navbar: React.FC = () => {
               className="absolute top-8 right-5 text-white text-md"
               aria-label="Close menu"
             >
-              <FaTimes size={32} />
+              <FaTimes className='-mt-1 -ml-2' size={26} />
             </button>
           )}
 

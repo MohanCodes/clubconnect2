@@ -1,4 +1,5 @@
 import dynamic from 'next/dynamic';
+import Link from 'next/link';
 
 const Navbar = dynamic(() => import('@/components/Navbar'));
 
@@ -64,9 +65,9 @@ export default function About() {
                 Whether you&apos;re looking to join a club or promote your own, MNClubConnect is here to help. Join our community today!
               </p>
               <div className="text-center">
-                <button className="px-7 py-3 rounded-full bg-azul text-white hover:opacity-70">
+                <Link href={`/signup`} className="px-7 py-3 rounded-full bg-azul text-white hover:opacity-70">
                   Join MNClubConnect
-                </button>
+                </Link>
               </div>
             </div>
           </div>
