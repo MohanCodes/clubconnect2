@@ -250,9 +250,20 @@ const ClubPage = () => {
         <div className="flex justify-between items-center mb-4">
           <h1 className="text-4xl font-bold text-white">{clubInfo.name == "" ? 'Enter Club Name Here' : clubInfo.name}</h1>
           <div className='space-x-4'>
-            <button className='text-white'>
-                placeholder button
-            </button>
+          <button 
+            className="bg-azul text-white text-xs sm:text-sm px-3 sm:px-4 py-2 rounded-full flex-grow md:flex-grow-0"
+            onClick={() => {
+              navigator.clipboard.writeText(window.location.href)
+                .then(() => {
+                  alert('Link copied to clipboard!');
+                })
+                .catch(err => {
+                  console.error('Failed to copy link: ', err);
+                });
+            }}
+          >
+            Copy Page Link
+          </button>
           </div>
             
         </div>

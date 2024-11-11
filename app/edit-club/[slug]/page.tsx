@@ -700,14 +700,25 @@ useEffect(() => {
 
         <div className="flex flex-wrap gap-2 mb-6">
           <div className="flex-grow">
-            {(clubInfo.tags || []).map((tag, index) => (
-              <span key={index} className="inline-block bg-blue-100 text-azul text-sm font-medium px-3 py-1 rounded-full mr-2 mb-2">
-                {tag}
-                {isEditing && (
-                  <button onClick={() => handleRemoveTag(index)} className="ml-2 text-red-500 text-xl">×</button>
-                )}
-              </span>
-            ))}
+          {(clubInfo.tags || []).map((tag, index) => (
+            <span 
+              key={index} 
+              className={`inline-flex items-center bg-blue-100 text-azul text-sm font-medium px-3 py-1 rounded-full mr-2 mb-2 ${
+                isEditing ? 'pr-1 transition-colors duration-200' : ''
+              }`}
+            >
+              {tag}
+              {isEditing && (
+                <button 
+                  onClick={() => handleRemoveTag(index)} 
+                  className="ml-2 text-red-500 hover:text-red-700 focus:outline-none rounded-full p-1 text-bold"
+                  aria-label={`Remove ${tag} tag`}
+                >
+                  <FaTrash />
+                </button>
+              )}
+            </span>
+          ))}
             {isEditing && (
               <div className="flex items-center mt-2 max-w-screen">
                 <input
