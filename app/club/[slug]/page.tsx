@@ -9,7 +9,7 @@ import Navbar from '@/components/Navbar';
 import { db } from '@/firebase/firebase';
 import { doc, getDoc } from 'firebase/firestore';
 import ClubNotFound from '@/components/ClubNotFound';
-import { parseISO, isBefore, isAfter, addDays, startOfWeek, nextMonday, format } from 'date-fns';
+import { parseISO, isAfter, format } from 'date-fns';
 
 interface Advisor {
   name: string;
