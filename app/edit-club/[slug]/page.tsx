@@ -743,7 +743,7 @@ useEffect(() => {
           </div>
         </div>
 
-        <div className="flex flex-col lg:flex-row gap-8 grid lg:grid-cols-2">
+        <div className="flex flex-col lg:flex-row gap-20 grid lg:grid-cols-2">
           <div className="space-y-8">
             <div>
               <h2 className="text-2xl font-bold text-white mb-2">Description</h2>
@@ -994,7 +994,7 @@ useEffect(() => {
               )}
               {isEditing && (
                 <div>
-                  <div className="flex items-center mt-2">
+                  <div className="flex flex-col sm:flex-row sm:items-center mt-2">
                     <input
                       type="date"
                       value={newOneOffEvent.date}
@@ -1006,7 +1006,7 @@ useEffect(() => {
                       value={newOneOffEvent.title}
                       onChange={(e) => handleOneOffEventChange('title', e.target.value)}
                       placeholder="Event Title"
-                      className="bg-gray-800 text-white p-1 rounded md:w-auto w-1/2"
+                      className="bg-gray-800 text-white p-1 rounded mt-2"
                     />
                   </div>
                   <button onClick={handleAddOneOffEvent} className="bg-green-500 text-white px-2 py-1 mt-2 rounded">
