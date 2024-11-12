@@ -668,20 +668,20 @@ useEffect(() => {
           
           <div className='flex whitespace-nowrap space-x-2 items-center -ml-3'>
             <div
-              className="hidden bg-azul text-white text-xs sm:text-sm px-3 sm:px-4 py-2 rounded-full"
+              className="hidden bg-azul text-white text-sm px-3 sm:px-4 py-2 rounded-full"
             >
               <span className="text-white">{filledFieldsCount} / 8</span>
             </div>
             <button
               onClick={isEditing ? handleSave : handleEdit}
-              className="bg-azul text-white text-xs sm:text-sm px-3 sm:px-4 py-2 rounded-full"
+              className="bg-azul text-white text-sm px-3 sm:px-4 py-2 rounded-full"
             >
               {isEditing ? 'Render Page' : 'Edit Page'}
             </button>
             
             <button 
               onClick={handleUpload} 
-              className={`${isUploading ? 'bg-gray-500' : hasUnsavedChanges ? 'bg-red-500' : 'bg-azul'} text-white text-xs sm:text-sm px-3 sm:px-4 py-2 rounded-full`}
+              className={`${isUploading ? 'bg-gray-500' : hasUnsavedChanges ? 'bg-red-500' : 'bg-azul'} text-white text-sm px-3 sm:px-4 py-2 rounded-full`}
               disabled={isUploading}
             >
               {isUploading ? 'Uploading...' : hasUnsavedChanges ? 'Save Changes' : 'Changes Saved'}
@@ -689,7 +689,7 @@ useEffect(() => {
             
             <button
               onClick={() => setIsDeleteModalOpen(true)}
-              className="bg-red-500 text-white text-xs sm:text-sm py-2 px-4 rounded-full"
+              className="bg-red-500 text-white text-sm py-2 px-4 rounded-full"
             >
               <div>
                 <FaTrash />
@@ -756,7 +756,7 @@ useEffect(() => {
                         handleChange(e, 'description');
                       }
                     }}
-                    className="w-auto sm:w-full box-border h-60 p-2 text-grey bg-gray-800 rounded mb-4 overflow-x-hidden"
+                    className="w-full box-border h-60 p-2 text-grey bg-gray-800 rounded mb-4 overflow-x-hidden"
                     placeholder="One paragraph club description"
                     maxLength={1000}
                   />
@@ -1233,7 +1233,7 @@ useEffect(() => {
                       )}
                     </div>
                   ))}
-                  {(isEditing && (clubInfo.images && clubInfo.images.length > 4 )) && ( // Show upload area only in edit mode
+                  {(isEditing && (clubInfo.images && clubInfo.images.length < 4 )) && ( // Show upload area only in edit mode
                     <div className="relative h-64 flex items-center justify-center border-2 border-dashed border-gray-400 rounded-lg">
                       <input
                         type="file"
