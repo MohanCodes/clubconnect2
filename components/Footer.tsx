@@ -26,7 +26,6 @@ const Footer: React.FC = () => {
           </div>
           <p className="text-center text-sm">© {new Date().getFullYear()} MNClubConnect. All rights reserved.</p>
           <p className="text-center text-sm mb-2">MNClubConnect is not affiliated with any school districts.</p>
-          <p className="text-center text-sm mb-2">Made with 💙 by Mohan</p>
         </div>
       </div>
     </footer>
