@@ -4,7 +4,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
-import { FaEnvelope, FaCalendarAlt, FaClock, FaMapMarkerAlt, FaUserGraduate, FaDollarSign, FaTwitter, FaInstagram, FaFacebook, FaLinkedin, FaYoutube, FaDiscord, FaGithub, FaTiktok, FaGlobe, FaUser, FaLink, FaCircleNotch } from 'react-icons/fa';
+import { FaEnvelope, FaCalendarAlt, FaClock, FaMapMarkerAlt, FaUserGraduate, FaDollarSign, FaTwitter, FaInstagram, FaFacebook, FaLinkedin, FaYoutube, FaDiscord, FaGithub, FaTiktok, FaGlobe, FaUser, FaLink, FaCircleNotch, FaCopy } from 'react-icons/fa';
 import Navbar from '@/components/Navbar';
 import { db } from '@/firebase/firebase';
 import { doc, getDoc } from 'firebase/firestore';
@@ -238,7 +238,7 @@ const ClubPage = () => {
   return (
     <div className="bg-cblack min-h-screen">
       <Navbar />
-      <main className="container mx-auto px-4 py-8">
+      <main className="container mx-auto px-8 pt-4 pb-8">
       {isLoading && (
         <div className="fixed inset-0 bg-black backdrop-blur bg-opacity-75 flex items-center justify-center z-50">
           <div className="bg-white p-6 rounded-lg flex flex-col items-center">
@@ -247,11 +247,10 @@ const ClubPage = () => {
           </div>
         </div>
       )}
-        <div className="flex flex-col md:flex-row items-center justify-between py-4 sticky top-20 z-40 bg-cblack break-words">
-          <h1 className="text-4xl font-bold text-white">{clubInfo.name == "" ? 'Enter Club Name Here' : clubInfo.name}</h1>
-          <div className='flex flex-wrap justify-center md:justify-end gap-2 mt-2'>
-            <button 
-              className="bg-azul text-white text-xs sm:text-sm px-3 sm:px-4 py-2 rounded-full flex-grow md:flex-grow-0"
+        <div className="flex flex-row items-center justify-between bg-cblack break-words -mr-4">
+          <h1 className="text-3xl md:text-4xl font-bold text-white mb-4 text-wrap pr-10">{clubInfo.name == "" ? 'Enter Club Name Here' : clubInfo.name}</h1>
+          <button 
+              className="bg-azul text-white text-xs sm:text-sm px-3 sm:px-4 py-2 rounded-full"
               onClick={() => {
                 navigator.clipboard.writeText(window.location.href)
                   .then(() => {
@@ -262,31 +261,29 @@ const ClubPage = () => {
                   });
               }}
             >
-              Copy Page Link
+              <FaCopy />
             </button>
-          </div>
-            
         </div>
-
+        
         <div className="flex flex-wrap gap-2 mb-6">
           <div className="flex-grow">
             {(clubInfo.tags || []).map((tag, index) => (
-              <span key={index} className="inline-block bg-blue-100 text-azul text-sm font-medium px-3 py-1 rounded-full mr-2 mb-2">
+              <span key={index} className="inline-block bg-blue-100 text-azul text-xs sm:text-sm font-medium px-3 py-1 rounded-full mr-2 mb-2">
                 {tag}
               </span>
             ))}
           </div>
         </div>
 
-        <div className="flex flex-col lg:flex-row gap-8 grid lg:grid-cols-2">
+        <div className="flex flex-col lg:flex-row gap-20 grid lg:grid-cols-2">
         <div className="space-y-8">
           <div>
-            <h2 className="text-xl lg:text-2xl font-bold text-white mb-2">Description</h2>
-            <p className="text-gray-400 mb-4 break-words text-sm lg:text-base">
+            <h2 className="text-2xl font-bold text-white mb-2">Description</h2>
+            <p className="text-grey mb-4 text-wrap text-md lg:text-base">
               {clubInfo.description}
             </p>
           </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-grey">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-grey text-md">
               <div className="flex items-center">
                 <FaCalendarAlt className="mr-2 text-azul" />
                 <span>{clubInfo.length}</span>
@@ -317,7 +314,7 @@ const ClubPage = () => {
                     <Link href={`mailto:${advisor.email}`} className="text-azul hover:underline">
                     <span className="flex items-center">
                         <FaEnvelope className="mr-2" />
-                        {advisor.email}
+                        <span className='text-sm sm:text-md'>{advisor.email}</span>
                     </span>
                     </Link>
                 </div>
@@ -332,7 +329,7 @@ const ClubPage = () => {
                     <Link href={`mailto:${lead.email}`} className="text-azul hover:underline">
                     <span className="flex items-center">
                         <FaEnvelope className="mr-2" />
-                        {lead.email}
+                        <span className='text-sm sm:text-md'>{lead.email}</span>
                     </span>
                     </Link>
                 </div>
@@ -432,7 +429,7 @@ const ClubPage = () => {
           {clubInfo.images && clubInfo.images.length > 0 && (
             <>
                 <h2 className="text-2xl font-bold text-white -mb-8">Images</h2>
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid lg:grid-cols-2 gap-4">
                     {clubInfo.images.map((src: string, index: number) => (
                     <div key={index} className="relative h-64">
                         <Image

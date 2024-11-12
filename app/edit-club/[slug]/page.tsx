@@ -756,7 +756,7 @@ useEffect(() => {
                         handleChange(e, 'description');
                       }
                     }}
-                    className="w-full box-border h-60 p-2 text-grey bg-gray-800 rounded mb-4 overflow-x-hidden"
+                    className="w-7/12 box-border h-60 p-2 text-grey bg-gray-800 rounded mb-4 overflow-x-hidden"
                     placeholder="One paragraph club description"
                     maxLength={1000}
                   />
@@ -1225,7 +1225,7 @@ useEffect(() => {
                       )}
                     </div>
                   ))}
-                  {isEditing && ( // Show upload area only in edit mode
+                  {(isEditing && (clubInfo.images && clubInfo.images.length > 4 )) && ( // Show upload area only in edit mode
                     <div className="relative h-64 flex items-center justify-center border-2 border-dashed border-gray-400 rounded-lg">
                       <input
                         type="file"
