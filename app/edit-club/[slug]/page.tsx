@@ -752,18 +752,18 @@ useEffect(() => {
                   <textarea
                     value={clubInfo.description}
                     onChange={(e) => {
-                      if (e.target.value.length <= 1000) {
+                      if (e.target.value.length <= 750) {
                         handleChange(e, 'description');
                       }
                     }}
-                    className="w-full box-border h-60 p-2 text-grey bg-gray-800 rounded mb-4 overflow-x-hidden"
+                    className="w-full box-border h-72 p-2 text-grey bg-gray-800 rounded mb-4 overflow-x-hidden"
                     placeholder="One paragraph club description"
-                    maxLength={1000}
+                    maxLength={750}
                   />
                   <span className={`absolute bottom-6 left-2 text-sm ${
-                    clubInfo.description?.length === 1000 ? 'text-red-500 font-bold' : 'text-grey'
+                    clubInfo.description?.length === 750 ? 'text-red-500 font-bold' : 'text-grey'
                   }`}>
-                    {clubInfo.description ? clubInfo.description.length : 0}/1000
+                    {clubInfo.description ? clubInfo.description.length : 0}/750
                   </span>
                 </div>
               ) : (

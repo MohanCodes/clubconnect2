@@ -69,8 +69,6 @@ interface ClubInfo {
   blogIds: string[];
 }
 
-type Day = 0 | 1 | 2 | 3 | 4 | 5 | 6;
-
 type NextMeetingDateResult = string; // The function returns a date string or an error message.
 
 function getNextMeetingDate(event: RecurringEvent): NextMeetingDateResult {
@@ -91,10 +89,10 @@ function getNextMeetingDate(event: RecurringEvent): NextMeetingDateResult {
   };
 
   // Calculate next meeting based on frequency
-  let increment = event.frequency === 'weekly' ? 7 : (event.frequency === 'biweekly' ? 14 : null);
+  const increment = event.frequency === 'weekly' ? 7 : (event.frequency === 'biweekly' ? 14 : null);
 
   // Start checking from today or from start date, whichever is later
-  let checkDate = new Date(Math.max(today.getTime(), startDate.getTime()));
+  const checkDate = new Date(Math.max(today.getTime(), startDate.getTime()));
 
   while (true) {
     // Set checkDate to the next occurrence of the specified dayOfWeek
