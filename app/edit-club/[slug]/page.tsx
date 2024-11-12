@@ -666,7 +666,7 @@ useEffect(() => {
             {clubInfo.name === "" ? 'Enter Club Name Here' : clubInfo.name}
           </h1>
           
-          <div className='HERE flex whitespace-nowrap space-x-2 items-center -ml-3'>
+          <div className='flex whitespace-nowrap space-x-2 items-center -ml-3'>
             <div
               className="hidden bg-azul text-white text-xs sm:text-sm px-3 sm:px-4 py-2 rounded-full"
             >
@@ -847,7 +847,7 @@ useEffect(() => {
             <div>
               <h2 className="text-2xl font-bold text-white mb-2">Advisors</h2>
               {(clubInfo.advisors || []).map((advisor, index) => (
-                <div key={index} className="mb-2">
+                <div key={index} className="mb-6">
                   {isEditing ? (
                     <>
                       <input
@@ -861,7 +861,7 @@ useEffect(() => {
                         type="email"
                         value={advisor.email}
                         onChange={(e) => handleAdvisorChange(index, 'email', e.target.value)}
-                        className="bg-gray-800 text-white p-1 rounded mr-2"
+                        className="bg-gray-800 text-white p-1 rounded mr-2 mt-2"
                         placeholder="Advisor Email"
                       />
                       <button onClick={() => handleRemoveAdvisor(index)} className="text-red-500">
@@ -891,7 +891,7 @@ useEffect(() => {
             <div>
               <h2 className="text-2xl font-bold text-white mb-2">Student Leads</h2>
               {(clubInfo.studentLeads || []).map((lead, index) => (
-                <div key={index} className="mb-2">
+                <div key={index} className="mb-6">
                   {isEditing ? (
                     <div className=''>
                       <input
@@ -1023,31 +1023,33 @@ useEffect(() => {
                   {(clubInfo.recurringEvents || []).map((event, index) => (
                     <div key={index} className="mb-4 p-4 bg-gray-800 rounded text-white">
                       {/* Event Title Input */}
-                      <input
-                        type="text"
-                        value={event.title || ''}
-                        onChange={(e) => handleRecurringEventChange(index, 'title', e.target.value)}
-                        placeholder="Event Title"
-                        className="bg-gray-700 text-white p-2 rounded mr-2"
-                        disabled={!isEditing}
-                      />
-                      
-                      {/* Remove Event Button */}
-                      {isEditing && (
-                        <button
-                          onClick={() => handleRemoveRecurringEvent(index)}
-                          className="bg-red-500 text-white px-2 py-1 rounded"
-                        >
-                          <FaTrash />
-                        </button>
-                      )}
+                      <div className='flex flex-row gap-4'>
+                        <input
+                          type="text"
+                          value={event.title || ''}
+                          onChange={(e) => handleRecurringEventChange(index, 'title', e.target.value)}
+                          placeholder="Event Title"
+                          className="bg-gray-700 text-white p-2 rounded w-full mb-2" // Full width for better usability
+                          disabled={!isEditing}
+                        />
+                        
+                        {/* Remove Event Button */}
+                        {isEditing && (
+                          <button
+                            onClick={() => handleRemoveRecurringEvent(index)}
+                            className="bg-red-500 px-2 py-1 rounded mb-2"
+                          >
+                            <FaTrash />
+                          </button>
+                        )}
+                      </div>
 
                       {/* Frequency and Day of Week Selectors */}
-                      <div className='flex flex-row mt-4'>
+                      <div className='flex flex-col sm:flex-row mt-4'>
                         <select
                           value={event.frequency}
                           onChange={(e) => handleRecurringEventChange(index, 'frequency', e.target.value)}
-                          className="bg-gray-700 p-2 rounded mr-2"
+                          className="bg-gray-700 p-2 rounded mr-2 mb-2 sm:mb-0"
                           disabled={!isEditing}
                         >
                           <option value="weekly">Weekly</option>
@@ -1055,14 +1057,14 @@ useEffect(() => {
                           <option value="monthly">Monthly</option>
                         </select>
                         
-                        <p className='flex items-center ml-1 mr-2'>
+                        <p className='flex items-center mx-2 mb-2 sm:mb-0'>
                           {event.frequency === 'biweekly' ? 'every other' : 'every'}
                         </p>
                         
                         <select
                           value={event.dayOfWeek}
                           onChange={(e) => handleRecurringEventChange(index, 'dayOfWeek', parseInt(e.target.value))}
-                          className="bg-gray-700 p-2 rounded mr-2"
+                          className="bg-gray-700 p-2 rounded mr-2 mb-2 sm:mb-0"
                           disabled={!isEditing}
                         >
                           {['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'].map((day, i) => (
@@ -1072,28 +1074,32 @@ useEffect(() => {
                       </div>
 
                       {/* Start Date and End Date Inputs */}
-                      <div className='my-2 flex flex-row'>
-                        <p className='flex items-center mx-2'>From</p>
-                        <input
-                          type="date"
-                          value={format(parseISO(event.startDate), 'yyyy-MM-dd')}
-                          onChange={(e) => handleRecurringEventChange(index, 'startDate', e.target.value)}
-                          className="bg-gray-700 text-white p-2 rounded mr-2"
-                          disabled={!isEditing}
-                        />
-                        
-                        <p className='flex items-center mx-2'>To</p>
-                        <input
-                          type="date"
-                          value={format(parseISO(event.endDate), 'yyyy-MM-dd')}
-                          onChange={(e) => handleRecurringEventChange(index, 'endDate', e.target.value)}
-                          className="bg-gray-700 text-white p-2 rounded mr-2"
-                          disabled={!isEditing}
-                        />
+                      <div className='my-4 flex flex-col sm:flex-row'>
+                        <div className='flex items-center mb-2 sm:mr-4'>
+                          <p className='flex items-center mx-2'>From</p>
+                          <input
+                            type="date"
+                            value={format(parseISO(event.startDate), 'yyyy-MM-dd')}
+                            onChange={(e) => handleRecurringEventChange(index, 'startDate', e.target.value)}
+                            className="bg-gray-700 text-white p-2 rounded w-full"
+                            disabled={!isEditing}
+                          />
+                        </div>
+
+                        <div className='flex items-center mb-2'>
+                          <p className='flex items-center mx-2'>To</p>
+                          <input
+                            type="date"
+                            value={format(parseISO(event.endDate), 'yyyy-MM-dd')}
+                            onChange={(e) => handleRecurringEventChange(index, 'endDate', e.target.value)}
+                            className="bg-gray-700 text-white p-2 rounded w-full"
+                            disabled={!isEditing}
+                          />
+                        </div>
                       </div>
 
                       {/* Exceptions Section */}
-                      <div className="mt-2">
+                      <div className="mt-4">
                         <h3 className="text-xl font-bold text-white mb-2">Exceptions</h3>
                         
                         {event.exceptions.map((exception, exceptionIndex) => (
@@ -1115,7 +1121,7 @@ useEffect(() => {
                           <input
                             type="date"
                             onChange={(e) => handleAddException(index, e.target.value)}
-                            className="bg-gray-700 text-white p-2 rounded"
+                            className="bg-gray-700 text-white p-2 rounded w-full mt-2" // Full width for better usability
                           />
                         )}
                       </div>
@@ -1126,69 +1132,80 @@ useEffect(() => {
                   {isEditing && (
                     <button
                       onClick={handleAddRecurringEvent}
-                      className="bg-green-500 text-white px-2 py-1 rounded flex flex-row items-center"
+                      className="bg-green-500 text-white px-4 py-2 rounded flex flex-row items-center mt-4"
                     >
                       <FaPlus className="mr-2" /> Add Recurring Event
                     </button>
                   )}
                 </>
               ) : (
-                <>
-                  <h3 className="text-xl font-semibold text-white mb-3">Recurring Events</h3>
-                  {(clubInfo.recurringEvents || []).length > 0 ? (
-                    clubInfo.recurringEvents.map((event, index) => {
-                      const nextMeeting = getNextMeetingDate(event);
-                      return (
-                        <div key={index} className="mb-6 p-6 bg-gray-800 rounded-lg shadow-md text-white">
-                          {/* Event Title */}
-                          <p className="font-semibold text-lg">Event: {event.title || 'Untitled Event'}</p>
+                <div>
+                  <h3 className="text-2xl font-semibold text-white mb-3">Recurring Events</h3>
+                      {(clubInfo.recurringEvents || []).length > 0 ? (
+                        clubInfo.recurringEvents.map((event, index) => {
+                          const nextMeeting = getNextMeetingDate(event);
+                          return (
+                            <div key={index} className="mb-6 p-6 bg-gray-800 rounded-lg shadow-md text-white lg:w-5/6">
+                              {/* Event Title */}
+                              <p className="font-semibold text-lg">Event: {event.title || 'Untitled Event'}</p>
 
-                          {/* Frequency and Day of Week */}
-                          <p className="mt-2">
-                            This event occurs{' '}
-                            {event.frequency === 'biweekly' ? 'every other' : 'every'}{' '}
-                            {
-                              ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'][
-                                event.dayOfWeek
-                              ]
-                            }.
-                          </p>
+                              {/* Frequency and Day of Week */}
+                              <p className="mt-2">
+                                This event occurs{' '}
+                                {event.frequency === 'biweekly' ? 'every other' : 'every'}{' '}
+                                {
+                                  ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'][
+                                    event.dayOfWeek
+                                  ]
+                                }.
+                              </p>
 
-                          {/* Start Date, End Date, and Next Meeting */}
-                          <p className="mt-2">
-                            It runs from {format(parseISO(event.startDate), 'MMMM dd, yyyy')} to{' '}
-                            {format(parseISO(event.endDate), 'MMMM dd, yyyy')}.
-                          </p>
-                          
-                          <p className="mt-2 font-semibold text-blue-400">
-                            Next meeting: {nextMeeting ? format(parseISO(nextMeeting), 'MMMM dd, yyyy') : 'No upcoming meeting'}
-                          </p>
+                              {/* Start Date, End Date, and Next Meeting */}
+                              <p className="mt-2">
+                                It runs from {format(parseISO(event.startDate), 'MMMM dd, yyyy')} to{' '}
+                                {format(parseISO(event.endDate), 'MMMM dd, yyyy')}.
+                              </p>
+                              
+                              <p className="mt-2 font-semibold text-blue-400">
+                              Next meeting: {nextMeeting ? format(parseISO(nextMeeting), 'MMMM dd, yyyy') : 'No upcoming meeting'}
+                              </p>
 
-                          {/* Display Exceptions */}
-                          {event.exceptions.length > 0 && (
-                            <div className="mt-4">
-                              <h4 className="text-lg font-bold text-white mb-2">Exceptions:</h4>
-                              <ul className="list-disc pl-5 text-gray-300">
-                                {event.exceptions.map((exception, exceptionIndex) => (
-                                  <li key={exceptionIndex}>{new Date(exception).toLocaleDateString()}</li>
-                                ))}
-                              </ul>
+                              {/* Display Exceptions */}
+                              {event.exceptions.length > 0 && (
+                                <div className="mt-4">
+                                  <h4 className="text-lg font-bold text-white mb-2">Exceptions:</h4>
+                                  <ul className="list-disc pl-5 text-gray-300">
+                                    {event.exceptions.map((exception, exceptionIndex) => (
+                                      <li key={exceptionIndex}>{new Date(exception).toLocaleDateString()}</li>
+                                    ))}
+                                  </ul>
+                                </div>
+                              )}
                             </div>
-                          )}
-                        </div>
-                      );
-                    })
-                  ) : (
-                    <p className="text-gray-300">No recurring events are currently scheduled.</p>
-                  )}
-                </>
+                          );
+                        })
+                      ) : (
+                        <p className="text-gray-300">No recurring events are currently scheduled.</p>
+                      )}
+
+                    <div className="mt-8">
+                        <h2 className="text-2xl font-bold text-white mb-2">More Information</h2>
+                        <p className="text-grey">
+                            For more information, please{' '}
+                            <Link href="mailto:hello@mnclubconnect.com" className="text-azul hover:underline">
+                            contact ClubConnect.
+                            </Link>
+                        </p>
+                    </div>
+                </div>
               )}
 
+              {/* More Information Section */}
               <div className="mt-8">
                 <h2 className="text-2xl font-bold text-white mb-2">More Information</h2>
                 <p className="text-grey">
                   For more information, please{' '}
-                  <Link href="mailto:hello@mnclubconnect.com" className="text-azul hover:underline">
+                  <Link href="mailto:hello@mnclubconnect.com" className="text-blue hover:underline">
                     contact ClubConnect.
                   </Link>
                 </p>
@@ -1206,7 +1223,7 @@ useEffect(() => {
               )}
                 <div className="grid sm:grid-cols-2 gap-4">
                   {clubInfo.images?.map((src: string, index: number) => (
-                    <div key={index} className="relative h-64">
+                    <div key={index} className="relative h-64 w-auto">
                       <Image
                         src={src}
                         alt={`Club activity ${index + 1}`}
