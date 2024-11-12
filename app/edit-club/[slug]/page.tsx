@@ -622,7 +622,7 @@ useEffect(() => {
   return (
     <div className="bg-cblack min-h-screen">
       <Navbar />
-      <main className="container mx-auto px-4 py-8">
+      <main className="container mx-auto px-8 pt-4 pb-8">
       {isLoading && (
         <div className="fixed inset-0 bg-black backdrop-blur bg-opacity-75 flex items-center justify-center z-50">
           <div className="bg-white p-6 rounded-lg flex flex-col items-center">
@@ -661,27 +661,27 @@ useEffect(() => {
           </div>
         </div>
       )}
-        <div className="flex flex-col md:flex-row items-center justify-between py-4 sticky top-20 z-40 bg-cblack break-words">
-          <h1 className="text-2xl md:text-4xl font-bold text-white mb-4 text-center md:text-left">
+        <div className="flex flex-col md:flex-row justify-between py-4 sticky top-20 z-40 bg-cblack break-words">
+          <h1 className="text-3xl md:text-4xl font-bold text-white mb-4">
             {clubInfo.name === "" ? 'Enter Club Name Here' : clubInfo.name}
           </h1>
           
-          <div className='flex flex-wrap justify-center md:justify-end gap-2 w-full'>
+          <div className='HERE flex whitespace-nowrap space-x-2 items-center -ml-3'>
             <div
-              className="hidden bg-azul text-white text-xs sm:text-sm px-3 sm:px-4 py-2 rounded-full flex-grow md:flex-grow-0"
+              className="hidden bg-azul text-white text-xs sm:text-sm px-3 sm:px-4 py-2 rounded-full"
             >
               <span className="text-white">{filledFieldsCount} / 8</span>
             </div>
             <button
               onClick={isEditing ? handleSave : handleEdit}
-              className="bg-azul text-white text-xs sm:text-sm px-3 sm:px-4 py-2 rounded-full flex-grow md:flex-grow-0"
+              className="bg-azul text-white text-xs sm:text-sm px-3 sm:px-4 py-2 rounded-full"
             >
               {isEditing ? 'Render Page' : 'Edit Page'}
             </button>
             
             <button 
               onClick={handleUpload} 
-              className={`${isUploading ? 'bg-gray-500' : hasUnsavedChanges ? 'bg-red-500' : 'bg-azul'} text-white text-xs sm:text-sm px-3 sm:px-4 py-2 rounded-full flex-grow md:flex-grow-0`}
+              className={`${isUploading ? 'bg-gray-500' : hasUnsavedChanges ? 'bg-red-500' : 'bg-azul'} text-white text-xs sm:text-sm px-3 sm:px-4 py-2 rounded-full`}
               disabled={isUploading}
             >
               {isUploading ? 'Uploading...' : hasUnsavedChanges ? 'Save Changes' : 'Changes Saved'}
@@ -703,7 +703,7 @@ useEffect(() => {
           {(clubInfo.tags || []).map((tag, index) => (
             <span 
               key={index} 
-              className={`inline-flex items-center bg-blue-100 text-azul text-sm font-medium px-3 py-1 rounded-full mr-2 mb-2 ${
+              className={`inline-flex items-center bg-blue-100 text-azul text-xs font-medium px-3 py-1 rounded-full mr-2 mb-2 sm:text-sm ${
                 isEditing ? 'pr-1 transition-colors duration-200' : ''
               }`}
             >
@@ -714,7 +714,7 @@ useEffect(() => {
                   className="ml-2 text-red-500 hover:text-red-700 focus:outline-none rounded-full p-1 text-bold"
                   aria-label={`Remove ${tag} tag`}
                 >
-                  <FaTrash />
+                  ✖
                 </button>
               )}
             </span>
@@ -756,7 +756,7 @@ useEffect(() => {
                         handleChange(e, 'description');
                       }
                     }}
-                    className="w-7/12 box-border h-60 p-2 text-grey bg-gray-800 rounded mb-4 overflow-x-hidden"
+                    className="w-auto sm:w-full box-border h-60 p-2 text-grey bg-gray-800 rounded mb-4 overflow-x-hidden"
                     placeholder="One paragraph club description"
                     maxLength={1000}
                   />
@@ -1204,7 +1204,7 @@ useEffect(() => {
                   <h2 className="text-2xl font-bold text-white -mb-8">Images</h2>
                 </div>
               )}
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid sm:grid-cols-2 gap-4">
                   {clubInfo.images?.map((src: string, index: number) => (
                     <div key={index} className="relative h-64">
                       <Image

@@ -429,7 +429,7 @@ const ClubPage = () => {
           {clubInfo.images && clubInfo.images.length > 0 && (
             <>
                 <h2 className="text-2xl font-bold text-white -mb-8">Images</h2>
-                <div className="grid lg:grid-cols-2 gap-4">
+                <div className="grid sm:grid-cols-2 gap-4">
                     {clubInfo.images.map((src: string, index: number) => (
                     <div key={index} className="relative h-64">
                         <Image
