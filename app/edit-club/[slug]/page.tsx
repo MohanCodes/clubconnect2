@@ -1110,6 +1110,7 @@ useEffect(() => {
                               <button
                                 onClick={() => handleRemoveException(index, exceptionIndex)}
                                 className="text-red-500"
+                                value={format(parseISO(event.startDate), 'yyyy-MM-dd')}
                               >
                                 <FaTrash />
                               </button>

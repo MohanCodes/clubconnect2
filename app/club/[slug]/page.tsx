@@ -71,7 +71,9 @@ interface ClubInfo {
 
 type Day = 0 | 1 | 2 | 3 | 4 | 5 | 6;
 
-function getNextMeetingDate(event: RecurringEvent): string {
+type NextMeetingDateResult = string; // The function returns a date string or an error message.
+
+function getNextMeetingDate(event: RecurringEvent): NextMeetingDateResult {
   const today = new Date();
   const startDate = parseISO(event.startDate);
   const endDate = parseISO(event.endDate);
@@ -82,40 +84,42 @@ function getNextMeetingDate(event: RecurringEvent): string {
   }
 
   let nextMeeting: Date;
+  
+  // Function to check if a date is an exception
+  const isException = (date: Date): boolean => {
+    return event.exceptions.includes(format(date, 'yyyy-MM-dd'));
+  };
 
-  // Calculate the next meeting date based on frequency
-  switch (event.frequency) {
-    case 'weekly':
-      nextMeeting = nextMonday(today);
-      break;
-    case 'biweekly':
-      nextMeeting = addDays(nextMonday(today), 14);
-      break;
-    case 'monthly':
-      nextMeeting = new Date(today.getFullYear(), today.getMonth() + 1, event.dayOfWeek);
-      break;
-    default:
-      throw new Error("Invalid frequency");
-  }
+  // Calculate next meeting based on frequency
+  let increment = event.frequency === 'weekly' ? 7 : (event.frequency === 'biweekly' ? 14 : null);
 
-  // Ensure the next meeting is after the start date
-  if (isBefore(nextMeeting, startDate)) {
-    nextMeeting = startOfWeek(startDate, { weekStartsOn: event.dayOfWeek as Day });
-    if (event.frequency === 'biweekly') {
-      nextMeeting = addDays(nextMeeting, 14);
-    }
+  // Start checking from today or from start date, whichever is later
+  let checkDate = new Date(Math.max(today.getTime(), startDate.getTime()));
+
+  while (true) {
+    // Set checkDate to the next occurrence of the specified dayOfWeek
+    checkDate.setDate(checkDate.getDate() + ((event.dayOfWeek + 7 - checkDate.getDay()) % 7));
+
+    // If frequency is monthly, adjust for month increment
     if (event.frequency === 'monthly') {
-      nextMeeting.setMonth(nextMeeting.getMonth() + 1);
+      checkDate.setMonth(checkDate.getMonth() + 1);
+      checkDate.setDate(event.dayOfWeek); // Set to specific day of month
+    }
+
+    // Check if this date is within range and not an exception
+    if (!isException(checkDate) && !isAfter(checkDate, endDate)) {
+      nextMeeting = checkDate;
+      return format(nextMeeting, 'yyyy-MM-dd'); // Return the formatted next meeting date.
+    }
+
+    // If it's an exception or past end date, continue checking further dates
+    checkDate.setDate(checkDate.getDate() + (increment || 0));
+    
+    // If we exceed end date without finding a valid meeting, break
+    if (isAfter(checkDate, endDate)) {
+      return "No more meetings scheduled.";
     }
   }
-
-  // Check if the next meeting is before the end date
-  if (isAfter(nextMeeting, endDate)) {
-    return "No more meetings scheduled.";
-  }
-
-  // Format and return the next meeting date
-  return format(nextMeeting, 'yyyy-MM-dd');
 }
 
 const ClubPage = () => {
