@@ -441,6 +441,7 @@ const ClubPage = () => {
                         layout="fill"
                         objectFit="cover"
                         className="rounded-lg"
+                        priority
                         />
                     </div>
                     ))}

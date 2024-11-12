@@ -113,10 +113,9 @@ const CalendarProp: React.FC<CalendarProps> = ({ events = [] }) => {
 
   return (
     <div className="bg-cblack text-white p-6 rounded-lg shadow-lg">
-      <div className="flex justify-between items-center mb-4">
+      <div className="flex justify-around items-center mb-4">
         <button onClick={prevPeriod} className="text-azul hover:text-blue-400 text-xl flex items-center space-x-2">
           <FaAngleLeft size={40}/> 
-          <span>Prev</span>
         </button>
         <h2 className="text-2xl font-semibold text-center">
           {isWeeklyView 
@@ -125,7 +124,6 @@ const CalendarProp: React.FC<CalendarProps> = ({ events = [] }) => {
           }
         </h2>
         <button onClick={nextPeriod} className="text-azul hover:text-blue-400 text-xl flex items-center space-x-2">
-          <span>Next</span>
           <FaAngleRight size={40}/> 
         </button>
       </div>

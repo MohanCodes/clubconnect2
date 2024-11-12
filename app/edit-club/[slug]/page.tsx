@@ -1213,6 +1213,7 @@ useEffect(() => {
                         layout="fill"
                         objectFit="cover"
                         className="rounded-lg"
+                        priority
                       />
                       {isEditing && ( // Only show the trash can when in edit mode
                         <button
