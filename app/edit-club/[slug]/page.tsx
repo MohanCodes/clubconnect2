@@ -662,7 +662,7 @@ useEffect(() => {
         </div>
       )}
         <div className="flex flex-col md:flex-row justify-between py-4 sticky top-20 z-40 bg-cblack break-words">
-          <h1 className="text-3xl md:text-4xl font-bold text-white mb-4">
+          <h1 className="text-2xl md:text-4xl font-bold text-white mb-4">
             {clubInfo.name === "" ? 'Enter Club Name Here' : clubInfo.name}
           </h1>
           
@@ -674,14 +674,14 @@ useEffect(() => {
             </div>
             <button
               onClick={isEditing ? handleSave : handleEdit}
-              className="bg-azul text-white text-sm px-3 sm:px-4 py-2 rounded-full"
+              className="bg-azul text-white text-xs sm:text-sm px-3 sm:px-4 py-2 rounded-full"
             >
               {isEditing ? 'Render Page' : 'Edit Page'}
             </button>
             
             <button 
               onClick={handleUpload} 
-              className={`${isUploading ? 'bg-gray-500' : hasUnsavedChanges ? 'bg-red-500' : 'bg-azul'} text-white text-sm px-3 sm:px-4 py-2 rounded-full`}
+              className={`${isUploading ? 'bg-gray-500' : hasUnsavedChanges ? 'bg-red-500' : 'bg-azul'} text-white text-xs sm:text-sm px-3 sm:px-4 py-2 rounded-full`}
               disabled={isUploading}
             >
               {isUploading ? 'Uploading...' : hasUnsavedChanges ? 'Save Changes' : 'Changes Saved'}
@@ -689,7 +689,7 @@ useEffect(() => {
             
             <button
               onClick={() => setIsDeleteModalOpen(true)}
-              className="bg-red-500 text-white text-sm py-2 px-4 rounded-full"
+              className="bg-red-500 text-white text-xs sm:text-sm py-2 px-4 rounded-full"
             >
               <div>
                 <FaTrash />
@@ -726,9 +726,9 @@ useEffect(() => {
                   value={newTag}
                   onChange={(e) => setNewTag(e.target.value)}
                   placeholder="Add a new tag"
-                  className="bg-gray-800 text-white p-1 rounded"
+                  className="bg-gray-800 text-white p-1 rounded sm:text-md text-sm"
                 />
-                <button onClick={handleAddTag} className="bg-green-500 text-white px-2 py-1 rounded ml-2">
+                <button onClick={handleAddTag} className="bg-green-500 text-white px-2 py-1 rounded ml-2 sm:text-md text-sm">
                   Add
                 </button>
               </div>
