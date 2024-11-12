@@ -847,7 +847,7 @@ useEffect(() => {
             <div>
               <h2 className="text-2xl font-bold text-white mb-2">Advisors</h2>
               {(clubInfo.advisors || []).map((advisor, index) => (
-                <div key={index} className="mb-6">
+                <div key={index} className="mb-3">
                   {isEditing ? (
                     <>
                       <input
@@ -891,7 +891,7 @@ useEffect(() => {
             <div>
               <h2 className="text-2xl font-bold text-white mb-2">Student Leads</h2>
               {(clubInfo.studentLeads || []).map((lead, index) => (
-                <div key={index} className="mb-6">
+                <div key={index} className="mb-3">
                   {isEditing ? (
                     <div className=''>
                       <input
@@ -957,7 +957,7 @@ useEffect(() => {
                 </div>
               ))}
               {isEditing && (
-                <button onClick={() => setIsModalOpen(true)} className="bg-green-500 text-white px-2 py-1 rounded flex flex-row items-center">
+                <button onClick={() => setIsModalOpen(true)} className="bg-green-500 text-white px-2 py-1 rounded flex flex-row items-center mt-3">
                   <FaPlus className="mr-2" /> Add Link
                 </button>
               )}
@@ -1187,16 +1187,6 @@ useEffect(() => {
                       ) : (
                         <p className="text-gray-300">No recurring events are currently scheduled.</p>
                       )}
-
-                    <div className="mt-8">
-                        <h2 className="text-2xl font-bold text-white mb-2">More Information</h2>
-                        <p className="text-grey">
-                            For more information, please{' '}
-                            <Link href="mailto:hello@mnclubconnect.com" className="text-azul hover:underline">
-                            contact ClubConnect.
-                            </Link>
-                        </p>
-                    </div>
                 </div>
               )}
 
@@ -1205,7 +1195,7 @@ useEffect(() => {
                 <h2 className="text-2xl font-bold text-white mb-2">More Information</h2>
                 <p className="text-grey">
                   For more information, please{' '}
-                  <Link href="mailto:hello@mnclubconnect.com" className="text-blue hover:underline">
+                  <Link href="mailto:hello@mnclubconnect.com" className="text-azul hover:underline">
                     contact ClubConnect.
                   </Link>
                 </p>

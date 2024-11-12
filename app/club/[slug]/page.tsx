@@ -314,7 +314,7 @@ const ClubPage = () => {
                     <Link href={`mailto:${advisor.email}`} className="text-azul hover:underline">
                     <span className="flex items-center">
                         <FaEnvelope className="mr-2" />
-                        <span className='text-sm sm:text-md'>{advisor.email}</span>
+                        <span className=''>{advisor.email}</span>
                     </span>
                     </Link>
                 </div>
@@ -329,7 +329,7 @@ const ClubPage = () => {
                     <Link href={`mailto:${lead.email}`} className="text-azul hover:underline">
                     <span className="flex items-center">
                         <FaEnvelope className="mr-2" />
-                        <span className='text-sm sm:text-md'>{lead.email}</span>
+                        <span className=''>{lead.email}</span>
                     </span>
                     </Link>
                 </div>

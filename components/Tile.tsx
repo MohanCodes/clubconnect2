@@ -123,7 +123,7 @@ const Tile: React.FC<TileProps> = ({
       {/* Icon and Club Name */}
       <div className="flex items-center mb-4 mr-6 space-x-4">
         <Image src={icon} alt="Club Icon" width={45} height={45} className="" />
-        <h2 className="text-xl md:text-2xl font-semibold text-white text-left pr-6">{clubName}</h2>
+        <h2 className="text-2xl font-semibold text-white text-left pr-6">{clubName}</h2>
       </div>
 
       {/* Club Description */}
