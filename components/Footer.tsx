@@ -1,5 +1,6 @@
 import React from 'react';
 import { FaInstagram } from 'react-icons/fa';
+import Link from 'next/link';
 
 const Footer: React.FC = () => {
 
@@ -13,7 +14,7 @@ const Footer: React.FC = () => {
         <div className="flex flex-col items-center">
           <div className="flex space-x-4 mb-4">
             {socialLinks.map((social) => (
-              <a
+              <Link
                 key={social.href}
                 href={social.href}
                 target="_blank"
@@ -21,7 +22,7 @@ const Footer: React.FC = () => {
                 className="hover:text-azul"
               >
                 {social.icon}
-              </a>
+              </Link>
             ))}
           </div>
           <p className="text-center text-sm">© {new Date().getFullYear()} MNClubConnect. All rights reserved.</p>
