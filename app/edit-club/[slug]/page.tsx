@@ -242,20 +242,20 @@ const EditClubPage = () => {
 
   const checkCompletion = (info: ClubInfo): boolean => {
     const requiredFields: (keyof ClubInfo)[] = [
-      'name', 'school', 'description', 'length', 'meetingTimes', 
-      'meetingSite', 'eligibility', 'costs'
+        'name', 'school', 'description', 'length', 'meetingTimes', 
+        'meetingSite', 'eligibility', 'costs'
     ];
     
     const isAllFieldsFilled = requiredFields.every(field => {
-      return info[field] !== undefined && info[field] !== '';
+        return info[field] !== undefined && info[field] !== '';
     });
-    
-    const hasAdvisor = info.advisors && info.advisors.length > 0 && 
-      info.advisors.every(advisor => advisor.name !== '' && advisor.email !== '');
-    
-    const hasStudentLead = info.studentLeads && info.studentLeads.length > 0 && 
-      info.studentLeads.every(lead => lead.name !== '' && lead.role !== '' && lead.email !== '');
-    
+
+    const hasAdvisor = Array.isArray(info.advisors) && info.advisors.length > 0 && 
+        info.advisors.every(advisor => advisor.name !== '' && advisor.email !== '');
+
+    const hasStudentLead = Array.isArray(info.studentLeads) && info.studentLeads.length > 0 && 
+        info.studentLeads.every(lead => lead.name !== '' && lead.role !== '' && lead.email !== '');
+
     return isAllFieldsFilled && hasAdvisor && hasStudentLead;
   };
 
@@ -385,8 +385,8 @@ const EditClubPage = () => {
         }));
       }
   
-      setHasUnsavedChanges(false);
       await setDoc(clubDocRef, clubData);
+      setHasUnsavedChanges(false);
       console.log('Club data uploaded successfully');
     } catch (error) {
       console.error('Error uploading club data:', error);
