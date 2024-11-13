@@ -385,8 +385,8 @@ const EditClubPage = () => {
         }));
       }
   
-      await setDoc(clubDocRef, clubData);
       setHasUnsavedChanges(false);
+      await setDoc(clubDocRef, clubData);
       console.log('Club data uploaded successfully');
     } catch (error) {
       console.error('Error uploading club data:', error);
