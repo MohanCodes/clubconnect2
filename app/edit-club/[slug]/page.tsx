@@ -246,9 +246,9 @@ const EditClubPage = () => {
       'meetingSite', 'eligibility', 'costs'
     ];
     
-    const isAllFieldsFilled = requiredFields.every(field => 
-      info[field] !== undefined && info[field] !== ''
-    );
+    const isAllFieldsFilled = requiredFields.every(field => {
+      return info[field] !== undefined && info[field] !== '';
+    });
     
     const hasAdvisor = info.advisors && info.advisors.length > 0 && 
       info.advisors.every(advisor => advisor.name !== '' && advisor.email !== '');
@@ -256,9 +256,7 @@ const EditClubPage = () => {
     const hasStudentLead = info.studentLeads && info.studentLeads.length > 0 && 
       info.studentLeads.every(lead => lead.name !== '' && lead.role !== '' && lead.email !== '');
     
-    const hasLink = info.links && info.links.length > 0;
-    
-    return isAllFieldsFilled && hasAdvisor && hasStudentLead && hasLink;
+    return isAllFieldsFilled && hasAdvisor && hasStudentLead;
   };
 
   const handleEdit = () => setIsEditing(true);
@@ -297,6 +295,7 @@ const EditClubPage = () => {
       ...updatedClubInfo,
       isComplete: checkCompletion(updatedClubInfo)
     });
+    setHasUnsavedChanges(true);
   };
 
   const handleAddAdvisor = () => {
@@ -308,17 +307,22 @@ const EditClubPage = () => {
 
   const handleRemoveAdvisor = (index: number) => {
     const updatedAdvisors = clubInfo.advisors.filter((_, i) => i !== index);
-    setClubInfo({ ...clubInfo, advisors: updatedAdvisors });
+    setClubInfo(prevState => ({
+        ...prevState,
+        advisors: updatedAdvisors,
+        isComplete: checkCompletion({ ...prevState, advisors: updatedAdvisors }) // Check completion after removal
+    }));
   };
 
   const handleStudentLeadChange = (index: number, field: keyof StudentLead, value: string) => {
     const updatedLeads = [...clubInfo.studentLeads];
     updatedLeads[index] = { ...updatedLeads[index], [field]: value };
-    const updatedClubInfo = { ...clubInfo, studentLeads: updatedLeads };
-    setClubInfo({
-      ...updatedClubInfo,
-      isComplete: checkCompletion(updatedClubInfo)
-    });
+    setClubInfo(prevState => ({
+      ...prevState,
+      studentLeads: updatedLeads,
+      isComplete: checkCompletion({ ...prevState, studentLeads: updatedLeads }) // Check completion after removal
+    }));
+    setHasUnsavedChanges(true);
   };
 
   const handleAddStudentLead = () => {
@@ -341,7 +345,6 @@ const EditClubPage = () => {
       };
       setClubInfo({
         ...updatedClubInfo,
-        isComplete: checkCompletion(updatedClubInfo)
       });
       setNewLink({ url: '', platform: '' });
       setIsModalOpen(false);
@@ -746,7 +749,7 @@ useEffect(() => {
         <div className="flex flex-col lg:flex-row gap-20 grid lg:grid-cols-2">
           <div className="space-y-8">
             <div>
-              <h2 className="text-2xl font-bold text-white mb-2">Description</h2>
+              <h2 className="text-2xl font-bold text-white mb-2">Description{isEditing && <span className="text-red-500 text-xs align-top"> ✱</span>}</h2>
               {isEditing ? (
                 <div className="relative">
                   <textarea
@@ -775,13 +778,16 @@ useEffect(() => {
               <div className="flex items-center">
                 <FaCalendarAlt className="mr-2 text-azul" />
                 {isEditing ? (
-                  <input
-                    type="text"
-                    value={clubInfo.length}
-                    onChange={(e) => handleChange(e, 'length')}
-                    className="bg-gray-800 text-white p-1 rounded"
-                    placeholder="Club Length"
-                  />
+                  <div>
+                    <input
+                      type="text"
+                      value={clubInfo.length}
+                      onChange={(e) => handleChange(e, 'length')}
+                      className="bg-gray-800 text-white p-1 rounded"
+                      placeholder="Club Length"
+                    />
+                    <span className="text-red-500 text-xs align-top"> ✱</span>
+                  </div>
                 ) : (
                   <span>{clubInfo.length}</span>
                 )}
@@ -789,13 +795,16 @@ useEffect(() => {
               <div className="flex items-center">
                 <FaClock className="mr-2 text-azul" />
                 {isEditing ? (
-                  <input
-                    type="text"
-                    value={clubInfo.meetingTimes}
-                    onChange={(e) => handleChange(e, 'meetingTimes')}
-                    className="bg-gray-800 text-white p-1 rounded"
-                    placeholder="Meeting Times"
-                  />
+                  <div>
+                    <input
+                      type="text"
+                      value={clubInfo.meetingTimes}
+                      onChange={(e) => handleChange(e, 'meetingTimes')}
+                      className="bg-gray-800 text-white p-1 rounded"
+                      placeholder="Meeting Times"
+                    />
+                    <span className="text-red-500 text-xs align-top"> ✱</span>
+                  </div>
                 ) : (
                   <span>{clubInfo.meetingTimes}</span>
                 )}
@@ -803,13 +812,16 @@ useEffect(() => {
               <div className="flex items-center">
                 <FaMapMarkerAlt className="mr-2 text-azul" />
                 {isEditing ? (
-                  <input
-                    type="text"
-                    value={clubInfo.meetingSite}
-                    onChange={(e) => handleChange(e, 'meetingSite')}
-                    className="bg-gray-800 text-white p-1 rounded"
-                    placeholder="Meeting Site"
-                  />
+                  <div>
+                    <input
+                      type="text"
+                      value={clubInfo.meetingSite}
+                      onChange={(e) => handleChange(e, 'meetingSite')}
+                      className="bg-gray-800 text-white p-1 rounded"
+                      placeholder="Meeting Site"
+                    />
+                    <span className="text-red-500 text-xs align-top"> ✱</span>
+                  </div>
                 ) : (
                   <span>{clubInfo.meetingSite}</span>
                 )}
@@ -817,13 +829,16 @@ useEffect(() => {
               <div className="flex items-center">
                 <FaUserGraduate className="mr-2 text-azul" />
                 {isEditing ? (
-                  <input
-                    type="text"
-                    value={clubInfo.eligibility}
-                    onChange={(e) => handleChange(e, 'eligibility')}
-                    className="bg-gray-800 text-white p-1 rounded"
-                    placeholder="Eligibility"
-                  />
+                  <div>
+                    <input
+                      type="text"
+                      value={clubInfo.eligibility}
+                      onChange={(e) => handleChange(e, 'eligibility')}
+                      className="bg-gray-800 text-white p-1 rounded"
+                      placeholder="Eligibility"
+                    />
+                    <span className="text-red-500 text-xs align-top"> ✱</span>
+                  </div>
                 ) : (
                   <span>{clubInfo.eligibility}</span>
                 )}
@@ -831,13 +846,16 @@ useEffect(() => {
               <div className="flex items-center">
                 <FaDollarSign className="mr-2 text-azul" />
                 {isEditing ? (
-                  <input
-                    type="text"
-                    value={clubInfo.costs}
-                    onChange={(e) => handleChange(e, 'costs')}
-                    className="bg-gray-800 text-white p-1 rounded"
-                    placeholder="Costs"
-                  />
+                  <div>
+                    <input
+                      type="text"
+                      value={clubInfo.costs}
+                      onChange={(e) => handleChange(e, 'costs')}
+                      className="bg-gray-800 text-white p-1 rounded"
+                      placeholder="Costs"
+                    />
+                    <span className="text-red-500 text-xs align-top"> ✱</span>
+                  </div>
                 ) : (
                   <span>{clubInfo.costs}</span>
                 )}
@@ -845,7 +863,7 @@ useEffect(() => {
             </div>
 
             <div>
-              <h2 className="text-2xl font-bold text-white mb-2">Advisors</h2>
+              <h2 className="text-2xl font-bold text-white mb-2">Advisors{isEditing && <span className="text-red-500 text-xs align-top"> ✱</span>}</h2>
               {(clubInfo.advisors || []).map((advisor, index) => (
                 <div key={index} className="mb-3">
                   {isEditing ? (
@@ -889,7 +907,7 @@ useEffect(() => {
             </div>
 
             <div>
-              <h2 className="text-2xl font-bold text-white mb-2">Student Leads</h2>
+              <h2 className="text-2xl font-bold text-white mb-2">Student Leads{isEditing && <span className="text-red-500 text-xs align-top"> ✱</span>}</h2>
               {(clubInfo.studentLeads || []).map((lead, index) => (
                 <div key={index} className="mb-3">
                   {isEditing ? (
