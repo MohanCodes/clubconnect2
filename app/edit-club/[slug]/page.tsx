@@ -1209,7 +1209,7 @@ useEffect(() => {
             <>
               {(clubInfo.images && clubInfo.images.length > 0 || isEditing) && (
                 <div className="mb-8">
-                  <h2 className="text-2xl font-bold text-white -mb-8">Images</h2>
+                  <h2 className="text-2xl font-bold text-white -mb-8">Images (Max 4)</h2>
                 </div>
               )}
                 <div className="grid sm:grid-cols-2 gap-4">
@@ -1233,7 +1233,7 @@ useEffect(() => {
                       )}
                     </div>
                   ))}
-                  {(isEditing && (clubInfo.images && clubInfo.images.length < 4 )) && ( // Show upload area only in edit mode
+                  {(isEditing && (!clubInfo.images || clubInfo.images.length < 4)) && ( // Show upload area only in edit mode
                     <div className="relative h-64 flex items-center justify-center border-2 border-dashed border-gray-400 rounded-lg">
                       <input
                         type="file"
