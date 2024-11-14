@@ -178,7 +178,7 @@ export default function CalendarPage() {
   return (
     <div className="container mx-auto px-4 py-8">
       <h1 className="text-white text-3xl font-bold mb-8">
-          Your Calendar {events.length === 0 ? ' - No events currently' : ''}
+          Your Calendar {events.length === 0 && ' - No events currently'}
       </h1>
       <CalendarProp events={events} />
     </div>

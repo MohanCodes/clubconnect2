@@ -176,8 +176,8 @@ const Home: React.FC = () => {
   return (
     <div className="bg-cblack">
       <Navbar />
-      <main className="relative flex min-h-screen flex-col items-center justify-center bg-cblack text-center -mt-16">
-        <div className='max-w-lg flex flex-col justify-center h-screen items-center'>
+      <main className="relative flex min-h-screen flex-col items-center justify-center bg-cblack text-center -mt-20">
+        <div className='max-w-lg flex flex-col justify-center h-screen items-center -mb-32'>
           <BlurFade delay={0.1}>
             <div className='font-semibold text-white text-4xl lg:text-5xl text-center'>
               <span className='text-azul'>Connect</span> with your club community.
@@ -197,21 +197,21 @@ const Home: React.FC = () => {
               />
             </div>
           </BlurFade>
-            <div className='mt-8 flex'>
-              <div className="flex flex-wrap gap-2 justify-center">
-              {tags.map((tag, index) => {
-                const schoolStyle = schoolColors[tag.toLowerCase() as keyof typeof schoolColors] || { bg: 'bg-gray-200', text: 'text-black', ring: '' };
-                  const isSelected = selectedTag === tag; // Check if the tag is selected
-                  return (
-                    <BlurFade key={index} delay={0.4 + index * 0.05} inView>
-                    <button onClick={() => handleTagClick(tag)} className={`md:text-sm text-xs text-sm font-medium px-3 py-1 rounded-full break-words ${schoolStyle.bg} ${schoolStyle.text} ${isSelected ? `ring-2 ${schoolStyle.ring}` : ''}`}>
-                          {tag}
-                      </button>
-                    </BlurFade>
-                  );
-              })}
-              </div>
+          <div className='mt-8 flex'>
+            <div className="flex flex-wrap gap-2 justify-center">
+            {tags.map((tag, index) => {
+              const schoolStyle = schoolColors[tag.toLowerCase() as keyof typeof schoolColors] || { bg: 'bg-gray-200', text: 'text-black', ring: '' };
+                const isSelected = selectedTag === tag; // Check if the tag is selected
+                return (
+                  <BlurFade key={index} delay={0.4 + index * 0.05} inView>
+                  <button onClick={() => handleTagClick(tag)} className={`md:text-sm text-xs text-sm font-medium px-3 py-1 rounded-full break-words ${schoolStyle.bg} ${schoolStyle.text} ${isSelected ? `ring-2 ${schoolStyle.ring}` : ''}`}>
+                        {tag}
+                    </button>
+                  </BlurFade>
+                );
+            })}
             </div>
+          </div>
         </div>
         <div className="flex flex-col items-center">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 p-6 max-w-full overflow-x-auto">
