@@ -177,7 +177,7 @@ const Home: React.FC = () => {
     <div className="bg-cblack">
       <Navbar />
       <main className="relative flex min-h-screen flex-col items-center justify-center bg-cblack text-center -mt-20">
-        <div className='max-w-lg flex flex-col justify-center h-screen items-center'>
+        <div className='max-w-lg flex flex-col justify-center h-[80vh] items-center'>
           <BlurFade delay={0.1}>
             <div className='font-semibold text-white text-4xl lg:text-5xl text-center'>
               <span className='text-azul'>Connect</span> with your club community.
