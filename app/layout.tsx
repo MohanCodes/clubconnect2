@@ -13,7 +13,7 @@ const sora = Sora({
 export const metadata: Metadata = {
   title: "MNClubConnect - Connect with Your Club Community",
   description: "Join MNClubConnect to discover, communicate, and collaborate with student clubs.",
-  keywords: "club, community, student, connect, MNClubConnect",
+  keywords: "clubconnect, mnclubconnect, club, community, student, connect, MNClubConnect",
   openGraph: {
     title: "MNClubConnect - Connect with Your Club Community",
     description: "Join MNClubConnect to discover, communicate, and collaborate with student clubs.",
