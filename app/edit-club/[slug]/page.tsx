@@ -1092,8 +1092,8 @@ useEffect(() => {
                       </div>
 
                       {/* Start Date and End Date Inputs */}
-                      <div className='my-4 flex flex-col sm:flex-row'>
-                        <div className='flex items-center mb-2 sm:mr-4'>
+                      <div className='my-4 flex flex-col xl:flex-row'>
+                        <div className='flex items-center mb-2'>
                           <p className='flex items-center mx-2'>From</p>
                           <input
                             type="date"
