@@ -1024,7 +1024,7 @@ useEffect(() => {
                       value={newOneOffEvent.title}
                       onChange={(e) => handleOneOffEventChange('title', e.target.value)}
                       placeholder="Event Title"
-                      className="bg-gray-800 text-white p-1 rounded mt-2"
+                      className="bg-gray-800 text-white p-1 rounded sm:mt-0 mt-2"
                     />
                   </div>
                   <button onClick={handleAddOneOffEvent} className="bg-green-500 text-white px-2 py-1 mt-2 rounded">

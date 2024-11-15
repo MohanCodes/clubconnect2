@@ -85,8 +85,7 @@ const Profile: React.FC = () => {
     }
   }, []);
 
-  
-const fetchClubs = async (clubIds: string[]) => {
+  const fetchClubs = async (clubIds: string[]) => {
     try {
       const clubsData = await Promise.all(clubIds.map(async (clubId) => {
         const clubDoc = await getDoc(doc(db, 'clubs', clubId));
@@ -96,10 +95,9 @@ const fetchClubs = async (clubIds: string[]) => {
     } catch (error) {
       console.error("Error fetching clubs:", error);
     }
-};
+  };
 
-  
-useEffect(() => {
+  useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
       if (currentUser) {
         const typedUser: User = {
@@ -115,67 +113,74 @@ useEffect(() => {
     });
 
     return () => unsubscribe();
-}, [router, fetchUserData]); // Include fetchUserData in the dependency array
+  }, [router, fetchUserData]); // Include fetchUserData in the dependency array
 
-const handleRemoveUpvote = async (clubId:string) => { 
-    if (user) { 
-        try { 
-            await updateDoc(doc(db, 'users', user.uid), { 
-                upvotedClubs: arrayRemove(clubId)
-            }); 
-            setUpvotedClubs(prevClubs => prevClubs.filter(id => id !== clubId));
+  const handleRemoveUpvote = async (clubId: string) => {
+    if (user) {
+      try {
+        await updateDoc(doc(db, 'users', user.uid), {
+          upvotedClubs: arrayRemove(clubId)
+        });
+        setUpvotedClubs(prevClubs => prevClubs.filter(id => id !== clubId));
 
-            const clubRef = doc(db, 'clubs', clubId);
-            await updateDoc(clubRef, { 
-                upvoteCount: increment(-1)
-            });
-            
-            // Remove the club from local state
-            setClubs(prevClubs => prevClubs.filter(club => club.id !== clubId));
-        } catch (error) { 
-            console.error("Error removing upvote:", error); 
-        } 
+        const clubRef = doc(db, 'clubs', clubId);
+        await updateDoc(clubRef, {
+          upvoteCount: increment(-1)
+        });
+
+        // Remove the club from local state
+        setClubs(prevClubs => prevClubs.filter(club => club.id !== clubId));
+      } catch (error) {
+        console.error("Error removing upvote:", error);
+      }
     }
-};
+  };
 
-if (!user) {
-    return null; 
-}
+  const handleClubClick = (clubId: string) => {
+    router.push(`/club/${clubId}`);
+  };
 
-return (
+  if (!user) {
+    return null;
+  }
+
+  return (
     <div className="container mx-auto px-4 py-8">
       <h1 className="text-3xl font-bold text-white mb-6">Your Profile</h1>
-      
+
       <div className="mb-6">
         <h2 className="text-2xl font-semibold text-white mb-4">Starred Clubs</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
           {clubs.map((club) => (
-            <Tile 
-              key={club.id}
-              icon={club.icon || "circles.svg"} // Provide a default icon if none exists
-              clubName={club.name}
-              description={club.description}
-              tags={club.tags}
-              links={club.links}
-              upvoteCount={club.upvoteCount || 0}
-              isUpvoted={upvotedClubs.includes(club.id)}
-              onUpvoteClick={() => handleRemoveUpvote(club.id)} // Handle remove upvote
-              isUpvoteLoading={false} // You can manage loading state if needed
-              showVoteButton={true} // Always show vote button for upvoted clubs
-            />
+            <div key={club.id} onClick={() => handleClubClick(club.id)} className="cursor-pointer">
+              <Tile
+                icon={club.icon || "circles.svg"} // Provide a default icon if none exists
+                clubName={club.name}
+                tags={club.tags}
+                links={club.links}
+                upvoteCount={club.upvoteCount || 0}
+                isUpvoted={upvotedClubs.includes(club.id)}
+                onUpvoteClick={(e) => {
+                  e.stopPropagation(); // Prevent the click from bubbling up to the parent div
+                  handleRemoveUpvote(club.id);
+                }}
+                isUpvoteLoading={false} // You can manage loading state if needed
+                showVoteButton={true} // Always show vote button for upvoted clubs
+              />
+            </div>
           ))}
         </div>
         {clubs.length === 0 && (
           <div className="rounded-lg p-9 transition-shadow duration-300 bg-[#2A2A2A] md:w-1/2">
-              <p className="text-gray-300">
-                  You haven&apos;t starred any clubs yet.<br />
-                  <span className='text-white font-semibold'>Star</span> a few of your favorite <span className='text-white font-semibold'>clubs</span> to see them on the calendar! 
-                  <br /><br />
-                  Remember, your engagement matters! By <span className='text-white font-semibold'>starring</span> clubs, you not only keep track of what <span className='text-white font-semibold'>interests</span> you but also help <span className='text-white font-semibold'>support</span> your favorite clubs!</p>
+            <p className="text-gray-300">
+              You haven&apos;t starred any clubs yet.<br />
+              <span className='text-white font-semibold'>Star</span> a few of your favorite <span className='text-white font-semibold'>clubs</span> to see them on the calendar!
+              <br /><br />
+              Remember, your engagement matters! By <span className='text-white font-semibold'>starring</span> clubs, you not only keep track of what <span className='text-white font-semibold'>interests</span> you but also help <span className='text-white font-semibold'>support</span> your favorite clubs!
+            </p>
           </div>
         )}
       </div>
-      
     </div>
   );
 };

@@ -19,7 +19,7 @@ import {
 interface TileProps {
   icon: string;
   clubName: string;
-  description: string;
+  description?: string;
   tags: string[];
   links: { platform: string; url: string }[];
   upvoteCount: number;
@@ -126,10 +126,11 @@ const Tile: React.FC<TileProps> = ({
         <h2 className="text-2xl font-semibold text-white text-left pr-6">{clubName}</h2>
       </div>
 
-      {/* Club Description */}
-      <p className="text-md text-grey mb-4 text-left line-clamp-4">
-        {description.length > 150 ? `${description.slice(0, 150)}...` : description}
-      </p>
+      {description && (
+        <p className="text-md text-grey mb-4 text-left line-clamp-4">
+          {description.length > 150 ? `${description.slice(0, 150)}...` : description}
+        </p>
+      )}
 
       <div className="flex items-center gap-4 mt-4 mb-6">
         {/* Conditional Rendering for HRs */}

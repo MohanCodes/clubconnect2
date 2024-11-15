@@ -198,8 +198,7 @@ const YourClubs: React.FC = () => {
                         <div key={club.id} className="relative">
                             <Tile 
                                 icon="circles.svg" 
-                                clubName={club.name} 
-                                description={`School: ${club.school}`} 
+                                clubName={club.name}
                                 tags={club.tags} 
                                 links={[]} // Pass links here as needed
                                 upvoteCount={club.upvoteCount} 
