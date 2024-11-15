@@ -177,7 +177,7 @@ const Home: React.FC = () => {
     <div className="bg-cblack">
       <Navbar />
       <main className="relative flex min-h-screen flex-col items-center justify-center bg-cblack text-center -mt-20">
-        <div className='max-w-lg flex flex-col justify-center h-screen items-center -mb-32'>
+        <div className='max-w-lg flex flex-col justify-center h-screen items-center'>
           <BlurFade delay={0.1}>
             <div className='font-semibold text-white text-4xl lg:text-5xl text-center'>
               <span className='text-azul'>Connect</span> with your club community.
@@ -214,66 +214,32 @@ const Home: React.FC = () => {
           </div>
         </div>
         <div className="flex flex-col items-center">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 p-6 max-w-full overflow-x-auto">
-            {[0, 1, 2, 3, 4].map((columnIndex) => (
-              <div key={columnIndex} className="grid auto-rows-max gap-6">
-                {filteredClubs
-                  .filter((_, index) => 
-                    index % 
-                  (window.innerWidth >= 1536 ? 4 :
-                    window.innerWidth >= 768 ? 3 :
-                    window.innerWidth >= 640 ? 2 :1) === columnIndex)
-                  .map((club) => (
-                    <div 
-                      key={club.id} 
-                      onClick={() => handleClubClick(club.id)}
-                      className="cursor-pointer overflow-hidden"
-                    >
-                      <Tile
-                        icon={club.icon || "circles.svg"}
-                        clubName={club.name}
-                        description={club.description}
-                        tags={club.tags}
-                        links={club.links}
-                        upvoteCount={club.upvoteCount}
-                        isUpvoted={upvotedClubs.includes(club.id)}
-                        onUpvoteClick={(e) => handleUpvoteClick(e, club.id)}
-                        isUpvoteLoading={isUpvoteLoading[club.id] || false}
-                        showVoteButton={!!user}
-                        isVerified={club.isVerified}
-                      />
-                    </div>
-                  ))}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 p-6 max-w-full">
+            {filteredClubs.map((club) => (
+              <div 
+                key={club.id} 
+                onClick={() => handleClubClick(club.id)}
+                className="cursor-pointer overflow-hidden"
+              >
+                <Tile
+                  icon={club.icon || "circles.svg"}
+                  clubName={club.name}
+                  description={club.description}
+                  tags={club.tags}
+                  links={club.links}
+                  upvoteCount={club.upvoteCount}
+                  isUpvoted={upvotedClubs.includes(club.id)}
+                  onUpvoteClick={(e) => handleUpvoteClick(e, club.id)}
+                  isUpvoteLoading={isUpvoteLoading[club.id] || false}
+                  showVoteButton={!!user}
+                  isVerified={club.isVerified}
+                />
               </div>
             ))}
           </div>
-          {filteredClubs.length <= 4 && (
-            <div className="flex justify-center mt-6">
-              {filteredClubs.slice(4).map((club) => (
-                <div 
-                  key={club.id} 
-                  onClick={() => handleClubClick(club.id)}
-                  className="cursor-pointer overflow-hidden"
-                >
-                  <Tile
-                    icon={club.icon || "circles.svg"}
-                    clubName={club.name}
-                    description={club.description}
-                    tags={club.tags}
-                    links={club.links}
-                    upvoteCount={club.upvoteCount ?? 0}
-                    isUpvoted={upvotedClubs.includes(club.id)}
-                    onUpvoteClick={(e) => handleUpvoteClick(e, club.id)}
-                    isUpvoteLoading={isUpvoteLoading[club.id] || false}
-                    showVoteButton={!!user}
-                  />
-                </div>
-              ))}
-            </div>
+          {filteredClubs.length === 0 && (
+            <p className="text-lg text-white mb-12">No clubs available at this time. Please check back later!</p>
           )}
-          {filteredClubs.length === 0 ? (
-                        <p className="text-lg text-white mb-12">No clubs available at this time. Please check back later!</p>
-                    ) : <div></div>}
         </div>
       </main>
     </div>
