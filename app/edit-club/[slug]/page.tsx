@@ -1039,7 +1039,7 @@ useEffect(() => {
                 <>
                   <h2 className="text-2xl font-bold text-white mb-2">Recurring Events</h2>
                   {(clubInfo.recurringEvents || []).map((event, index) => (
-                    <div key={index} className="mb-4 p-4 bg-gray-800 rounded text-white">
+                    <div key={index} className="mb-4 p-4 bg-gray-800 rounded text-white w-10/12">
                       {/* Event Title Input */}
                       <div className='flex flex-row gap-4'>
                         <input
