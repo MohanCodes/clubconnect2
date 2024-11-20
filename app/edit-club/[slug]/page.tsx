@@ -4,17 +4,16 @@ import React, { useState, useEffect, useCallback } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter, useParams } from 'next/navigation';
-import { FaEnvelope, FaTimes, FaCalendarAlt, FaClock, FaMapMarkerAlt, FaUserGraduate, FaDollarSign, FaPlus, FaTrash, FaTwitter, FaInstagram, FaFacebook, FaLinkedin, FaYoutube, FaDiscord, FaGithub, FaTiktok, FaGlobe, FaUser, FaLink, FaCircleNotch } from 'react-icons/fa';
+import { FaEnvelope, FaTimes, FaCalendarAlt, FaClock, FaMapMarkerAlt, FaUserGraduate, FaDollarSign, FaPlus, FaTrash, FaTwitter, FaInstagram, FaFacebook, FaLinkedin, FaYoutube, FaDiscord, FaGithub, FaTiktok, FaGlobe, FaUser, FaLink, FaCircleNotch, FaUserTie, FaCrown, FaMarker } from 'react-icons/fa';
 import Navbar from '@/components/Navbar';
 import { auth, db, storage } from '@/firebase/firebase';
-import { doc, setDoc, getDoc, updateDoc, arrayUnion, arrayRemove, deleteDoc } from 'firebase/firestore';
+import { doc, setDoc, getDoc, updateDoc, arrayUnion, arrayRemove, deleteDoc, collection, query, where, getDocs } from 'firebase/firestore';
 import { ref, uploadBytes, getDownloadURL, deleteObject } from 'firebase/storage';
 import { onAuthStateChanged } from 'firebase/auth';
 import { User as FirebaseUser } from 'firebase/auth';
 import { nanoid } from 'nanoid';
 import { parseISO, isBefore, isAfter, addDays, startOfWeek, nextMonday, format } from 'date-fns';
-
-type User = Pick<FirebaseUser, 'uid' | 'email' | 'displayName'>;
+import TransferOwnership from '@/components/TransferOwnership';
 
 interface Advisor {
   name: string;
@@ -58,6 +57,7 @@ interface ClubInfo {
   isComplete: boolean;
   name: string;
   school: string;
+  creatorId: string;
   tags: string[];
   description: string;
   length: string;
@@ -72,6 +72,7 @@ interface ClubInfo {
   recurringEvents: RecurringEvent[];
   oneOffEvents: OneOffEvent[];
   blogIds: string[];
+  addedEditors?: string[];
 }
 
 type Day = 0 | 1 | 2 | 3 | 4 | 5 | 6;
@@ -124,7 +125,8 @@ function getNextMeetingDate(event: RecurringEvent): string {
 }
 
 const EditClubPage = () => {
-  const [user, setUser] = useState<User | null>(null);
+  const [user, setUser] = useState<FirebaseUser | null>(null);
+  const [isLoadingUser, setIsLoadingUser] = useState(true);
   const [isLoading, setIsLoading] = useState(true);
   const [isEditing, setIsEditing] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -141,11 +143,15 @@ const EditClubPage = () => {
   const [blogs, setBlogs] = useState<Blog[]>([]);
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
   const [filledFieldsCount, setFilledFieldsCount] = useState(0);
+  const [editorEmail, setEditorEmail] = useState('');
+  const [editors, setEditors] = useState<{ uid: string; email: string; name: string }[]>([]);
+  const [creatorInfo, setCreatorInfo] = useState({ displayName: "", email: "" });
   const [clubInfo, setClubInfo] = useState<ClubInfo>({
     id: "",
     isComplete: false,
     name: "",
     school: "",
+    creatorId: "",
     tags: [],
     description: "",
     length: "",
@@ -160,7 +166,7 @@ const EditClubPage = () => {
     recurringEvents: [],
     oneOffEvents: [],
     blogIds: [],
-});
+  });
   const [newTag, setNewTag] = useState("");
 
   const router = useRouter();
@@ -170,63 +176,81 @@ const EditClubPage = () => {
   const fetchClubInfo = useCallback(async () => {
     setIsLoading(true);
     try {
-      if (typeof slug !== 'string') {
-        console.error('Invalid slug');
-        return;
-      }
-      const clubDocRef = doc(db, 'clubs', slug);;
-      const clubSnapshot = await getDoc(clubDocRef);
-  
-      if (clubSnapshot.exists()) {
-        const clubData = clubSnapshot.data() as ClubInfo;
-        
-        // Fetch blog data separately
-        if (clubData.blogIds && clubData.blogIds.length > 0) {
-          const blogPromises = clubData.blogIds.map(async (blogId) => {
-            const blogDocRef = doc(db, 'blogs', blogId);
-            const blogSnapshot = await getDoc(blogDocRef);
-            if (blogSnapshot.exists()) {
-              const blogData = blogSnapshot.data();
-              return {
-                id: blogId,
-                title: blogData.title,
-                content: blogData.content,
-                date: blogData.date ? new Date(blogData.date.seconds * 1000) : new Date(),
-              } as Blog;
-            }
-            return null;
-          });
-          const blogs = (await Promise.all(blogPromises)).filter((blog): blog is Blog => blog !== null);
-          setBlogs(blogs);
+        if (typeof slug !== 'string') {
+            console.error('Invalid slug');
+            return;
         }
-  
-        setClubInfo({
-            ...clubData,
-            links: clubData.links || [], // Default to empty array if undefined
-            oneOffEvents: clubData.oneOffEvents || [],
-        });
-      } else {
-        console.error('Club not found');
-      }
+
+        const clubDocRef = doc(db, 'clubs', slug);
+        const clubSnapshot = await getDoc(clubDocRef);
+
+        if (clubSnapshot.exists()) {
+            const clubData = clubSnapshot.data() as ClubInfo;
+
+            // Fetch blog data separately
+            if (clubData.blogIds && clubData.blogIds.length > 0) {
+                const blogPromises = clubData.blogIds.map(async (blogId) => {
+                    const blogDocRef = doc(db, 'blogs', blogId);
+                    const blogSnapshot = await getDoc(blogDocRef);
+                    if (blogSnapshot.exists()) {
+                        const blogData = blogSnapshot.data();
+                        return {
+                            id: blogId,
+                            title: blogData.title,
+                            content: blogData.content,
+                            date: blogData.date ? new Date(blogData.date.seconds * 1000) : new Date(),
+                        } as Blog;
+                    }
+                    return null;
+                });
+                const blogs = (await Promise.all(blogPromises)).filter((blog): blog is Blog => blog !== null);
+                setBlogs(blogs);
+            }
+
+            // Set club info state
+            setClubInfo({
+                ...clubData,
+                links: clubData.links || [], // Default to empty array if undefined
+                oneOffEvents: clubData.oneOffEvents || [],
+            });
+
+            // Fetch creator info
+            const creatorDocRef = doc(db, 'users', clubData.creatorId);
+            const creatorSnapshot = await getDoc(creatorDocRef);
+            if (creatorSnapshot.exists()) {
+                const creatorData = creatorSnapshot.data();
+                setCreatorInfo({
+                    displayName: creatorData.displayName || creatorData.name,
+                    email: creatorData.email,
+                });
+            }
+        } else {
+            console.error('Club not found');
+        }
     } catch (error) {
-      console.error('Error fetching club data:', error);
+        console.error('Error fetching club data:', error);
     } finally {
-      setIsLoading(false);
+        setIsLoading(false);
     }
-  }, [slug]);
+}, [slug]);
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
-      setUser(currentUser);
-      if (!currentUser) {
-        router.push('/signin');
-      } else {
+      if (currentUser) {
+        setUser(currentUser);
         fetchClubInfo();
+        setIsLoadingUser(false)
+      } else {
+        if (slug) {
+          router.push(`/club/${slug}`);
+        } else {
+          router.push('/');
+        }
       }
     });
   
     return () => unsubscribe();
-  }, [router, fetchClubInfo]);
+  }, [router, fetchClubInfo, slug]);
 
   useEffect(() => {
     const handleBeforeUnload = (e: BeforeUnloadEvent) => {
@@ -239,6 +263,30 @@ const EditClubPage = () => {
     window.addEventListener('beforeunload', handleBeforeUnload);
     return () => window.removeEventListener('beforeunload', handleBeforeUnload);
   }, [hasUnsavedChanges]);
+
+  useEffect(() => {
+    const fetchEditorDetails = async () => {
+      if (clubInfo.addedEditors && clubInfo.addedEditors.length > 0) {
+        const editorPromises = clubInfo.addedEditors.map(async (editorUid) => {
+          const userDocRef = doc(db, 'users', editorUid);
+          const userSnapshot = await getDoc(userDocRef);
+          if (userSnapshot.exists()) {
+            const userData = userSnapshot.data();
+            return {
+              uid: editorUid,
+              email: userData.email,
+              name: userData.displayName || userData.name
+            };
+          }
+          return null;
+        });
+        const editorDetails = (await Promise.all(editorPromises)).filter((editor) => editor !== null);
+        setEditors(editorDetails);
+      }
+    };
+
+    fetchEditorDetails();
+  }, [clubInfo.addedEditors]);
 
   const checkCompletion = (info: ClubInfo): boolean => {
     const requiredFields: (keyof ClubInfo)[] = [
@@ -263,7 +311,7 @@ const EditClubPage = () => {
   const handleSave = () => setIsEditing(false);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>, field: keyof ClubInfo) => {
-    if (field !== 'name' && field !== 'school') {
+    if (field !== 'name' && field !== 'school' && field !== 'creatorId') {
       const updatedClubInfo = { ...clubInfo, [field]: e.target.value };
       setClubInfo({ ...updatedClubInfo, isComplete: checkCompletion(updatedClubInfo) });
       setHasUnsavedChanges(true);
@@ -285,6 +333,61 @@ const EditClubPage = () => {
       ...prevState,
       tags: (prevState.tags || []).filter((_, i) => i !== index)
     }));
+  };
+
+  const handleAddEditor = async () => {
+    if (!editorEmail) return;
+  
+    try {
+      // Query the users collection for the email
+      const usersRef = collection(db, 'users');
+      const q = query(usersRef, where('email', '==', editorEmail));
+      const querySnapshot = await getDocs(q);
+  
+      if (querySnapshot.empty) {
+        alert('No user found with this email.');
+        return;
+      }
+  
+      // Get the first (and should be only) matching user
+      const userDoc = querySnapshot.docs[0];
+      const editorUid = userDoc.id;
+  
+      // Update the club document
+      const clubRef = doc(db, 'clubs', clubInfo.id);
+      await updateDoc(clubRef, {
+        addedEditors: arrayUnion(editorUid)
+      });
+  
+      // Update local state
+      setClubInfo(prevState => ({
+        ...prevState,
+        addedEditors: [...(prevState.addedEditors || []), editorUid]
+      }));
+  
+      alert('Editor added successfully!');
+      setEditorEmail('');
+    } catch (error) {
+      console.error('Error adding editor:', error);
+      alert('Failed to add editor. Please try again.');
+    }
+  };
+
+  const handleRemoveEditor = async (editorUid: string) => {
+    try {
+      const clubDocRef = doc(db, 'clubs', clubInfo.id);
+      await updateDoc(clubDocRef, {
+        addedEditors: arrayRemove(editorUid)
+      });
+      setClubInfo(prevState => ({
+        ...prevState,
+        addedEditors: prevState.addedEditors?.filter(uid => uid !== editorUid) || []
+      }));
+      setEditors(prevEditors => prevEditors.filter(editor => editor.uid !== editorUid));
+    } catch (error) {
+      console.error('Error removing editor:', error);
+      alert('Failed to remove editor. Please try again.');
+    }
   };
 
   const handleAdvisorChange = (index: number, field: keyof Advisor, value: string) => {
@@ -606,20 +709,32 @@ const EditClubPage = () => {
 
   const countFilledFields = (info: ClubInfo) => {
     const requiredFields: (keyof ClubInfo)[] = [
-        'name', 'school', 'description', 'length', 
+        'description', 'length', 
         'meetingTimes', 'meetingSite', 'eligibility', 'costs'
     ];
     const filledCount = requiredFields.filter(field => info[field] !== undefined && info[field] !== '').length;
     setFilledFieldsCount(filledCount);
   };
 
-// Call this function whenever clubInfo changes
-useEffect(() => {
-    countFilledFields(clubInfo);
-}, [clubInfo]);
+  // Call this function whenever clubInfo changes
+  useEffect(() => {
+      countFilledFields(clubInfo);
+  }, [clubInfo]);
 
-  if (!user) {
-    return null; // Prevent rendering if user is not authenticated
+  if (isLoadingUser || isLoading) {
+    return (
+      <div className="fixed inset-0 bg-black flex items-center justify-center z-50">
+          <div className="bg-white p-6 rounded-lg flex flex-col items-center">
+            <FaCircleNotch className="animate-spin h-16 w-16 text-azul" />
+            <p className="mt-4 text-azul font-semibold">Loading user data...</p>
+          </div>
+      </div>
+    );
+  }
+
+  if (!user || (clubInfo.creatorId != user.uid && !clubInfo.addedEditors?.includes(user.uid))) {
+    router.push(`/`);
+    return null; // Prevent rendering if user is not authenticated or not an editor
   }
 
   return (
@@ -664,16 +779,16 @@ useEffect(() => {
           </div>
         </div>
       )}
-        <div className="flex flex-col md:flex-row justify-between py-4 sticky top-20 z-40 bg-cblack break-words">
+        <div className="flex flex-col md:flex-row justify-between py-4 sticky top-20 z-40 bg-cblack break-words pb-1">
           <h1 className="text-2xl md:text-4xl font-bold text-white mb-4">
             {clubInfo.name === "" ? 'Enter Club Name Here' : clubInfo.name}
           </h1>
           
-          <div className='flex whitespace-nowrap space-x-2 items-center -ml-3'>
+          <div className='flex whitespace-nowrap space-x-3 items-center -ml-3'>
             <div
               className="hidden bg-azul text-white text-sm px-3 sm:px-4 py-2 rounded-full"
             >
-              <span className="text-white">{filledFieldsCount} / 8</span>
+              <span className="text-white">{filledFieldsCount} / 6</span>
             </div>
             <button
               onClick={isEditing ? handleSave : handleEdit}
@@ -690,14 +805,14 @@ useEffect(() => {
               {isUploading ? 'Uploading...' : hasUnsavedChanges ? 'Save Changes' : 'Changes Saved'}
             </button>
             
-            <button
+            {user.uid === clubInfo.creatorId && <button
               onClick={() => setIsDeleteModalOpen(true)}
               className="bg-red-500 text-white text-xs sm:text-sm py-2 px-4 rounded-full"
             >
               <div>
                 <FaTrash />
               </div>
-            </button>
+            </button>}
           </div>
         </div>
 
@@ -714,7 +829,7 @@ useEffect(() => {
               {isEditing && (
                 <button 
                   onClick={() => handleRemoveTag(index)} 
-                  className="ml-2 text-red-500 hover:text-red-700 focus:outline-none rounded-full p-1 text-bold"
+                  className="ml-2 text-red-500 hover:text-red-700 focus:outline-none rounded-full px-1 text-bold"
                   aria-label={`Remove ${tag} tag`}
                 >
                   ✖
@@ -737,7 +852,7 @@ useEffect(() => {
               </div>
             )}
           </div>
-          <div className="flex-shrink-0 max-w-full md:w-1/3 md:text-right">
+          <div className="flex-shrink-0 max-w-full md:w-1/3 md:text-right text-sm">
             <p className={`text-${clubInfo.isComplete ? 'white' : 'red-500'} ${clubInfo.isComplete ? '' : 'whitespace-normal'}`}>
               {clubInfo.isComplete 
                 ? 'Club information is complete!' 
@@ -745,6 +860,74 @@ useEffect(() => {
             </p>
           </div>
         </div>
+
+        {isEditing &&     
+          <div className="mb-6 sm:text-sm text-xs">
+            <h4 className="text-2xl font-bold text-white mb-2">Editors</h4>
+            <div className="flex items-center max-w-lg text-sm">
+              <input
+                type="email"
+                value={editorEmail}
+                onChange={(e) => setEditorEmail(e.target.value)}
+                placeholder="Editor's email"
+                className="bg-gray-800 text-white p-2 rounded flex-grow"
+              />
+              <button
+                onClick={handleAddEditor}
+                className="bg-azul text-white px-4 py-2.5 rounded ml-2"
+              >
+                <FaPlus />
+              </button>
+            </div>
+            <div className="mt-2 max-w-lg">  
+              {/* Club Creator */}
+              <li className="flex items-center justify-between bg-gray-800 p-2 rounded mb-2 sm:flex-row flex-col">
+                <div className="text-white flex items-center space-x-4 flex-grow ml-2">
+                  <div className='text-yellow-500'>
+                    <FaCrown size={20} />
+                  </div>
+                  <div className=''>
+                    {creatorInfo.displayName} ({creatorInfo.email})
+                  </div>
+                </div>
+                <div className="bg-yellow-500 text-white px-2 py-1 rounded text-sm hidden sm:block">
+                  Owner
+                </div>
+              </li>
+              
+              {/* Added Editors */}
+              {editors.length > 0 ? (
+                <ul className="space-y-2">
+                  {editors.map((editor) => (
+                    <li key={editor.uid} className="flex flex-col sm:flex-row sm:space-y-0 space-y-3 items-center justify-between bg-gray-800 p-2 rounded">
+                      <div className="text-white flex align-center space-x-4 ml-3">
+                        <div className='text-azul -rotate-90 -mr-1'><FaMarker size={20} /></div>
+                        <div>{editor.name} ({editor.email})</div>
+                      </div>  
+                      <div className='flex flex-row space-x-2'>
+                        {user.uid === clubInfo.creatorId && (
+                          <TransferOwnership 
+                            clubId={clubInfo.id} 
+                            currentCreatorId={clubInfo.creatorId} 
+                            newOwnerId={editor.uid} 
+                          />
+                        )}
+                        <button
+                          onClick={() => handleRemoveEditor(editor.uid)}
+                          className="bg-red-500 text-white px-2 py-1 rounded text-sm"
+                        >
+                          Remove
+                        </button>
+                      </div>
+                    </li>
+                  ))}
+                </ul>
+              ) : (
+                <p className="text-grey">No additional editors added yet.</p>
+              )}
+            </div>
+          </div>
+        }
 
         <div className="flex flex-col lg:flex-row gap-20 grid lg:grid-cols-2">
           <div className="space-y-8">
@@ -763,7 +946,7 @@ useEffect(() => {
                     placeholder="One paragraph club description"
                     maxLength={750}
                   />
-                  <span className={`absolute bottom-6 left-2 text-sm ${
+                  <span className={`absolute bottom-6 right-4 text-sm ${
                     clubInfo.description?.length === 750 ? 'text-red-500 font-bold' : 'text-grey'
                   }`}>
                     {clubInfo.description ? clubInfo.description.length : 0}/750
@@ -778,15 +961,15 @@ useEffect(() => {
               <div className="flex items-center">
                 <FaCalendarAlt className="mr-2 text-azul" />
                 {isEditing ? (
-                  <div>
+                  <div className='flex'>
                     <input
                       type="text"
                       value={clubInfo.length}
                       onChange={(e) => handleChange(e, 'length')}
-                      className="bg-gray-800 text-white p-1 rounded"
+                      className="bg-gray-800 text-white p-1 rounded w-full"
                       placeholder="Club Length"
                     />
-                    <span className="text-red-500 text-xs align-top"> ✱</span>
+                    <span className="text-red-500 text-xs align-top ml-1">✱</span>
                   </div>
                 ) : (
                   <span>{clubInfo.length}</span>
@@ -795,15 +978,15 @@ useEffect(() => {
               <div className="flex items-center">
                 <FaClock className="mr-2 text-azul" />
                 {isEditing ? (
-                  <div>
+                  <div className='flex'>
                     <input
                       type="text"
                       value={clubInfo.meetingTimes}
                       onChange={(e) => handleChange(e, 'meetingTimes')}
-                      className="bg-gray-800 text-white p-1 rounded"
+                      className="bg-gray-800 text-white p-1 rounded w-full"
                       placeholder="Meeting Times"
                     />
-                    <span className="text-red-500 text-xs align-top"> ✱</span>
+                    <span className="text-red-500 text-xs align-top ml-1">✱</span>
                   </div>
                 ) : (
                   <span>{clubInfo.meetingTimes}</span>
@@ -812,15 +995,15 @@ useEffect(() => {
               <div className="flex items-center">
                 <FaMapMarkerAlt className="mr-2 text-azul" />
                 {isEditing ? (
-                  <div>
+                  <div className='flex'>
                     <input
                       type="text"
                       value={clubInfo.meetingSite}
                       onChange={(e) => handleChange(e, 'meetingSite')}
-                      className="bg-gray-800 text-white p-1 rounded"
+                      className="bg-gray-800 text-white p-1 rounded w-full"
                       placeholder="Meeting Site"
                     />
-                    <span className="text-red-500 text-xs align-top"> ✱</span>
+                    <span className="text-red-500 text-xs align-top ml-1">✱</span>
                   </div>
                 ) : (
                   <span>{clubInfo.meetingSite}</span>
@@ -829,15 +1012,15 @@ useEffect(() => {
               <div className="flex items-center">
                 <FaUserGraduate className="mr-2 text-azul" />
                 {isEditing ? (
-                  <div>
+                  <div className='flex'>
                     <input
                       type="text"
                       value={clubInfo.eligibility}
                       onChange={(e) => handleChange(e, 'eligibility')}
-                      className="bg-gray-800 text-white p-1 rounded"
+                      className="bg-gray-800 text-white p-1 rounded w-full"
                       placeholder="Eligibility"
                     />
-                    <span className="text-red-500 text-xs align-top"> ✱</span>
+                    <span className="text-red-500 text-xs align-top ml-1">✱</span>
                   </div>
                 ) : (
                   <span>{clubInfo.eligibility}</span>
@@ -846,15 +1029,15 @@ useEffect(() => {
               <div className="flex items-center">
                 <FaDollarSign className="mr-2 text-azul" />
                 {isEditing ? (
-                  <div>
+                  <div className='flex'>
                     <input
                       type="text"
                       value={clubInfo.costs}
                       onChange={(e) => handleChange(e, 'costs')}
-                      className="bg-gray-800 text-white p-1 rounded"
+                      className="bg-gray-800 text-white p-1 rounded w-full"
                       placeholder="Costs"
                     />
-                    <span className="text-red-500 text-xs align-top"> ✱</span>
+                    <span className="text-red-500 text-xs align-top ml-1">✱</span>
                   </div>
                 ) : (
                   <span>{clubInfo.costs}</span>
@@ -1047,7 +1230,7 @@ useEffect(() => {
                           value={event.title || ''}
                           onChange={(e) => handleRecurringEventChange(index, 'title', e.target.value)}
                           placeholder="Event Title"
-                          className="bg-gray-700 text-white p-2 rounded w-full mb-2" // Full width for better usability
+                          className="bg-gray-800 text-white p-2 rounded w-full mb-2" // Full width for better usability
                           disabled={!isEditing}
                         />
                         
@@ -1067,7 +1250,7 @@ useEffect(() => {
                         <select
                           value={event.frequency}
                           onChange={(e) => handleRecurringEventChange(index, 'frequency', e.target.value)}
-                          className="bg-gray-700 p-2 rounded mr-2 mb-2 sm:mb-0"
+                          className="bg-gray-800 p-2 rounded mr-2 mb-2 sm:mb-0"
                           disabled={!isEditing}
                         >
                           <option value="weekly">Weekly</option>
@@ -1227,7 +1410,7 @@ useEffect(() => {
             <>
               {(clubInfo.images && clubInfo.images.length > 0 || isEditing) && (
                 <div className="mb-8">
-                  <h2 className="text-2xl font-bold text-white -mb-8">Images (Max 4)</h2>
+                  <h2 className="text-2xl font-bold text-white -mb-8">{`Images${isEditing ? ' (Max 4)' : ''}`}</h2>
                 </div>
               )}
                 <div className="grid sm:grid-cols-2 gap-4">
@@ -1244,7 +1427,7 @@ useEffect(() => {
                       {isEditing && ( // Only show the trash can when in edit mode
                         <button
                           onClick={() => handleImageDelete(src)}
-                          className="absolute top-2 right-2 bg-red-500 text-white p-1 rounded-full"
+                          className="absolute top-2 right-2 bg-red-500 text-white p-1 rounded-lg"
                         >
                           <FaTrash />
                         </button>

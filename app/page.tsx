@@ -176,15 +176,15 @@ const Home: React.FC = () => {
   return (
     <div className="bg-cblack">
       <Navbar />
-      <main className="relative flex min-h-screen flex-col items-center justify-center bg-cblack text-center -mt-20">
-        <div className='max-w-lg flex flex-col justify-center h-[80vh] items-center'>
+      <main className="relative flex min-h-screen flex-col items-center justify-center bg-cblack text-center -mt-16">
+        <div className='max-w-lg flex flex-col justify-center h-[90vh] items-center'>
           <BlurFade delay={0.1}>
-            <div className='font-semibold text-white text-4xl lg:text-5xl text-center'>
+            <div className='font-semibold text-white text-3xl sm:text-4xl lg:text-5xl text-center'>
               <span className='text-azul'>Connect</span> with your club community.
             </div>
           </BlurFade>
           <BlurFade delay={0.3}>
-            <p className="text-lg sm:text-xl my-2 sm:my-4 text-center text-grey px-4 sm:px-0 max-w-md mx-auto">
+            <p className="text-lg sm:text-xl text-sm my-2 sm:my-4 text-center text-grey px-4 sm:px-0 max-w-md mx-auto">
               Currently a club platform for students located in the west metro.
             </p>
             <div className="flex justify-center space-y-4 sm:space-y-0 sm:space-x-4 pt-4 flex flex-col sm:flex-row px-4 sm:px-0">
@@ -193,7 +193,7 @@ const Home: React.FC = () => {
                 placeholder="Search for a club:"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="px-5 py-3 rounded-full border-none outline-none w-full sm:w-96 text-gray-700"
+                className="px-5 py-2 sm:py-3 rounded-full border-none outline-none w-full sm:w-96 text-gray-700 sm:text-md text-sm"
               />
             </div>
           </BlurFade>
@@ -204,7 +204,7 @@ const Home: React.FC = () => {
                 const isSelected = selectedTag === tag; // Check if the tag is selected
                 return (
                   <BlurFade key={index} delay={0.4 + index * 0.05} inView>
-                  <button onClick={() => handleTagClick(tag)} className={`md:text-sm text-xs text-sm font-medium px-3 py-1 rounded-full break-words ${schoolStyle.bg} ${schoolStyle.text} ${isSelected ? `ring-2 ${schoolStyle.ring}` : ''}`}>
+                  <button onClick={() => handleTagClick(tag)} className={`md:text-sm text-xs font-medium px-3 py-1 rounded-full break-words ${schoolStyle.bg} ${schoolStyle.text} ${isSelected ? `ring-2 ${schoolStyle.ring}` : ''}`}>
                         {tag}
                     </button>
                   </BlurFade>
