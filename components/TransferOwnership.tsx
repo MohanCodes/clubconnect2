@@ -1,6 +1,5 @@
 import React, { useState, useCallback } from 'react';
 import { doc, updateDoc, getDoc } from 'firebase/firestore';
-import { useRouter } from 'next/navigation';
 import { db } from '../firebase/firebase'; // Adjust the import according to your project structure
 
 interface TransferOwnershipProps {
@@ -11,7 +10,6 @@ interface TransferOwnershipProps {
 
 const TransferOwnership: React.FC<TransferOwnershipProps> = ({ clubId, currentCreatorId, newOwnerId }) => {
     const [errorMessage, setErrorMessage] = useState<string>('');
-    const router = useRouter();
 
     const handleTransferOwnership = useCallback(async () => {
         try {
