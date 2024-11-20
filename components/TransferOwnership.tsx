@@ -42,7 +42,7 @@ const TransferOwnership: React.FC<TransferOwnershipProps> = ({ clubId, currentCr
             console.error('Error transferring ownership:', error);
             setErrorMessage('Failed to transfer ownership. Please try again.');
         }
-    }, [clubId, currentCreatorId, newOwnerId, router]);
+    }, [clubId, currentCreatorId, newOwnerId]);
 
     return (
         <div>

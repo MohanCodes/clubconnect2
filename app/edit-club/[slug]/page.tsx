@@ -4,7 +4,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter, useParams } from 'next/navigation';
-import { FaEnvelope, FaTimes, FaCalendarAlt, FaClock, FaMapMarkerAlt, FaUserGraduate, FaDollarSign, FaPlus, FaTrash, FaTwitter, FaInstagram, FaFacebook, FaLinkedin, FaYoutube, FaDiscord, FaGithub, FaTiktok, FaGlobe, FaUser, FaLink, FaCircleNotch, FaUserTie, FaCrown, FaMarker } from 'react-icons/fa';
+import { FaEnvelope, FaTimes, FaCalendarAlt, FaClock, FaMapMarkerAlt, FaUserGraduate, FaDollarSign, FaPlus, FaTrash, FaTwitter, FaInstagram, FaFacebook, FaLinkedin, FaYoutube, FaDiscord, FaGithub, FaTiktok, FaGlobe, FaUser, FaLink, FaCircleNotch, FaCrown, FaMarker } from 'react-icons/fa';
 import Navbar from '@/components/Navbar';
 import { auth, db, storage } from '@/firebase/firebase';
 import { doc, setDoc, getDoc, updateDoc, arrayUnion, arrayRemove, deleteDoc, collection, query, where, getDocs } from 'firebase/firestore';
