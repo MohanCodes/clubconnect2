@@ -22,14 +22,12 @@ const TransferOwnership: React.FC<TransferOwnershipProps> = ({ clubId, currentCr
     
             const clubData = clubSnapshot.data();
             const addedEditors: string[] = clubData.addedEditors || [];
+
+            const updatedEditors = addedEditors.filter(editor => editor !== newOwnerId);
+            
+            updatedEditors.push(currentCreatorId);
     
-            // Create a new array of editors excluding the current creator
-            const updatedEditors = addedEditors.filter(editor => editor !== currentCreatorId);
-    
-            // Add the new owner to the editors list
-            updatedEditors.push(newOwnerId);
-    
-            // Update the document with new creator ID and updated editors
+
             await updateDoc(clubRef, {
                 creatorId: newOwnerId,
                 addedEditors: updatedEditors
