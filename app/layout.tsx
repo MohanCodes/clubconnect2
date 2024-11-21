@@ -1,10 +1,10 @@
 import './globals.css'
 import type { Metadata } from "next";
-import { Parkinsans } from 'next/font/google'
+import { Sora } from 'next/font/google'
 import { AuthProvider } from '../firebase/context/AuthContext';
 import Footer from '@/components/Footer';
 
-const sora = Parkinsans({
+const sora = Sora({
   variable: '--font-sora',
   subsets: ['latin'],
   display: 'swap',
