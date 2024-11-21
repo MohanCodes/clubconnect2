@@ -11,7 +11,7 @@ const nextConfig: NextConfig = {
         pathname: '/a/**',
       },
     ],
-    domains: ['firebasestorage.googleapis.com' ,'images.pexels.com', 'via.placeholder.com', 'picsum.photos'],
+    domains: ['firebasestorage.googleapis.com'],
   },
 };
 

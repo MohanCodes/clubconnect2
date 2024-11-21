@@ -3,7 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { FaPlus, FaTimes, FaExclamationTriangle, FaCheckCircle } from 'react-icons/fa';
 import { auth, db } from '@/firebase/firebase';
-import { collection, getDocs, query, where, serverTimestamp, setDoc, doc, updateDoc, arrayUnion, arrayRemove, increment } from 'firebase/firestore';
+import { or, collection, getDocs, query, where, serverTimestamp, setDoc, doc, updateDoc, arrayUnion, arrayRemove, increment } from 'firebase/firestore';
 import { onAuthStateChanged } from 'firebase/auth';
 import Tile from '@/components/Tile';
 
@@ -18,7 +18,6 @@ interface DashClub {
     school: string;
     creatorId: string;
     createdAt: Date;
-    creatorName: string;
     isComplete: boolean;
     tags: string[];
     upvoteCount: number;
@@ -67,7 +66,12 @@ const YourClubs: React.FC = () => {
     const fetchClubs = async (userId: string) => {
         try {
             const clubsRef = collection(db, 'clubs');
-            const q = query(clubsRef, where('creatorId', '==', userId));
+            const q = query(clubsRef, 
+                or(
+                  where('creatorId', '==', userId),
+                  where('addedEditors', 'array-contains', userId)
+                )
+            );
             const querySnapshot = await getDocs(q);
             const clubsData = querySnapshot.docs.map(doc => ({
                 id: doc.id,
@@ -109,7 +113,6 @@ const YourClubs: React.FC = () => {
                     school: newClubSchool,
                     creatorId: user.uid,
                     createdAt: serverTimestamp(),
-                    creatorName: user.displayName,
                     isComplete: false,
                     tags: [newClubSchool], // Add tags if needed
                     upvoteCount: 0,
