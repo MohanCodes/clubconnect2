@@ -240,7 +240,7 @@ const ClubPage = () => {
   return (
     <div className="bg-cblack min-h-screen">
       <Navbar />
-      <main className="container mx-auto px-8 pt-4 pb-8">
+      <main className="container mx-auto max-w-6xl px-8 pt-4 pb-8">
       {isLoading && (
         <div className="fixed inset-0 bg-black backdrop-blur bg-opacity-75 flex items-center justify-center z-50">
           <div className="bg-white p-6 rounded-lg flex flex-col items-center">
@@ -277,7 +277,7 @@ const ClubPage = () => {
           </div>
         </div>
 
-        <div className="flex flex-col lg:flex-row gap-20 grid lg:grid-cols-2">
+        <div className="gap-20 grid lg:grid-cols-2">
         <div className="space-y-8">
           <div>
             <h2 className="text-2xl font-bold text-white mb-2">Description</h2>

@@ -90,47 +90,61 @@ const YourClubs: React.FC = () => {
     };
 
     const handleCreateClub = async () => {
-        // Clear previous error messages
         setError('');
-
-        // Validate inputs
-        if (!newClubName.trim()) {
-            setError('Club name is required.');
-            return;
+        const capitalizeFirstWord = (str: string) => {
+          return str.toLowerCase().split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
+        };
+        
+        const capitalizedClubName = capitalizeFirstWord(newClubName.trim());
+        const capitalizedSchool = capitalizeFirstWord(newClubSchool);
+        
+        if (!capitalizedClubName) {
+          setError('Club name is required.');
+          return;
         }
-        if (!newClubSchool) {
-            setError('Please select a school district.');
-            return;
-        }
-
-        if (user) {
-            try {
-                const newClubRef = collection(db, 'clubs');
-                const docId = `${newClubName.replace(/\s+/g, '-')}-${newClubSchool.replace(/\s+/g, '-')}`.toLowerCase();
-                await setDoc(doc(newClubRef, docId), {
-                    id: docId,
-                    name: newClubName,
-                    school: newClubSchool,
-                    creatorId: user.uid,
-                    createdAt: serverTimestamp(),
-                    isComplete: false,
-                    tags: [newClubSchool], // Add tags if needed
-                    upvoteCount: 0,
-                    isVerified: false // Add isVerified property
-                });
-
-                // Clear input fields after successful creation
-                setNewClubName('');
-                setNewClubSchool('');
-                setIsModalOpen(false);
-                router.push(`/edit-club/${docId}`)
-            } catch (error) {
-                console.error("Error creating club:", error);
-                setError('An error occurred while creating the club. Please try again.');
+        
+        for (const district of schoolDistricts) {
+            if (capitalizedClubName.includes(district)) {
+              setError(`Please remove the district ${district} from the club name.`);
+              return;
             }
         }
+        
+        if (user) {
+          try {
+            const newClubRef = collection(db, 'clubs');
+            const docId = `${capitalizedClubName.replace(/\s+/g, '-')}-${capitalizedSchool.replace(/\s+/g, '-')}`.toLowerCase();
+            
+            // Check if the club already exists
+            const clubDoc = await getDocs(query(newClubRef, where('name', '==', capitalizedClubName), where('school', '==', capitalizedSchool)));
+            if (!clubDoc.empty) {
+              setError('A club with this name already exists in the selected school district.');
+              return;
+            }
+            
+            await setDoc(doc(newClubRef, docId), {
+              id: docId,
+              name: capitalizedClubName,
+              school: capitalizedSchool,
+              creatorId: user.uid,
+              createdAt: serverTimestamp(),
+              isComplete: false,
+              tags: [capitalizedSchool],
+              upvoteCount: 0,
+              isVerified: false
+            });
+            
+            setNewClubName('');
+            setNewClubSchool('');
+            setIsModalOpen(false);
+            router.push(`/edit-club/${docId}`);
+          } catch (error) {
+            console.error("Error creating club:", error);
+            setError('An error occurred while creating the club. Please try again.');
+          }
+        }
     };
-
+    
     // Upvote handling functions
     const handleUpvoteClick = async (e: React.MouseEvent<HTMLButtonElement>, clubId: string) => {
         e.stopPropagation(); // Prevent click event from bubbling up

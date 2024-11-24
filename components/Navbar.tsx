@@ -53,7 +53,7 @@ const Navbar: React.FC = () => {
 
   return (
     <>
-      <ScrollLock isActive={isOpen} />
+      <ScrollLock isActive={isOpen || isSignOutModalOpen} />
       <nav className="sticky top-0 z-50 bg-cblack">
         <div className="flex items-center justify-between p-6">
           <Link href="/" className="flex items-center md:space-x-4">
@@ -65,9 +65,16 @@ const Navbar: React.FC = () => {
               className="h-9 md:h-10"
               priority
             />
-            <span className="text-xl md:text-3xl font-bold text-white">
-              <span className="text-grey">MN</span><span className="text-white">Club</span><span className="text-azul">Connect</span>
-            </span>
+            <div className="flex justify-end items-end">
+              <span className="text-2xl md:text-3xl font-bold text-white">
+                <span className="text-grey">MN</span><span className="text-white">Club</span><span className="text-azul">Connect</span>
+              </span>
+              <div className="ml-0.5 transition duration-100 ease-in-out hover:-rotate-15">
+                <span className="text-xs text-gray-300 bg-gray-800 px-0.5 rounded-sm outline outline-1 outline-gray-500">
+                  beta
+                </span>
+              </div>
+            </div>
           </Link>
 
           <button 
@@ -134,8 +141,7 @@ const Navbar: React.FC = () => {
                 </button>
               </div>
               <p className="mb-4">Are you sure you want to sign out?</p>
-              {/* Improved column layout for buttons */}
-              <div className="flex flex-col space-y-2">
+              <div className="flex space-x-2 justify-end">
                 <button
                   onClick={() => setIsSignOutModalOpen(false)}
                   className="bg-gray-300 text-black px-4 py-2 rounded hover:bg-gray-400"
