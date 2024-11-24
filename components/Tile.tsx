@@ -131,12 +131,8 @@ const Tile: React.FC<TileProps> = ({
           {description.length > 150 ? `${description.slice(0, 150)}...` : description}
         </p>
       )}
-
       <div className="flex items-center gap-4 mt-4 mb-6">
-        {/* Conditional Rendering for HRs */}
-        {links.length === 0 ? (
-          <hr className="flex-grow border-t border-gray-600" />
-        ) : (
+        {links && links.length > 0 ? (
           <>
             {/* Left HR */}
             <hr className="flex-grow border-t border-gray-600" />
@@ -160,6 +156,8 @@ const Tile: React.FC<TileProps> = ({
             {/* Right HR */}
             <hr className="flex-grow border-t border-gray-600" />
           </>
+        ) : (
+          <hr className="flex-grow border-t border-gray-600" />
         )}
       </div>
 

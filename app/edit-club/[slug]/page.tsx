@@ -502,13 +502,25 @@ const EditClubPage = () => {
     try {
       const docId = `${clubInfo.name.replace(/\s+/g, '-')}-${clubInfo.school.replace(/\s+/g, '-')}`.toLowerCase();
       const clubDocRef = doc(db, 'clubs', docId);
+  
+      // Delete all associated images from storage
+      if (clubInfo.images && clubInfo.images.length > 0) {
+        const deletePromises = clubInfo.images.map(async (imageUrl) => {
+          const imageRef = ref(storage, imageUrl);
+          await deleteObject(imageRef);
+        });
+        await Promise.all(deletePromises);
+      }
+  
+      // Delete the club document from Firestore
       await deleteDoc(clubDocRef);
-      console.log('Club deleted successfully');
-      router.push('/dashboard'); // Redirect to the clubs list page
+  
+      console.log('Club and associated images deleted successfully');
+      router.push('/dashboard');
     } catch (error) {
       console.error('Error deleting club:', error);
     }
-  };
+  }
 
   const getPlatformIcon = (platform: string) => {
     switch (platform) {
@@ -740,7 +752,7 @@ const EditClubPage = () => {
   return (
     <div className="bg-cblack min-h-screen">
       <Navbar />
-      <main className="container mx-auto px-8 pt-4 pb-8">
+      <main className="container mx-auto max-w-6xl px-8 pt-4 pb-8">
       {isLoading && (
         <div className="fixed inset-0 bg-black backdrop-blur bg-opacity-75 flex items-center justify-center z-50">
           <div className="bg-white p-6 rounded-lg flex flex-col items-center">
@@ -779,8 +791,48 @@ const EditClubPage = () => {
           </div>
         </div>
       )}
-        <div className="flex flex-col md:flex-row justify-between py-4 sticky top-20 z-40 bg-cblack break-words pb-1">
-          <h1 className="text-2xl md:text-4xl font-bold text-white mb-4">
+      {isModalOpen && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
+          <div className="bg-white p-6 rounded-lg">
+            <h3 className="text-xl font-bold mb-4">Add New Link</h3>
+            <input
+              type="text"
+              value={newLink.url}
+              onChange={(e) => setNewLink({ ...newLink, url: e.target.value })}
+              placeholder="Enter URL"
+              className="w-full p-2 mb-2 border rounded"
+            />
+            <select
+              value={newLink.platform}
+              onChange={(e) => setNewLink({ ...newLink, platform: e.target.value })}
+              className="w-full p-2 mb-4 border rounded"
+            >
+              <option value="">Select Platform</option>
+              <option value="twitter">Twitter</option>
+              <option value="instagram">Instagram</option>
+              <option value="facebook">Facebook</option>
+              <option value="linkedin">LinkedIn</option>
+              <option value="youtube">YouTube</option>
+              <option value="discord">Discord</option>
+              <option value="github">GitHub</option>
+              <option value="tiktok">TikTok</option>
+              <option value="website">Website</option>
+              <option value="personal">Personal</option>
+              <option value="other">Other</option>
+            </select>
+            <div className="flex justify-end">
+              <button onClick={() => setIsModalOpen(false)} className="bg-gray-300 text-black px-4 py-2 rounded mr-2">
+                Cancel
+              </button>
+              <button onClick={handleAddLink} className="bg-azul text-white px-4 py-2 rounded">
+                Add Link
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+        <div className="flex flex-col lg:flex-row justify-between py-4 -mt-4 sticky top-[5.2rem] z-40 bg-cblack break-words">
+          <h1 className="text-3xl md:text-4xl font-bold text-white mb-4">
             {clubInfo.name === "" ? 'Enter Club Name Here' : clubInfo.name}
           </h1>
           
@@ -792,14 +844,13 @@ const EditClubPage = () => {
             </div>
             <button
               onClick={isEditing ? handleSave : handleEdit}
-              className="bg-azul text-white text-xs sm:text-sm px-3 sm:px-4 py-2 rounded-full"
+              className="bg-azul text-white text-xs sm:text-sm px-3 sm:px-4 py-2 rounded"
             >
               {isEditing ? 'Render Page' : 'Edit Page'}
-            </button>
-            
+            </button>    
             <button 
               onClick={handleUpload} 
-              className={`${isUploading ? 'bg-gray-500' : hasUnsavedChanges ? 'bg-red-500' : 'bg-azul'} text-white text-xs sm:text-sm px-3 sm:px-4 py-2 rounded-full`}
+              className={`${isUploading ? 'bg-gray-500' : hasUnsavedChanges ? 'bg-red-500' : 'bg-azul'} text-white text-xs sm:text-sm px-3 sm:px-4 py-2 rounded`}
               disabled={isUploading}
             >
               {isUploading ? 'Uploading...' : hasUnsavedChanges ? 'Save Changes' : 'Changes Saved'}
@@ -807,7 +858,7 @@ const EditClubPage = () => {
             
             {user.uid === clubInfo.creatorId && <button
               onClick={() => setIsDeleteModalOpen(true)}
-              className="bg-red-500 text-white text-xs sm:text-sm py-2 px-4 rounded-full"
+              className="bg-red-500 text-white text-xs sm:text-sm py-2.5 px-4 rounded"
             >
               <div>
                 <FaTrash />
@@ -862,9 +913,9 @@ const EditClubPage = () => {
         </div>
 
         {isEditing &&     
-          <div className="mb-6 sm:text-sm text-xs">
+          <div className="mb-6 sm:text-sm text-xs max-w-lg">
             <h4 className="text-2xl font-bold text-white mb-2">Editors</h4>
-            <div className="flex items-center max-w-lg text-sm">
+            <div className="flex items-center text-sm">
               <input
                 type="email"
                 value={editorEmail}
@@ -879,9 +930,9 @@ const EditClubPage = () => {
                 <FaPlus />
               </button>
             </div>
-            <div className="mt-2 max-w-lg">  
+            <div className="mt-2">  
               {/* Club Creator */}
-              <li className="flex items-center justify-between bg-gray-800 p-2 rounded mb-2 sm:flex-row flex-col">
+              <li className="flex items-right justify-between bg-gray-800 p-2 rounded mb-2 sm:flex-row flex-col">
                 <div className="text-white flex items-center space-x-4 flex-grow ml-2">
                   <div className='text-yellow-500'>
                     <FaCrown size={20} />
@@ -890,7 +941,7 @@ const EditClubPage = () => {
                     {creatorInfo.displayName} ({creatorInfo.email})
                   </div>
                 </div>
-                <div className="bg-yellow-500 text-white px-2 py-1 rounded text-sm hidden sm:block">
+                <div className="bg-yellow-500 text-white px-2 py-1 rounded text-xs hidden sm:block">
                   Owner
                 </div>
               </li>
@@ -899,12 +950,12 @@ const EditClubPage = () => {
               {editors.length > 0 ? (
                 <ul className="space-y-2">
                   {editors.map((editor) => (
-                    <li key={editor.uid} className="flex flex-col sm:flex-row sm:space-y-0 space-y-3 items-center justify-between bg-gray-800 p-2 rounded">
-                      <div className="text-white flex align-center space-x-4 ml-3">
-                        <div className='text-azul -rotate-90 -mr-1'><FaMarker size={20} /></div>
+                    <li key={editor.uid} className="flex flex-col sm:flex-row sm:space-y-0 space-y-3 sm:items-center items-left justify-between bg-gray-800 p-2 rounded">
+                      <div className="text-white flex items-center space-x-4 flex-grow ml-2">
+                        <div className='text-azul -rotate-90'><FaMarker size={20} /></div>
                         <div>{editor.name} ({editor.email})</div>
                       </div>  
-                      <div className='flex flex-row space-x-2'>
+                      <div className='flex flex-row space-x-2 text-xs'>
                         {user.uid === clubInfo.creatorId && (
                           <TransferOwnership 
                             clubId={clubInfo.id} 
@@ -914,7 +965,7 @@ const EditClubPage = () => {
                         )}
                         <button
                           onClick={() => handleRemoveEditor(editor.uid)}
-                          className="bg-red-500 text-white px-2 py-1 rounded text-sm"
+                          className="bg-red-500 text-white px-2 py-1 rounded"
                         >
                           Remove
                         </button>
@@ -929,7 +980,7 @@ const EditClubPage = () => {
           </div>
         }
 
-        <div className="flex flex-col lg:flex-row gap-20 grid lg:grid-cols-2">
+        <div className="gap-20 grid lg:grid-cols-2">
           <div className="space-y-8">
             <div>
               <h2 className="text-2xl font-bold text-white mb-2">Description{isEditing && <span className="text-red-500 text-xs align-top"> ✱</span>}</h2>
@@ -1230,7 +1281,7 @@ const EditClubPage = () => {
                           value={event.title || ''}
                           onChange={(e) => handleRecurringEventChange(index, 'title', e.target.value)}
                           placeholder="Event Title"
-                          className="bg-gray-800 text-white p-2 rounded w-full mb-2" // Full width for better usability
+                          className="bg-gray-700 text-white p-2 rounded w-full mb-2" // Full width for better usability
                           disabled={!isEditing}
                         />
                         
@@ -1250,7 +1301,7 @@ const EditClubPage = () => {
                         <select
                           value={event.frequency}
                           onChange={(e) => handleRecurringEventChange(index, 'frequency', e.target.value)}
-                          className="bg-gray-800 p-2 rounded mr-2 mb-2 sm:mb-0"
+                          className="bg-gray-700 p-2 rounded mr-2 mb-2 sm:mb-0"
                           disabled={!isEditing}
                         >
                           <option value="weekly">Weekly</option>
@@ -1282,7 +1333,7 @@ const EditClubPage = () => {
                             type="date"
                             value={format(parseISO(event.startDate), 'yyyy-MM-dd')}
                             onChange={(e) => handleRecurringEventChange(index, 'startDate', e.target.value)}
-                            className="bg-gray-700 text-white p-2 rounded w-full"
+                            className="bg-gray-700 text-white p-2 rounded w-auto"
                             disabled={!isEditing}
                           />
                         </div>
@@ -1293,7 +1344,7 @@ const EditClubPage = () => {
                             type="date"
                             value={format(parseISO(event.endDate), 'yyyy-MM-dd')}
                             onChange={(e) => handleRecurringEventChange(index, 'endDate', e.target.value)}
-                            className="bg-gray-700 text-white p-2 rounded w-full"
+                            className="bg-gray-700 text-white p-2 rounded w-auto"
                             disabled={!isEditing}
                           />
                         </div>
@@ -1535,47 +1586,6 @@ const EditClubPage = () => {
           </div>
         </div>
       </main>
-
-      {isModalOpen && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
-          <div className="bg-white p-6 rounded-lg">
-            <h3 className="text-xl font-bold mb-4">Add New Link</h3>
-            <input
-              type="text"
-              value={newLink.url}
-              onChange={(e) => setNewLink({ ...newLink, url: e.target.value })}
-              placeholder="Enter URL"
-              className="w-full p-2 mb-2 border rounded"
-            />
-            <select
-              value={newLink.platform}
-              onChange={(e) => setNewLink({ ...newLink, platform: e.target.value })}
-              className="w-full p-2 mb-4 border rounded"
-            >
-              <option value="">Select Platform</option>
-              <option value="twitter">Twitter</option>
-              <option value="instagram">Instagram</option>
-              <option value="facebook">Facebook</option>
-              <option value="linkedin">LinkedIn</option>
-              <option value="youtube">YouTube</option>
-              <option value="discord">Discord</option>
-              <option value="github">GitHub</option>
-              <option value="tiktok">TikTok</option>
-              <option value="website">Website</option>
-              <option value="personal">Personal</option>
-              <option value="other">Other</option>
-            </select>
-            <div className="flex justify-end">
-              <button onClick={() => setIsModalOpen(false)} className="bg-gray-300 text-black px-4 py-2 rounded mr-2">
-                Cancel
-              </button>
-              <button onClick={handleAddLink} className="bg-azul text-white px-4 py-2 rounded">
-                Add Link
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 };
