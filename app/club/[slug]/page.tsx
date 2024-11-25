@@ -313,7 +313,7 @@ const ClubPage = () => {
               {(clubInfo.advisors || []).map((advisor, index) => (
                 <div key={index} className="mb-2">
                   <p className="text-grey">{advisor.name}</p>
-                    <Link href={`mailto:${advisor.email}`} className="text-azul hover:underline">
+                    <Link href={`mailto:${advisor.email}`} className="text-azul hover:underline truncate">
                     <span className="flex items-center">
                         <FaEnvelope className="mr-2" />
                         <span className=''>{advisor.email}</span>
