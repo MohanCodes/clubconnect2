@@ -277,8 +277,16 @@ const ClubPage = () => {
           </div>
         </div>
 
-        <div className="gap-20 grid lg:grid-cols-2">
-        <div className="space-y-8">
+        <div className={`gap-20 grid ${
+  (!clubInfo.images || clubInfo.images.length === 0) && 
+  (!clubInfo.blogIds || clubInfo.blogIds.length === 0) 
+    ? 'lg:grid-cols-3' 
+    : 'lg:grid-cols-2'
+}`}>
+  <div className={(!clubInfo.images || clubInfo.images.length === 0) && 
+                  (!clubInfo.blogIds || clubInfo.blogIds.length === 0) 
+                  ? 'lg:col-span-2' 
+                  : ''}>
           <div>
             <h2 className="text-2xl font-bold text-white mb-2">Description</h2>
             <p className="text-grey mb-4 text-wrap text-md lg:text-base">
@@ -309,22 +317,25 @@ const ClubPage = () => {
             </div>
 
             <div>
-              <h2 className="text-2xl font-bold text-white mb-2">Advisors</h2>
+              <h2 className="text-2xl font-bold text-white mb-2 mt-6">Advisors</h2>
               {(clubInfo.advisors || []).map((advisor, index) => (
                 <div key={index} className="mb-2">
                   <p className="text-grey">{advisor.name}</p>
-                    <Link href={`mailto:${advisor.email}`} className="text-azul hover:underline truncate">
+                  <Link 
+                    href={`mailto:${advisor.email}`} 
+                    className="text-azul hover:underline block max-w-[200px]"
+                  >
                     <span className="flex items-center">
-                        <FaEnvelope className="mr-2" />
-                        <span className=''>{advisor.email}</span>
+                      <FaEnvelope className="mr-2 flex-shrink-0" />
+                      <span className='truncate'>{advisor.email}</span>
                     </span>
-                    </Link>
+                  </Link>
                 </div>
               ))}
             </div>
 
             <div>
-              <h2 className="text-2xl font-bold text-white mb-2">Student Leads</h2>
+              <h2 className="text-2xl font-bold text-white mb-2 mt-6">Student Leads</h2>
               {(clubInfo.studentLeads || []).map((lead, index) => (
                 <div key={index} className="mb-2">
                   <p className="text-grey">{lead.name} - {lead.role}</p>
@@ -339,7 +350,7 @@ const ClubPage = () => {
             </div>
 
             <div>
-              <h2 className="text-2xl font-bold text-white mb-2">Links</h2>
+              <h2 className="text-2xl font-bold text-white mb-2 mt-6">Links</h2>
               {(clubInfo.links || []).map((link, index) => (
                 <div key={index} className="flex items-center mb-2">
                   <a href={link.url} target="_blank" rel="noopener noreferrer" className="text-azul hover:underline flex items-center">
@@ -351,7 +362,7 @@ const ClubPage = () => {
             </div>
 
             <div>
-              <h2 className="text-2xl font-bold text-white mb-2">One-off Events</h2>
+              <h2 className="text-2xl font-bold text-white mb-2 mt-6 ">One-off Events</h2>
               {clubInfo.oneOffEvents && clubInfo.oneOffEvents.length > 0 ? (
                     clubInfo.oneOffEvents.map((event, index) => (
                       <div key={index} className="mb-4 flex items-center bg-gray-800 p-4 rounded-lg shadow-md lg:w-5/6">
@@ -367,7 +378,7 @@ const ClubPage = () => {
             </div>
 
             <div>
-              <h3 className="text-2xl font-semibold text-white mb-3">Recurring Events</h3>
+              <h3 className="text-2xl font-semibold text-white mb-2 mt-6">Recurring Events</h3>
                   {(clubInfo.recurringEvents || []).length > 0 ? (
                     clubInfo.recurringEvents.map((event, index) => {
                       const nextMeeting = getNextMeetingDate(event);

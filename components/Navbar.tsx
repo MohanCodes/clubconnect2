@@ -56,7 +56,7 @@ const Navbar: React.FC = () => {
       <ScrollLock isActive={isOpen || isSignOutModalOpen} />
       <nav className="sticky top-0 z-50 bg-cblack">
         <div className="flex items-center justify-between p-6">
-          <Link href="/" className="flex items-center md:space-x-4">
+          <Link href="/" className="flex items-center md:space-x-2">
             <Image
               src="/circles.svg"
               alt="Logo"

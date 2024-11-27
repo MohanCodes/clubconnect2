@@ -290,7 +290,7 @@ const EditClubPage = () => {
 
   const checkCompletion = (info: ClubInfo): boolean => {
     const requiredFields: (keyof ClubInfo)[] = [
-        'name', 'school', 'description', 'length', 'meetingTimes', 
+        'description', 'length', 'meetingTimes', 
         'meetingSite', 'eligibility', 'costs'
     ];
     
@@ -980,8 +980,23 @@ const EditClubPage = () => {
           </div>
         }
 
-        <div className="gap-20 grid lg:grid-cols-2">
-          <div className="space-y-8">
+        <div className={`gap-20 grid ${
+          isEditing
+            ? 'lg:grid-cols-2'
+            : ((!clubInfo.images || clubInfo.images.length === 0) && 
+              (!clubInfo.blogIds || clubInfo.blogIds.length === 0) 
+                ? 'lg:grid-cols-3' 
+                : 'lg:grid-cols-2')
+        }`}>
+          <div className={
+            isEditing
+              ? ''
+              : ((!clubInfo.images || clubInfo.images.length === 0) && 
+                (!clubInfo.blogIds || clubInfo.blogIds.length === 0) 
+                  ? 'lg:col-span-2' 
+                  : '')
+          }>
+            <div className='space-y-6'>
             <div>
               <h2 className="text-2xl font-bold text-white mb-2">Description{isEditing && <span className="text-red-500 text-xs align-top"> ✱</span>}</h2>
               {isEditing ? (
@@ -1453,6 +1468,7 @@ const EditClubPage = () => {
                   </Link>
                 </p>
               </div>
+            </div>
             </div>
 
           </div>
