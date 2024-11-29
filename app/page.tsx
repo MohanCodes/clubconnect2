@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from 'react';
-import { collection, getDocs, query, where, updateDoc, doc, arrayUnion, arrayRemove, increment, getDoc, limit } from 'firebase/firestore';
+import { collection, getDocs, query, where, updateDoc, doc, arrayUnion, arrayRemove, increment, getDoc } from 'firebase/firestore';
 import { db, auth } from '@/firebase/firebase'; // Adjust the path as necessary
 import dynamic from 'next/dynamic';
 import BlurFade from '@/components/ui/blur-fade';
@@ -263,8 +263,8 @@ const Home: React.FC = () => {
             <BlurFade delay={0} inView className='flex justify-center'>
               <div className="rounded-lg p-9 transition-shadow duration-300 bg-[#2A2A2A] lg:w-1/2 ">
                 <p className="text-gray-300">
-                    It looks like there are currently <span className="font-semibold text-white">no clubs available</span> for you to explore. Don't worry, though! You can easily <span className="font-semibold text-white">select another school district</span> to see if there are clubs that <span className="font-semibold text-white">pique your interest</span>. Alternatively, feel free to <span className="font-semibold text-white">search for something else</span> that might catch your eye. <br /><br />
-                    Remember, the <span className="font-semibold text-white">club community</span> is always evolving, and <span className="font-semibold text-white">new opportunities</span> are just around the corner. Stay connected and keep checking back for updates on clubs that match your <span className="font-semibold text-white">passions and interests</span>!
+                    It looks like there are currently <span className="font-semibold text-white">no clubs available</span> for you to explore. Don&apos;t worry, though! You can easily <span className="font-semibold text-white">select another school district</span> to see if there are clubs that <span className="font-semibold text-white">pique your interest</span>. Alternatively, feel free to <span className="font-semibold text-white">search for something else</span> that might catch your eye. <br /><br />
+                    Remember, our <span className="font-semibold text-white">club community</span> is always evolving, and <span className="font-semibold text-white">new opportunities</span> are just around the corner. Stay connected and keep checking back for updates on clubs that match your <span className="font-semibold text-white">passions and interests</span>!
                 </p>
               </div>
             </BlurFade>
