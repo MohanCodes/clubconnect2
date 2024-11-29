@@ -62,14 +62,14 @@ const Navbar: React.FC = () => {
               alt="Logo"
               width={60}
               height={60}
-              className="h-9 md:h-10"
+              className="h-9 md:h-10 nav-image-below-300"
               priority
             />
             <div className="flex justify-end items-end">
-              <span className="text-2xl md:text-3xl font-bold text-white">
+              <span className="text-2xl md:text-3xl font-bold text-white nav-text-below-300">
                 <span className="text-grey">MN</span><span className="text-white">Club</span><span className="text-azul">Connect</span>
               </span>
-              <div className="ml-0.5 transition duration-100 ease-in-out hover:-rotate-15">
+              <div className="-ml-10 hidden transition duration-100 ease-in-out hover:-rotate-15">
                 <span className="text-xs text-gray-300 bg-gray-800 px-0.5 rounded-sm outline outline-1 outline-gray-500">
                   beta
                 </span>
@@ -79,7 +79,7 @@ const Navbar: React.FC = () => {
 
           <button 
             onClick={() => setIsOpen(!isOpen)} 
-            className="lg:hidden text-white"
+            className="lg:hidden text-white nav-image-below-300"
             aria-expanded={isOpen}
             aria-label={isOpen ? "Close menu" : "Open menu"}
           >

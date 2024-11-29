@@ -12,6 +12,7 @@ const Navbar = dynamic(() => import('@/components/Navbar'));
 import { useRouter } from 'next/navigation';
 import { onAuthStateChanged } from 'firebase/auth';
 import { User as FirebaseUser } from 'firebase/auth';
+import SkeletonTile from '@/components/SkeletonTile';
 
 interface DisplayClub {
   id: string;
@@ -21,6 +22,7 @@ interface DisplayClub {
   tags: string[];
   links: { platform: string; url: string }[];
   isComplete: boolean;
+  isDisplayed: boolean;
   isVerified: boolean;
   upvoteCount: number;
 }
@@ -62,7 +64,11 @@ const Home: React.FC = () => {
 
   useEffect(() => {
     const fetchClubs = async () => {
-      const q = query(collection(db, 'clubs'), where('isComplete', '==', true), limit(50));
+      const q = query(
+        collection(db, 'clubs'),
+        where('isComplete', '==', true),
+        where('isDisplayed', '==', true),
+      );
       const querySnapshot = await getDocs(q);
       const clubsData = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })) as DisplayClub[];
       setClubs(clubsData);
@@ -184,63 +190,86 @@ const Home: React.FC = () => {
             </div>
           </BlurFade>
           <BlurFade delay={0.3}>
-            <p className="text-lg sm:text-xl text-sm my-2 sm:my-4 text-center text-grey px-4 sm:px-0 max-w-md mx-auto">
+            <p className="text-lg sm:text-xl my-2 sm:my-4 text-center text-grey px-4 sm:px-0 max-w-md mx-auto">
               Currently a club platform for students located in the west metro.
             </p>
-            <div className="flex justify-center space-y-4 sm:space-y-0 sm:space-x-4 pt-4 flex flex-col sm:flex-row px-4 sm:px-0">
-              <input
-                type="text"
-                placeholder="Search for a club:"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="px-5 py-2 sm:py-3 rounded-full border-none outline-none w-full sm:w-96 text-gray-700 sm:text-md text-sm"
-              />
-            </div>
           </BlurFade>
-          <div className='mt-8 flex'>
-            <div className="flex flex-wrap gap-2 justify-center">
-            {tags.map((tag, index) => {
-              const schoolStyle = schoolColors[tag.toLowerCase() as keyof typeof schoolColors] || { bg: 'bg-gray-200', text: 'text-black', ring: '' };
-                const isSelected = selectedTag === tag; // Check if the tag is selected
-                return (
-                  <BlurFade key={index} delay={0.4 + index * 0.05} inView>
-                  <button onClick={() => handleTagClick(tag)} className={`md:text-sm text-xs font-medium px-3 py-1 rounded-full break-words ${schoolStyle.bg} ${schoolStyle.text} ${isSelected ? `ring-2 ${schoolStyle.ring}` : ''}`}>
-                        {tag}
-                    </button>
-                  </BlurFade>
-                );
-            })}
+            <div className='bf1'>
+              <BlurFade delay={0.3}>
+                <div className="flex justify-center space-y-4 sm:space-y-0 sm:space-x-4 pt-4 flex-col sm:flex-row px-4 sm:px-0">
+                  <input
+                    type="text"
+                    placeholder="Search for a club:"
+                    value={searchQuery}
+                    onChange={(ppp) => setSearchQuery(ppp.target.value)}
+                    className="mb-8 px-5 py-2 sm:py-3 rounded-full border-none outline-none w-full sm:w-96 text-gray-700 sm:text-md text-sm"
+                  />
+                </div>
+              </BlurFade>
+              <div className='flex'>
+                <div className="flex flex-wrap gap-2 justify-center">
+                {tags.map((tag, index) => {
+                  const schoolStyle = schoolColors[tag.toLowerCase() as keyof typeof schoolColors] || { bg: 'bg-gray-200', text: 'text-black', ring: '' };
+                    const isSelected = selectedTag === tag; // Check if the tag is selected
+                    return (
+                      <BlurFade key={index} delay={0.4 + index * 0.05} inView>
+                      <button onClick={() => handleTagClick(tag)} className={`md:text-sm text-xs font-medium px-3 py-1 rounded-full break-words ${schoolStyle.bg} ${schoolStyle.text} ${isSelected ? `ring-2 ${schoolStyle.ring}` : ''}`}>
+                            {tag}
+                        </button>
+                      </BlurFade>
+                    );
+                })}
+                </div>
+              </div>
             </div>
-          </div>
         </div>
         <div className="flex flex-col items-center">
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 p-6 max-w-full">
-            {filteredClubs.map((club) => (
-              <div 
-                key={club.id} 
-                onClick={() => handleClubClick(club.id)}
-                className="cursor-pointer overflow-hidden"
-              >
-                <Tile
-                  icon={club.icon || "circles.svg"}
-                  clubName={club.name}
-                  description={club.description}
-                  tags={club.tags}
-                  links={club.links}
-                  upvoteCount={club.upvoteCount}
-                  isUpvoted={upvotedClubs.includes(club.id)}
-                  onUpvoteClick={(e) => handleUpvoteClick(e, club.id)}
-                  isUpvoteLoading={isUpvoteLoading[club.id] || false}
-                  showVoteButton={!!user}
-                  isVerified={club.isVerified}
-                />
-              </div>
-            ))}
+              {filteredClubs.map((club, index) => (
+                  <BlurFade key={index} delay={index * 0.05} inView>
+                      <div 
+                          onClick={() => handleClubClick(club.id)}
+                          className="cursor-pointer overflow-hidden"
+                      >
+                          <Tile
+                              icon={club.icon || "circles.svg"}
+                              clubName={club.name}
+                              description={club.description}
+                              tags={club.tags}
+                              links={club.links}
+                              upvoteCount={club.upvoteCount}
+                              isUpvoted={upvotedClubs.includes(club.id)}
+                              onUpvoteClick={(e) => handleUpvoteClick(e, club.id)}
+                              isUpvoteLoading={isUpvoteLoading[club.id] || false}
+                              showVoteButton={!!user}
+                              isVerified={club.isVerified}
+                          />
+                      </div>
+                  </BlurFade>
+              ))}
           </div>
-          {filteredClubs.length === 0 && (
-            <p className="text-lg text-white mb-12">No clubs available at this time. Please check back later!</p>
+          {clubs.length === 0 && (
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 p-6 max-w-full -mt-[40px]">
+                  {Array.from({ length: 12 }, (_, index) => (
+                      <BlurFade key={index} delay={0 + index * 0.05} inView>
+                          <div className="cursor-pointer overflow-hidden">
+                              <SkeletonTile />
+                          </div>
+                      </BlurFade>
+                  ))}
+              </div>
           )}
-        </div>
+          {filteredClubs.length === 0 && (
+            <BlurFade delay={0} inView className='flex justify-center'>
+              <div className="rounded-lg p-9 transition-shadow duration-300 bg-[#2A2A2A] lg:w-1/2 ">
+                <p className="text-gray-300">
+                    It looks like there are currently <span className="font-semibold text-white">no clubs available</span> for you to explore. Don't worry, though! You can easily <span className="font-semibold text-white">select another school district</span> to see if there are clubs that <span className="font-semibold text-white">pique your interest</span>. Alternatively, feel free to <span className="font-semibold text-white">search for something else</span> that might catch your eye. <br /><br />
+                    Remember, the <span className="font-semibold text-white">club community</span> is always evolving, and <span className="font-semibold text-white">new opportunities</span> are just around the corner. Stay connected and keep checking back for updates on clubs that match your <span className="font-semibold text-white">passions and interests</span>!
+                </p>
+              </div>
+            </BlurFade>
+          )}
+      </div>
       </main>
     </div>
   );

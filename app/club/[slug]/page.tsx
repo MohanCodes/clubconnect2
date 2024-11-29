@@ -51,6 +51,7 @@ interface Blog {
 interface ClubInfo {
   id: string;
   isComplete: boolean;
+  isDisplayed: boolean;
   name: string;
   school: string;
   tags: string[];
@@ -126,6 +127,7 @@ const ClubPage = () => {
   const [clubInfo, setClubInfo] = useState<ClubInfo>({
     id: "",
     isComplete: false,
+    isDisplayed: false,
     name: "",
     school: "",
     tags: [],
@@ -165,6 +167,11 @@ const ClubPage = () => {
                 console.log('Club data is incomplete');
                 return; // Exit if the data is incomplete
             }
+
+            if (!clubData.isDisplayed) {
+              console.log('Club data should not be displayed.');
+              return;
+          }
 
             // Proceed to fetch blogs only if club data is complete
             if (clubData.blogIds && clubData.blogIds.length > 0) {
@@ -218,7 +225,7 @@ const ClubPage = () => {
     }
   };
 
-  if (clubInfo && !clubInfo.isComplete) {
+  if (clubInfo && !clubInfo.isComplete && !clubInfo.isDisplayed) {
     return (
       <div>
         <Navbar />

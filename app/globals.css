@@ -6,6 +6,16 @@ body {
     font-family: var(--font-sora);
 }
 
+@media (max-width: 299px) {
+  .nav-text-below-300 {
+    font-size: 20px;
+  }
+  .nav-image-below-300 {
+    max-width: 26px;
+    height: auto;
+  }
+}
+
 .bubble-text {
     color: #0F0F0F;
     text-shadow: 
