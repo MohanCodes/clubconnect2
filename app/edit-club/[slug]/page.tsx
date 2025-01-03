@@ -195,10 +195,11 @@ const EditClubPage = () => {
   const [isLoadingUser, setIsLoadingUser] = useState(true);
   const [isLoading, setIsLoading] = useState(true);
   const [isEditing, setIsEditing] = useState(true);
-  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isLinkModalOpen, setIsLinkModalOpen] = useState(false);
   const [newLink, setNewLink] = useState({ url: '', platform: '' });
   const [isUploading, setIsUploading] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [isDeleteDescriptionModalOpen, setIsDeleteDescriptionModalOpen] = useState(false);
   const [newOneOffEvent, setNewOneOffEvent] = useState<OneOffEvent>({
     date: new Date().toISOString().split('T')[0], // This will give you 'YYYY-MM-DD'
     title: ''
@@ -533,7 +534,7 @@ const EditClubPage = () => {
         ...updatedClubInfo,
       });
       setNewLink({ url: '', platform: '' });
-      setIsModalOpen(false);
+      setIsLinkModalOpen(false);
     }
   };
 
@@ -822,6 +823,41 @@ const EditClubPage = () => {
       countFilledFields(clubInfo);
   }, [clubInfo]);
 
+  type TemplateNumber = 1 | 2 | 3;
+  const templateDescriptions: Record<TemplateNumber, string> = {
+      1: "The {clubName} is a fun and relaxed group for students interested in ____________. We meet occasionally to hang out, share ideas, and participate in light activities like ____________ and ____________. Whether you can join us once in a while or just want to drop by for a specific event, everyone is welcome!",
+      2: "The {clubName} is an engaging community focused on ____________. We meet bi-weekly on ____________ at ____________ to plan and participate in activities such as ____________, ____________, and ____________. Members are encouraged to attend regularly and contribute their ideas, but we understand that life can get busy! If you're looking to make new friends while exploring your interests, this club is for you.",
+      3: "The {clubName} is a dedicated group committed to ____________ and making a meaningful impact in our school community. We meet weekly on ____________ at ____________, where we engage in planning extensive projects, events, and initiatives such as ____________, ____________, and ____________. Members are expected to actively participate and contribute their time and talents. If you're passionate about ____________ and ready to take on challenges, we'd love for you to join us!"
+  };
+
+  const getExistingTemplates = (clubName: string) => {
+    return Object.values(templateDescriptions).map(template => 
+      template.replace(/{clubName}/g, clubName)
+    );
+  };
+  
+  // Usage in your updateDescriptionTemplate function
+  const updateDescriptionTemplate = (templateNumber: TemplateNumber) => {
+    const newDescription = templateDescriptions[templateNumber].replace(/{clubName}/g, clubInfo.name);
+    
+    // Get existing templates with the current club name
+    const existingTemplates = getExistingTemplates(clubInfo.name);
+  
+    // Check if the new description does not match any existing templates
+    if (newDescription.trim() !== "" && !existingTemplates.includes(newDescription)) {
+      const userConfirmed = window.confirm("The new description does not match any of the templates. Are you sure you want to proceed?");
+      if (!userConfirmed) {
+        return; // Exit if user does not confirm
+      }
+    }
+
+    // Proceed with updating the description
+    setClubInfo(prevState => ({
+        ...prevState,
+        description: newDescription
+    }));
+  };
+
   if (isLoadingUser || isLoading) {
     return (
       <div className="fixed inset-0 bg-black flex items-center justify-center z-50">
@@ -880,7 +916,28 @@ const EditClubPage = () => {
           </div>
         </div>
       )}
-      {isModalOpen && (
+      {isDeleteDescriptionModalOpen && (
+        <div className="fixed inset-0 z-50 bg-black backdrop-blur bg-opacity-50 flex items-center justify-center">
+          <div className="bg-white p-6 rounded-lg w-96">
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="text-2xl font-bold">Delete Description</h2>
+              <button onClick={() => setIsDeleteDescriptionModalOpen(false)} className="text-gray-500 hover:text-gray-700">
+                <FaTimes size={24} />
+              </button>
+            </div>
+            <p className="mb-4">It seems like you've made some edits to the description. Please clear the field to apply a template.</p>
+            <div className="flex justify-end space-x-4">
+              <button
+                onClick={() => setIsDeleteDescriptionModalOpen(false)}
+                className="bg-gray-300 text-black px-4 py-2 rounded hover:bg-gray-400"
+              >
+                Gotcha
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+      {isLinkModalOpen && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
           <div className="bg-white p-6 rounded-lg">
             <h3 className="text-xl font-bold mb-4">Add New Link</h3>
@@ -910,7 +967,7 @@ const EditClubPage = () => {
               <option value="other">Other</option>
             </select>
             <div className="flex justify-end">
-              <button onClick={() => setIsModalOpen(false)} className="bg-gray-300 text-black px-4 py-2 rounded mr-2">
+              <button onClick={() => setIsLinkModalOpen(false)} className="bg-gray-300 text-black px-4 py-2 rounded mr-2">
                 Cancel
               </button>
               <button onClick={handleAddLink} className="bg-azul text-white px-4 py-2 rounded">
@@ -920,6 +977,7 @@ const EditClubPage = () => {
           </div>
         </div>
       )}
+      
         <div className="flex flex-col lg:flex-row justify-between py-4 -mt-4 sticky top-[5.2rem] z-40 bg-cblack break-words">
           <h1 className="text-3xl md:text-4xl font-bold text-white mb-4">
             {clubInfo.name === "" ? 'Enter Club Name Here' : clubInfo.name}
@@ -1137,23 +1195,36 @@ const EditClubPage = () => {
             <div>
               <h2 className="text-2xl font-bold text-white mb-2">Description{isEditing && <span className="text-red-500 text-xs align-top"> ✱</span>}</h2>
               {isEditing ? (
-                <div className="relative">
-                  <textarea
-                    value={clubInfo.description}
-                    onChange={(e) => {
-                      if (e.target.value.length <= 750) {
-                        handleChange(e, 'description');
-                      }
-                    }}
-                    className="w-full box-border h-72 p-2 text-grey bg-gray-800 rounded mb-4 overflow-x-hidden"
-                    placeholder="One paragraph club description"
-                    maxLength={750}
-                  />
-                  <span className={`absolute bottom-6 right-4 text-sm ${
-                    clubInfo.description?.length === 750 ? 'text-red-500 font-bold' : 'text-grey'
-                  }`}>
-                    {clubInfo.description ? clubInfo.description.length : 0}/750
-                  </span>
+                <div>
+                  <div className="relative">
+                    <textarea
+                      value={clubInfo.description}
+                      onChange={(e) => {
+                        if (e.target.value.length <= 750) {
+                          handleChange(e, 'description');
+                        }
+                      }}
+                      className="w-full box-border h-72 p-2 text-grey bg-gray-800 rounded overflow-x-hidden"
+                      placeholder="One paragraph club description"
+                      maxLength={750}
+                    />
+                    <span className={`absolute bottom-6 right-4 text-sm ${
+                      clubInfo.description?.length === 750 ? 'text-red-500 font-bold' : 'text-grey'
+                    }`}>
+                      {clubInfo.description ? clubInfo.description.length : 0}/750
+                    </span>
+                  </div>
+                  <div className='space-x-2'>
+                    <button onClick={() => updateDescriptionTemplate(1)} className="bg-azul text-white text-xs sm:text-sm px-3 sm:px-4 py-2 rounded whitespace-nowrap">
+                      Template 1
+                    </button>
+                    <button onClick={() => updateDescriptionTemplate(2)} className="bg-azul text-white text-xs sm:text-sm px-3 sm:px-4 py-2 rounded whitespace-nowrap">
+                      Template 2
+                    </button>
+                    <button onClick={() => updateDescriptionTemplate(3)} className="bg-azul text-white text-xs sm:text-sm px-3 sm:px-4 py-2 rounded whitespace-nowrap">
+                      Template 3
+                    </button>
+                  </div>
                 </div>
               ) : (
                 <p className="text-grey break-words mb-4">{clubInfo.description}</p>
@@ -1361,7 +1432,7 @@ const EditClubPage = () => {
                 </div>
               ))}
               {isEditing && (
-                <button onClick={() => setIsModalOpen(true)} className="bg-green-500 text-white px-2 py-1 rounded flex flex-row items-center mt-3">
+                <button onClick={() => setIsLinkModalOpen(true)} className="bg-green-500 text-white px-2 py-1 rounded flex flex-row items-center mt-3">
                   <FaPlus className="mr-2" /> Add Link
                 </button>
               )}
