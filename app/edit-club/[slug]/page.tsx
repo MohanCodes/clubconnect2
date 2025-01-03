@@ -925,7 +925,7 @@ const EditClubPage = () => {
                 <FaTimes size={24} />
               </button>
             </div>
-            <p className="mb-4">It seems like you've made some edits to the description. Please clear the field to apply a template.</p>
+            <p className="mb-4">It seems like you&apos;ve made some edits to the description. Please clear the field to apply a template.</p>
             <div className="flex justify-end space-x-4">
               <button
                 onClick={() => setIsDeleteDescriptionModalOpen(false)}
