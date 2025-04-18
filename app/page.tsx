@@ -232,7 +232,7 @@ const Home: React.FC = () => {
                           className="cursor-pointer overflow-hidden"
                       >
                           <Tile
-                              icon={club.icon || "circles.svg"}
+                              icon={club.icon}
                               clubName={club.name}
                               description={club.description}
                               tags={club.tags}

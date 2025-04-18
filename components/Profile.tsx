@@ -154,7 +154,7 @@ const Profile: React.FC = () => {
           {clubs.map((club) => (
             <div key={club.id} onClick={() => handleClubClick(club.id)} className="cursor-pointer">
               <Tile
-                icon={club.icon || "circles.svg"} // Provide a default icon if none exists
+                icon={club.icon} // Provide a default icon if none exists
                 clubName={club.name}
                 tags={club.tags}
                 links={club.links}

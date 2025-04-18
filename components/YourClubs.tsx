@@ -214,7 +214,6 @@ const YourClubs: React.FC = () => {
                     {clubs.map((club) => (
                         <div key={club.id} className="relative">
                             <Tile 
-                                icon="circles.svg" 
                                 clubName={club.name}
                                 tags={club.tags} 
                                 links={[]} // Pass links here as needed

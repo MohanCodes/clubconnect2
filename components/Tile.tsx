@@ -17,7 +17,7 @@ import {
 } from 'react-icons/fa';
 
 interface TileProps {
-  icon: string;
+  icon?: string;
   clubName: string;
   description?: string;
   tags: string[];
@@ -122,13 +122,15 @@ const Tile: React.FC<TileProps> = ({
         </div>
       {/* Icon and Club Name */}
       <div className="flex items-center mb-4 mr-6 space-x-4">
-        <Image 
-          src={icon} 
-          alt="Club Icon" 
-          width={12} 
-          height={12} 
-          className="w-12 h-12"
-        />
+        {icon && (
+          <Image 
+            src={icon} 
+            alt="Club Icon" 
+            width={12} 
+            height={12} 
+            className="w-12 h-12"
+          />
+        )}
         <h2 className="text-xl font-semibold text-white text-left pr-6">
           {clubName}
         </h2>
