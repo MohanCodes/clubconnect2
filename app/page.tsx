@@ -224,30 +224,39 @@ const Home: React.FC = () => {
             </div>
         </div>
         <div className="flex flex-col items-center">
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 p-6 max-w-full">
-              {filteredClubs.map((club, index) => (
-                  <BlurFade key={index} delay={index * 0.05} inView>
-                      <div 
-                          onClick={() => handleClubClick(club.id)}
-                          className="cursor-pointer overflow-hidden"
-                      >
-                          <Tile
-                              icon={club.icon}
-                              clubName={club.name}
-                              description={club.description}
-                              tags={club.tags}
-                              links={club.links}
-                              upvoteCount={club.upvoteCount}
-                              isUpvoted={upvotedClubs.includes(club.id)}
-                              onUpvoteClick={(e) => handleUpvoteClick(e, club.id)}
-                              isUpvoteLoading={isUpvoteLoading[club.id] || false}
-                              showVoteButton={!!user}
-                              isVerified={club.isVerified}
-                          />
-                      </div>
-                  </BlurFade>
-              ))}
+          <div className="
+            columns-1
+            sm:columns-2
+            lg:columns-3
+            xl:columns-4
+            gap-6
+            p-6
+            max-w-full
+          ">
+            {filteredClubs.map((club, index) => (
+              <BlurFade key={index} delay={index * 0.05} inView>
+                <div 
+                  onClick={() => handleClubClick(club.id)}
+                  className="mb-6 break-inside-avoid cursor-pointer overflow-hidden"
+                >
+                  <Tile
+                    icon={club.icon}
+                    clubName={club.name}
+                    description={club.description}
+                    tags={club.tags}
+                    links={club.links}
+                    upvoteCount={club.upvoteCount}
+                    isUpvoted={upvotedClubs.includes(club.id)}
+                    onUpvoteClick={(e) => handleUpvoteClick(e, club.id)}
+                    isUpvoteLoading={isUpvoteLoading[club.id] || false}
+                    showVoteButton={!!user}
+                    isVerified={club.isVerified}
+                  />
+                </div>
+              </BlurFade>
+            ))}
           </div>
+
           {clubs.length === 0 && (
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 p-6 max-w-full -mt-[40px]">
                   {Array.from({ length: 12 }, (_, index) => (

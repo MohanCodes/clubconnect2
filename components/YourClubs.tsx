@@ -210,37 +210,47 @@ const YourClubs: React.FC = () => {
                     <div className='text-white font-semibold'>CLICK RENDER PAGE TO SEE WHAT IT LOOKS LIKS AND UPLOAD PAGE TO SAVE YOUR CHANGES!</div>
                 </div>
             ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-x-6 gap-y-16">
+                <div className="
+                    columns-1
+                    md:columns-2
+                    xl:columns-3
+                    gap-x-6
+                    gap-y-16
+                ">
                     {clubs.map((club) => (
-                        <div key={club.id} className="relative">
-                            <Tile 
-                                clubName={club.name}
-                                tags={club.tags} 
-                                links={[]} // Pass links here as needed
-                                upvoteCount={club.upvoteCount} 
-                                isUpvoted={upvotedClubs.includes(club.id)} 
-                                onUpvoteClick={(e) => handleUpvoteClick(e, club.id)} 
-                                isUpvoteLoading={isUpvoteLoading[club.id] || false}
-                                showVoteButton={false}
-                            />
-                            {!club.isComplete && (
-                                <div className="absolute top-0 right-0 bg-yellow-500 text-black p-2 rounded-tr-lg rounded-bl-lg flex items-center">
-                                    <FaExclamationTriangle />
-                                    <span className="text-sm hidden sm:inline ml-2">Incomplete</span> {/* Hidden on small screens */}
-                                </div>
-                            )}
-                            {club.isComplete && (
-                                <div className="absolute top-0 right-0 bg-green-500 text-black p-2 rounded-tr-lg rounded-bl-lg flex items-center">
-                                    <FaCheckCircle />
-                                    <span className="text-sm hidden sm:inline ml-2">Complete</span> {/* Hidden on small screens */}
-                                </div>
-                            )}
-                            <button onClick={() => router.push(`/edit-club/${club.id}`)} className="absolute rounded-br-lg rounded-bl-lg -bottom-9 left-0 right-0 bg-azul text-white p-2 text-center mt-2">
-                                {club.isComplete ? 'View/Edit Club' : 'Complete Club Info'}
-                            </button>
+                        <div key={club.id} className="relative mb-16 break-inside-avoid">
+                        <Tile 
+                            clubName={club.name}
+                            tags={club.tags} 
+                            links={[]} // Pass links here as needed
+                            upvoteCount={club.upvoteCount} 
+                            isUpvoted={upvotedClubs.includes(club.id)} 
+                            onUpvoteClick={(e) => handleUpvoteClick(e, club.id)} 
+                            isUpvoteLoading={isUpvoteLoading[club.id] || false}
+                            showVoteButton={false}
+                        />
+                        {!club.isComplete && (
+                            <div className="absolute top-0 right-0 bg-yellow-500 text-black p-2 rounded-tr-lg rounded-bl-lg flex items-center">
+                            <FaExclamationTriangle />
+                            <span className="text-sm hidden sm:inline ml-2">Incomplete</span>
+                            </div>
+                        )}
+                        {club.isComplete && (
+                            <div className="absolute top-0 right-0 bg-green-500 text-black p-2 rounded-tr-lg rounded-bl-lg flex items-center">
+                            <FaCheckCircle />
+                            <span className="text-sm hidden sm:inline ml-2">Complete</span>
+                            </div>
+                        )}
+                        <button
+                            onClick={() => router.push(`/edit-club/${club.id}`)}
+                            className="absolute rounded-br-lg rounded-bl-lg -bottom-9 left-0 right-0 bg-azul text-white p-2 text-center mt-2"
+                        >
+                            {club.isComplete ? 'View/Edit Club' : 'Complete Club Info'}
+                        </button>
                         </div>
                     ))}
-                </div>
+                    </div>
+
             )}
 
             <button onClick={() => setIsModalOpen(true)} className="fixed bottom-8 right-8 bg-azul text-white p-4 rounded-full shadow-lg hover:opacity-80 transition-opacity" aria-label="Create new club">

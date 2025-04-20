@@ -150,26 +150,37 @@ const Profile: React.FC = () => {
 
       <div className="mb-6">
         <h2 className="text-2xl font-semibold text-white mb-4">Starred Clubs</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+        <div className="
+            columns-1
+            lg:columns-2
+            xl:columns-3
+            gap-6
+            max-w-full
+        ">
           {clubs.map((club) => (
-            <div key={club.id} onClick={() => handleClubClick(club.id)} className="cursor-pointer">
+            <div
+              key={club.id}
+              onClick={() => handleClubClick(club.id)}
+              className="mb-6 break-inside-avoid cursor-pointer"
+            >
               <Tile
-                icon={club.icon} // Provide a default icon if none exists
+                icon={club.icon}
                 clubName={club.name}
-                tags={club.tags}
-                links={club.links}
+                tags={[]}
+                links={[]}
                 upvoteCount={club.upvoteCount || 0}
                 isUpvoted={upvotedClubs.includes(club.id)}
                 onUpvoteClick={(e) => {
-                  e.stopPropagation(); // Prevent the click from bubbling up to the parent div
+                  e.stopPropagation();
                   handleRemoveUpvote(club.id);
                 }}
-                isUpvoteLoading={false} // You can manage loading state if needed
-                showVoteButton={true} // Always show vote button for upvoted clubs
+                isUpvoteLoading={false}
+                showVoteButton={true}
               />
             </div>
           ))}
         </div>
+
         {clubs.length === 0 && (
           <div className="rounded-lg p-9 transition-shadow duration-300 bg-[#2A2A2A] md:w-1/2">
             <p className="text-gray-300">
