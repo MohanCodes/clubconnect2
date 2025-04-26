@@ -7,6 +7,7 @@ import { db } from '@/firebase/firebase';
 import { doc, getDoc } from 'firebase/firestore';
 import ReactMarkdown from 'react-markdown';
 import { FaCalendar, FaUser } from 'react-icons/fa';
+import LoadingModal from '@/components/LoadingModal';
 
 interface Blog {
   id: string;
@@ -58,9 +59,7 @@ const BlogPage = () => {
 
   if (isLoading) {
     return (
-      <div className="bg-cblack min-h-screen flex items-center justify-center">
-        <div className="text-white text-2xl">Loading...</div>
-      </div>
+      <LoadingModal loadingMessage="Loading Blog..."/>
     );
   }
 

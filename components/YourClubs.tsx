@@ -6,6 +6,18 @@ import { auth, db } from '@/firebase/firebase';
 import { or, collection, getDocs, query, where, serverTimestamp, setDoc, doc, updateDoc, arrayUnion, arrayRemove, increment } from 'firebase/firestore';
 import { onAuthStateChanged } from 'firebase/auth';
 import Tile from '@/components/Tile';
+import Masonry from 'react-masonry-css';
+import { getTodayId, getDailyCode, validateCode } from '@/helpers/codeHelpers';
+
+
+const breakpointColumnsObj = {
+    default: 4,
+    1536: 3,
+    1280: 2,
+    768: 2,
+    640: 1 
+  };
+  
 
 interface User {
     uid: string;
@@ -47,6 +59,9 @@ const YourClubs: React.FC = () => {
     const [upvotedClubs, setUpvotedClubs] = useState<string[]>([]);
     const [isUpvoteLoading, setIsUpvoteLoading] = useState<{ [key: string]: boolean }>({});
     
+    const [verificationCode, setVerificationCode] = useState('');
+    const [codeLoading, setCodeLoading] = useState(false);
+
     const router = useRouter();
 
     useEffect(() => {
@@ -103,6 +118,11 @@ const YourClubs: React.FC = () => {
           return;
         }
         
+        if (!verificationCode) {
+          setError('Verification code is required.');
+          return;
+        }
+    
         for (const district of schoolDistricts) {
             if (capitalizedClubName.includes(district)) {
               setError(`Please remove the district ${district} from the club name.`);
@@ -112,13 +132,31 @@ const YourClubs: React.FC = () => {
         
         if (user) {
           try {
+            setCodeLoading(true);
+            
+            // Validate verification code using codeHelpers
+            const todayId = getTodayId();
+            const currentCode = await getDailyCode(todayId);
+            const { valid } = await validateCode(verificationCode, todayId, currentCode);
+    
+            if (!valid) {
+              setError('Invalid verification code.');
+              setCodeLoading(false);
+              return;
+            }
+    
             const newClubRef = collection(db, 'clubs');
             const docId = `${capitalizedClubName.replace(/\s+/g, '-')}-${capitalizedSchool.replace(/\s+/g, '-')}`.toLowerCase();
             
             // Check if the club already exists
-            const clubDoc = await getDocs(query(newClubRef, where('name', '==', capitalizedClubName), where('school', '==', capitalizedSchool)));
+            const clubDoc = await getDocs(query(newClubRef, 
+                where('name', '==', capitalizedClubName), 
+                where('school', '==', capitalizedSchool)
+            ));
+            
             if (!clubDoc.empty) {
               setError('A club with this name already exists in the selected school district.');
+              setCodeLoading(false);
               return;
             }
             
@@ -136,11 +174,14 @@ const YourClubs: React.FC = () => {
             
             setNewClubName('');
             setNewClubSchool('');
+            setVerificationCode('');
             setIsModalOpen(false);
+            setCodeLoading(false);
             router.push(`/edit-club/${docId}`);
           } catch (error) {
             console.error("Error creating club:", error);
             setError('An error occurred while creating the club. Please try again.');
+            setCodeLoading(false);
           }
         }
     };
@@ -202,7 +243,7 @@ const YourClubs: React.FC = () => {
     }
 
     return (
-        <div className="container mx-auto px-4 py-8">
+        <div className="container mx-auto py-8">
             <h1 className="text-3xl font-bold text-white mb-6">Your Clubs</h1>
             {clubs.length === 0 ? (
                 <div className="rounded-lg p-9 transition-shadow duration-300 bg-[#2A2A2A] relative md:w-1/2">
@@ -210,13 +251,11 @@ const YourClubs: React.FC = () => {
                     <div className='text-white font-semibold'>CLICK RENDER PAGE TO SEE WHAT IT LOOKS LIKS AND UPLOAD PAGE TO SAVE YOUR CHANGES!</div>
                 </div>
             ) : (
-                <div className="
-                    columns-1
-                    md:columns-2
-                    xl:columns-3
-                    gap-x-6
-                    gap-y-16
-                ">
+                <Masonry
+                    breakpointCols={breakpointColumnsObj}
+                    className="flex w-full gap-6 p-6"
+                    columnClassName="masonry-column"
+                >
                     {clubs.map((club) => (
                         <div key={club.id} className="relative mb-16 break-inside-avoid">
                         <Tile 
@@ -243,13 +282,13 @@ const YourClubs: React.FC = () => {
                         )}
                         <button
                             onClick={() => router.push(`/edit-club/${club.id}`)}
-                            className="absolute rounded-br-lg rounded-bl-lg -bottom-9 left-0 right-0 bg-azul text-white p-2 text-center mt-2"
+                            className="absolute rounded-br-lg rounded-bl-lg -bottom-8 left-0 right-0 bg-azul text-white p-2 text-center mt-2"
                         >
                             {club.isComplete ? 'View/Edit Club' : 'Complete Club Info'}
                         </button>
                         </div>
                     ))}
-                    </div>
+                </Masonry>
 
             )}
 
@@ -259,7 +298,7 @@ const YourClubs: React.FC = () => {
 
             {/* Modal for creating a new club */}
             {isModalOpen && (
-                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
+                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
                     <div className="bg-white p-6 rounded-lg w-96">
                         <div className="flex justify-between items-center mb-4">
                             <h2 className="text-2xl font-bold">Create New Club</h2>
@@ -289,8 +328,20 @@ const YourClubs: React.FC = () => {
                                 <option key={district} value={district}>{district}</option>
                             ))}
                         </select>
-                        <button onClick={handleCreateClub} className="w-full bg-azul text-white p-2 rounded hover:bg-blue-600">
-                            Create Club
+                        <input
+                            type="text"
+                            placeholder="Verification Code"
+                            value={verificationCode}
+                            onChange={(e) => setVerificationCode(e.target.value)}
+                            className="w-full p-2 mb-4 border rounded"
+                            maxLength={6}
+                        />
+                        <button 
+                            onClick={handleCreateClub} 
+                            className="w-full bg-azul text-white p-2 rounded hover:bg-blue-600"
+                            disabled={codeLoading}
+                        >
+                            {codeLoading ? 'Verifying...' : 'Create Club'}
                         </button>
                     </div>
                 </div>

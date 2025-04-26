@@ -5,6 +5,7 @@ import { collection, getDocs, query, where, updateDoc, doc, arrayUnion, arrayRem
 import { db, auth } from '@/firebase/firebase'; // Adjust the path as necessary
 import dynamic from 'next/dynamic';
 import BlurFade from '@/components/ui/blur-fade';
+import Masonry from 'react-masonry-css';
 
 const Tile = dynamic(() => import('@/components/Tile'));
 const Navbar = dynamic(() => import('@/components/Navbar'));
@@ -26,6 +27,15 @@ interface DisplayClub {
   isVerified: boolean;
   upvoteCount: number;
 }
+
+const breakpointColumnsObj = {
+  default: 5,   // ≥1536px (2xl and up)
+  1536: 4,      // ≥1536px (2xl)
+  1280: 3,      // ≥1280px (xl)
+  768: 2,       // ≥768px (md)
+  640: 1        // <640px (sm and below)
+};
+
 
 const Home: React.FC = () => {
   const [clubs, setClubs] = useState<DisplayClub[]>([]);
@@ -224,15 +234,11 @@ const Home: React.FC = () => {
             </div>
         </div>
         <div className="flex flex-col items-center">
-          <div className="
-            columns-1
-            sm:columns-2
-            lg:columns-3
-            xl:columns-4
-            gap-6
-            p-6
-            max-w-full
-          ">
+        <Masonry
+          breakpointCols={breakpointColumnsObj}
+          className="flex w-full gap-6 p-6"
+          columnClassName="masonry-column"
+        >
             {filteredClubs.map((club, index) => (
               <BlurFade key={index} delay={index * 0.05} inView>
                 <div 
@@ -255,7 +261,7 @@ const Home: React.FC = () => {
                 </div>
               </BlurFade>
             ))}
-          </div>
+          </Masonry>
 
           {clubs.length === 0 && (
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 p-6 max-w-full -mt-[40px]">

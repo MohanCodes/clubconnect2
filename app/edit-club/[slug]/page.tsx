@@ -1,6 +1,5 @@
 "use client";
 
-"use client";
 import React, { useState, useEffect, useCallback } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
@@ -57,6 +56,7 @@ import { User as FirebaseUser } from 'firebase/auth';
 import { nanoid } from 'nanoid';
 import { parseISO, isBefore, isAfter, addDays, startOfWeek, nextMonday, format } from 'date-fns';
 import TransferOwnership from '@/components/TransferOwnership';
+import LoadingModal from '@/components/LoadingModal';
 
 interface Advisor {
   name: string;
@@ -860,12 +860,7 @@ const EditClubPage = () => {
 
   if (isLoadingUser || isLoading) {
     return (
-      <div className="fixed inset-0 bg-black flex items-center justify-center z-50">
-          <div className="bg-white p-6 rounded-lg flex flex-col items-center">
-            <FaCircleNotch className="animate-spin h-16 w-16 text-azul" />
-            <p className="mt-4 text-azul font-semibold">Loading user data...</p>
-          </div>
-      </div>
+      <LoadingModal loadingMessage='Loading Club Data' />
     );
   }
 
@@ -878,14 +873,6 @@ const EditClubPage = () => {
     <div className="bg-cblack min-h-screen">
       <Navbar />
       <main className="container mx-auto max-w-6xl px-8 pt-4 pb-8">
-      {isLoading && (
-        <div className="fixed inset-0 bg-black backdrop-blur bg-opacity-75 flex items-center justify-center z-50">
-          <div className="bg-white p-6 rounded-lg flex flex-col items-center">
-            <FaCircleNotch className="animate-spin h-16 w-16 text-azul" />
-            <p className="mt-4 text-azul font-semibold">Loading club data...</p>
-          </div>
-        </div>
-      )}
       {isDeleteModalOpen && (
         <div className="fixed inset-0 z-50 bg-black backdrop-blur bg-opacity-50 flex items-center justify-center">
           <div className="bg-white p-6 rounded-lg w-96">

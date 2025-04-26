@@ -75,57 +75,86 @@ const CalendarProp: React.FC<CalendarProps> = ({ events = [] }) => {
   const renderMonthlyView = () => {
     const daysInMonth = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 0).getDate();
     const firstDayOfMonth = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1).getDay();
-    const days = [];
-
-    for (let i = 0; i < firstDayOfMonth; i++) {
-      days.push(<div key={`empty-${i}`} className="h-24"></div>);
-    }
-
+    
+    // 1. Determine which weekdays have events
+    const weekdayHasEvents = Array(7).fill(false);
     for (let day = 1; day <= daysInMonth; day++) {
       const date = new Date(currentDate.getFullYear(), currentDate.getMonth(), day);
-      const dayEvents = events.filter(event => event.date.toDateString() === date.toDateString());
-
-      days.push(
-        <div key={day} className={`min-h-40 border ${isToday(date) ? 'border-azul' : 'border-gray-700'} p-2 rounded overflow-y-auto ${isToday(date) ? 'outline outline-2 outline-azul' : ''}`}>
-          <div className="text-right text-gray-400">{day}</div>
-          <div className="flex flex-col">
-            {dayEvents.map((event, index) => (
-              <Link key={index} href={event.link} className="text-xs text-white mt-1">
-                <div className='bg-[#2A2A2A] rounded p-2 inline-block hover:underline break-words w-full'>{event.title}</div>
-              </Link>
-            ))}
-          </div>
-        </div>
-      );
+      if (events.some(event => event.date.toDateString() === date.toDateString())) {
+        weekdayHasEvents[date.getDay()] = true;
+      }
     }
-
+  
+    // 2. Generate column width classes
+    const gridTemplateColumns = weekdayHasEvents
+      .map(hasEvents => hasEvents ? 'minmax(100px, 1fr)' : '1fr')
+      .join(' ');
+  
+    // 3. Render calendar with dynamic columns
     return (
-      <>
-        <div className="grid grid-cols-7 gap-1 font-medium mb-2">
-          {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(day => (
-            <div key={day} className="text-center text-gray-500">{day}</div>
-          ))}
-        </div>
-        <div className="grid grid-cols-7 gap-1">{days}</div>
-      </>
+      <div className="grid" style={{ gridTemplateColumns }}>
+        {/* Header row */}
+        {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map((day, index) => (
+          <div 
+            key={day} 
+            className={`text-center p-2 ${!weekdayHasEvents[index] ? 'text-gray-500' : ''}`}
+          >
+            {day}
+          </div>
+        ))}
+  
+        {/* Calendar cells */}
+        {Array.from({ length: firstDayOfMonth }).map((_, i) => (
+          <div key={`empty-${i}`} />
+        ))}
+        
+        {Array.from({ length: daysInMonth }).map((_, i) => {
+          const day = i + 1;
+          const date = new Date(currentDate.getFullYear(), currentDate.getMonth(), day);
+          const dayEvents = events.filter(event => 
+            event.date.toDateString() === date.toDateString()
+          );
+  
+          return (
+            <div
+              key={day}
+              className={`p-2 min-h-16 border ${isToday(date) ? 'border-azul' : 'border-gray-700'} ${
+                !weekdayHasEvents[date.getDay()] ? 'text-gray-500' : ''
+              }`}
+            >
+              <div className="text-right">{day}</div>
+              {dayEvents.map((event, index) => (
+                <Link
+                  key={index}
+                  href={event.link}
+                  className="text-xs block mt-1 p-1 bg-[#2A2A2A] rounded hover:underline"
+                >
+                  {event.title}
+                </Link>
+              ))}
+            </div>
+          );
+        })}
+      </div>
     );
   };
+  
 
   return (
-    <div className="bg-cblack text-white p-6 rounded-lg shadow-lg">
+    <div className="bg-cblack text-white p-6 rounded-lg shadow-lg max-w-7xl mx-auto">
       <div className="flex justify-around items-center mb-4">
-        <button onClick={prevPeriod} className="text-azul hover:text-blue-400 text-xl flex items-center space-x-2">
-          <FaAngleLeft size={40}/> 
-        </button>
-        <h2 className="text-2xl font-semibold text-center">
-          {isWeeklyView 
-            ? `Week of ${currentDate.toLocaleDateString()}`
-            : `${monthNames[currentDate.getMonth()]} ${currentDate.getFullYear()}`
-          }
-        </h2>
-        <button onClick={nextPeriod} className="text-azul hover:text-blue-400 text-xl flex items-center space-x-2">
-          <FaAngleRight size={40}/> 
-        </button>
+      <button onClick={prevPeriod} className="text-azul hover:text-blue-400 text-xl flex items-center space-x-2">
+        <FaAngleLeft size={40}/> 
+      </button>
+      <h2 className="text-2xl font-semibold text-center">
+        {isWeeklyView 
+        ? `Week of ${currentDate.toLocaleDateString()}`
+        : `${monthNames[currentDate.getMonth()]} ${currentDate.getFullYear()}`
+        }
+      </h2>
+      <button onClick={nextPeriod} className="text-azul hover:text-blue-400 text-xl flex items-center space-x-2">
+        <FaAngleRight size={40}/> 
+      </button>
       </div>
       {isWeeklyView ? renderWeeklyView() : renderMonthlyView()}
     </div>

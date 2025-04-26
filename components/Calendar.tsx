@@ -8,6 +8,7 @@ import { onAuthStateChanged } from 'firebase/auth';
 import { FaCircleNotch } from 'react-icons/fa';
 import { User } from 'firebase/auth'; // Import User type
 import { parseISO, format, addDays } from 'date-fns'; // Import date-fns functions
+import LoadingModal from '@/components/LoadingModal';
 
 interface Event {
   date: Date;
@@ -158,12 +159,7 @@ export default function CalendarPage() {
 
   if (loading) {
     return (
-      <div className="fixed inset-0 bg-cblack flex items-center justify-center z-50">
-          <div className="bg-white p-6 rounded-lg flex flex-col items-center">
-            <FaCircleNotch className="animate-spin h-16 w-16 text-azul" />
-            <p className="mt-4 text-azul font-semibold">Loading calendar data...</p>
-          </div>
-      </div>
+      <LoadingModal loadingMessage='Loading Calendar Data...' />
     );
   }
 
