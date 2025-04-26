@@ -5,7 +5,6 @@ import CalendarProp from '@/components/CalendarProp';
 import { auth, db } from '@/firebase/firebase';
 import { doc, getDoc } from 'firebase/firestore';
 import { onAuthStateChanged } from 'firebase/auth';
-import { FaCircleNotch } from 'react-icons/fa';
 import { User } from 'firebase/auth'; // Import User type
 import { parseISO, format, addDays } from 'date-fns'; // Import date-fns functions
 import LoadingModal from '@/components/LoadingModal';

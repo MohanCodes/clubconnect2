@@ -8,7 +8,6 @@ import {
   setupMidnightRefresh,
   validateCode,
 } from "@/helpers/codeHelpers";
-import Navbar from "@/components/Navbar";
 
 const DailyCode: React.FC = () => {
   const [code, setCode] = useState<string | null>(null);
