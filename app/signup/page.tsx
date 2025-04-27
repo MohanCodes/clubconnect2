@@ -74,7 +74,7 @@ export default function Signup() {
             </div>
             <Image src="/circles.svg" alt="MNClubConnect Logo" width={60} height={60} className="relative z-10 mx-auto mb-10 mt-6" />
             <h1 className="text-3xl font-semibold text-white">Sign Up for MNClubConnect</h1>
-            <p className="text-grey mt-2">Join your club community</p>
+            <p className="text-white mt-2">Join your club community</p>
           </div>
           <div className="p-8">
             {error && (

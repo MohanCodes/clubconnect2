@@ -69,7 +69,7 @@ export default function Signin() {
             
             <Image src="/circles.svg" alt="MNClubConnect Logo" width={60} height={60} className="relative z-10 mx-auto mb-10 mt-6" />
             <h1 className="text-3xl font-semibold text-white">Sign In to MNClubConnect</h1>
-            <p className="text-grey mt-2">Access your club community</p>
+            <p className="text-white mt-2">Access your club community</p>
           </div>
           <div className="p-8">
             {error && (
@@ -130,6 +130,11 @@ export default function Signin() {
               Don&apos;t have an account?{' '}
               <Link href="/signup" className="font-medium text-azul hover:opacity-70">
                 Sign up
+              </Link>
+            </p>
+            <p className="mt-1 text-center text-sm text-gray-600">
+              <Link href="/forgotpw" className="font-medium text-azul hover:opacity-70">
+                Forgot Password?
               </Link>
             </p>
           </div>
