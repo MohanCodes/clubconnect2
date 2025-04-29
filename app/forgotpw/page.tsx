@@ -22,9 +22,10 @@ export default function ForgotPassword() {
       await sendPasswordResetEmail(auth, email);
       setMessage("A password reset email has been sent. Please check your inbox.");
       setEmail("");
-    } catch (err: any) {
+    } catch (err) {
+      const error = err as { code?: string };
       setError(
-        err.code === "auth/user-not-found"
+        error.code === "auth/user-not-found"
           ? "No account found with this email."
           : "Failed to send reset email. Please try again."
       );
