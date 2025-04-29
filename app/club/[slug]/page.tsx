@@ -231,7 +231,7 @@ const ClubPage = () => {
         <Navbar />
         {isLoading && (
           <div className="fixed inset-0 bg-black flex items-center justify-center z-50">
-            <div className="bg-white p-6 rounded-lg flex flex-col items-center">
+            <div className="bg-white p-6 rounded-xl flex flex-col items-center">
               <FaCircleNotch className="animate-spin h-16 w-16 text-azul" />
               <p className="mt-4 text-azul font-semibold">Loading club data...</p>
             </div>
@@ -250,7 +250,7 @@ const ClubPage = () => {
       <main className="container mx-auto max-w-6xl px-8 pt-4 pb-8">
       {isLoading && (
         <div className="fixed inset-0 bg-black backdrop-blur bg-opacity-75 flex items-center justify-center z-50">
-          <div className="bg-white p-6 rounded-lg flex flex-col items-center">
+          <div className="bg-white p-6 rounded-xl flex flex-col items-center">
             <FaCircleNotch className="animate-spin h-16 w-16 text-azul" />
             <p className="mt-4 text-azul font-semibold">Loading club data...</p>
           </div>
@@ -372,7 +372,7 @@ const ClubPage = () => {
               <h2 className="text-2xl font-bold text-white mb-2 mt-6 ">One-off Events</h2>
               {clubInfo.oneOffEvents && clubInfo.oneOffEvents.length > 0 ? (
                     clubInfo.oneOffEvents.map((event, index) => (
-                      <div key={index} className="mb-4 flex items-center bg-gray-800 p-4 rounded-lg shadow-md lg:w-5/6">
+                      <div key={index} className="mb-4 flex items-center bg-gray-800 p-4 rounded-xl shadow-md lg:w-5/6">
                         <FaCalendarAlt className="text-blue-400 mr-4" />
                         <span className="text-white">
                           {format(parseISO(event.date), 'MMMM dd, yyyy')} - {event.title}
@@ -390,7 +390,7 @@ const ClubPage = () => {
                     clubInfo.recurringEvents.map((event, index) => {
                       const nextMeeting = getNextMeetingDate(event);
                       return (
-                        <div key={index} className="mb-6 p-6 bg-gray-800 rounded-lg shadow-md text-white lg:w-5/6">
+                        <div key={index} className="mb-6 p-6 bg-gray-800 rounded-xl shadow-md text-white lg:w-5/6">
                           {/* Event Title */}
                           <p className="font-semibold text-lg">Event: {event.title || 'Untitled Event'}</p>
 
@@ -457,7 +457,7 @@ const ClubPage = () => {
                         alt={`Club activity ${index + 1}`}
                         layout="fill"
                         objectFit="cover"
-                        className="rounded-lg"
+                        className="rounded-xl"
                         priority
                         />
                     </div>
@@ -471,7 +471,7 @@ const ClubPage = () => {
             )}
             <div className="flex flex-col lg:flex-row gap-8">
               {blogs.map((blog) => (
-                <div key={blog.id} className="rounded-lg p-9 transition-shadow duration-300 bg-[#2A2A2A]">
+                <div key={blog.id} className="rounded-xl p-9 transition-shadow duration-300 bg-[#2A2A2A]">
                   <Link href={`/blog/${blog.id}`} passHref>
                     <div className='flex flex-row justify-between'>
                       <h3 className="text-lg text-white font-bold">{blog.title}</h3>

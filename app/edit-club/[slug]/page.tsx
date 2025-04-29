@@ -875,7 +875,7 @@ const EditClubPage = () => {
       <main className="container mx-auto max-w-6xl px-8 pt-4 pb-8">
       {isDeleteModalOpen && (
         <div className="fixed inset-0 z-50 bg-black backdrop-blur bg-opacity-50 flex items-center justify-center">
-          <div className="bg-white p-6 rounded-lg w-96">
+          <div className="bg-white p-6 rounded-xl w-96">
             <div className="flex justify-between items-center mb-4">
               <h2 className="text-2xl font-bold">Delete Club</h2>
               <button onClick={() => setIsDeleteModalOpen(false)} className="text-gray-500 hover:text-gray-700">
@@ -905,7 +905,7 @@ const EditClubPage = () => {
       )}
       {isDeleteDescriptionModalOpen && (
         <div className="fixed inset-0 z-50 bg-black backdrop-blur bg-opacity-50 flex items-center justify-center">
-          <div className="bg-white p-6 rounded-lg w-96">
+          <div className="bg-white p-6 rounded-xl w-96">
             <div className="flex justify-between items-center mb-4">
               <h2 className="text-2xl font-bold">Delete Description</h2>
               <button onClick={() => setIsDeleteDescriptionModalOpen(false)} className="text-gray-500 hover:text-gray-700">
@@ -926,7 +926,7 @@ const EditClubPage = () => {
       )}
       {isLinkModalOpen && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
-          <div className="bg-white p-6 rounded-lg">
+          <div className="bg-white p-6 rounded-xl">
             <h3 className="text-xl font-bold mb-4">Add New Link</h3>
             <input
               type="text"
@@ -1434,7 +1434,7 @@ const EditClubPage = () => {
               )}
               {clubInfo.oneOffEvents && clubInfo.oneOffEvents.length > 0 ? (
                 clubInfo.oneOffEvents.map((event, index) => (
-                  <div key={index} className="mb-4 flex items-center justify-between bg-gray-800 p-4 rounded-lg shadow-md lg:w-2/3">
+                  <div key={index} className="mb-4 flex items-center justify-between bg-gray-800 p-4 rounded-xl shadow-md lg:w-2/3">
                     <div className="flex items-center">
                       <FaCalendarAlt className="text-blue-400 mr-4" />
                       <span className="text-white">
@@ -1607,7 +1607,7 @@ const EditClubPage = () => {
                         clubInfo.recurringEvents.map((event, index) => {
                           const nextMeeting = getNextMeetingDate(event);
                           return (
-                            <div key={index} className="mb-6 p-6 bg-gray-800 rounded-lg shadow-md text-white lg:w-5/6">
+                            <div key={index} className="mb-6 p-6 bg-gray-800 rounded-xl shadow-md text-white lg:w-5/6">
                               {/* Event Title */}
                               <p className="font-semibold text-lg">Event: {event.title || 'Untitled Event'}</p>
 
@@ -1682,13 +1682,13 @@ const EditClubPage = () => {
                         alt={`Club activity ${index + 1}`}
                         layout="fill"
                         objectFit="cover"
-                        className="rounded-lg"
+                        className="rounded-xl"
                         priority
                       />
                       {isEditing && ( // Only show the trash can when in edit mode
                         <button
                           onClick={() => handleImageDelete(src)}
-                          className="absolute top-2 right-2 bg-red-500 text-white p-1 rounded-lg"
+                          className="absolute top-2 right-2 bg-red-500 text-white p-1 rounded-xl"
                         >
                           <FaTrash />
                         </button>
@@ -1696,7 +1696,7 @@ const EditClubPage = () => {
                     </div>
                   ))}
                   {(isEditing && (!clubInfo.images || clubInfo.images.length < 4)) && ( // Show upload area only in edit mode
-                    <div className="relative h-64 flex items-center justify-center border-2 border-dashed border-gray-400 rounded-lg">
+                    <div className="relative h-64 flex items-center justify-center border-2 border-dashed border-gray-400 rounded-xl">
                       <input
                         type="file"
                         onChange={handleImageUpload}
@@ -1740,7 +1740,7 @@ const EditClubPage = () => {
             )}
             <div className="flex flex-col lg:flex-row gap-8">
               {blogs.map((blog) => (
-                <div key={blog.id} className="rounded-lg p-9 transition-shadow duration-300 bg-[#2A2A2A]">
+                <div key={blog.id} className="rounded-xl p-9 transition-shadow duration-300 bg-[#2A2A2A]">
                   <div className='flex flex-row justify-between'>
                     <h3 className="text-lg text-white font-bold">{blog.title}</h3>
                     {isEditing ? (
@@ -1772,7 +1772,7 @@ const EditClubPage = () => {
             {/* Delete Confirmation Modal */}
             {isDeleteModalOpen && blogToDelete && (
                 <div className="fixed inset-0 bg-black backdrop-blur bg-opacity-50 flex items-center justify-center">
-                    <div className="bg-white p-6 rounded-lg w-96">
+                    <div className="bg-white p-6 rounded-xl w-96">
                         <div className="flex justify-between items-center mb-4">
                             <h2 className="text-2xl font-bold">Delete Blog</h2>
                             <button onClick={() => setIsDeleteModalOpen(false)} className="text-gray-500 hover:text-gray-700">

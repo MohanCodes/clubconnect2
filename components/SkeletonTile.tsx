@@ -2,7 +2,7 @@ import React from 'react';
 
 const SkeletonTile: React.FC = () => {
   return (
-    <div className="rounded-lg p-6 transition-shadow duration-300 bg-[#2A2A2A] relative w-full h-full flex flex-col justify-between">
+    <div className="rounded-xl p-6 transition-shadow duration-300 bg-[#2A2A2A] relative w-full h-full flex flex-col justify-between">
       {/* Icon and Club Name */}
       <div className="flex items-center mb-4 space-x-4">
         <div className="w-[55px] h-[55px] bg-gray-700 rounded-full animate-pulse"></div>

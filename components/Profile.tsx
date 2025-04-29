@@ -182,7 +182,7 @@ const Profile: React.FC = () => {
         </div>
 
         {clubs.length === 0 && (
-          <div className="rounded-lg p-9 transition-shadow duration-300 bg-[#2A2A2A] md:w-1/2">
+          <div className="rounded-xl p-9 transition-shadow duration-300 bg-[#2A2A2A] md:w-1/2">
             <p className="text-gray-300">
               You haven&apos;t starred any clubs yet.<br />
               <span className='text-white font-semibold'>Star</span> a few of your favorite <span className='text-white font-semibold'>clubs</span> to see them on the calendar!

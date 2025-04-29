@@ -246,7 +246,7 @@ const YourClubs: React.FC = () => {
         <div className="container mx-auto py-8">
             <h1 className="text-3xl font-bold text-white mb-6">Your Clubs</h1>
             {clubs.length === 0 ? (
-                <div className="rounded-lg p-9 transition-shadow duration-300 bg-[#2A2A2A] relative md:w-1/2">
+                <div className="rounded-xl p-9 transition-shadow duration-300 bg-[#2A2A2A] relative md:w-1/2">
                     <p className="text-gray-300">You haven&apos;t created any clubs yet.<br />Note that only groups that have either <span className='text-white font-semibold'>successfully</span> gone through the student group application process or a club <span className='text-white font-semibold'>affiliated</span> with your school body should create a club.<br /><br /></p>
                     <div className='text-white font-semibold'>CLICK RENDER PAGE TO SEE WHAT IT LOOKS LIKS AND UPLOAD PAGE TO SAVE YOUR CHANGES!</div>
                 </div>
@@ -269,20 +269,20 @@ const YourClubs: React.FC = () => {
                             showVoteButton={false}
                         />
                         {!club.isComplete && (
-                            <div className="absolute top-0 right-0 bg-yellow-500 text-black p-2 rounded-tr-lg rounded-bl-lg flex items-center">
+                            <div className="absolute top-0 right-0 bg-yellow-500 text-black p-2 rounded-tr-xl rounded-bl-xl flex items-center">
                             <FaExclamationTriangle />
                             <span className="text-sm hidden sm:inline ml-2">Incomplete</span>
                             </div>
                         )}
                         {club.isComplete && (
-                            <div className="absolute top-0 right-0 bg-green-500 text-black p-2 rounded-tr-lg rounded-bl-lg flex items-center">
+                            <div className="absolute top-0 right-0 bg-green-500 text-black p-2 rounded-tr-xl rounded-bl-xl flex items-center">
                             <FaCheckCircle />
                             <span className="text-sm hidden sm:inline ml-2">Complete</span>
                             </div>
                         )}
                         <button
                             onClick={() => router.push(`/edit-club/${club.id}`)}
-                            className="absolute rounded-br-lg rounded-bl-lg -bottom-8 left-0 right-0 bg-azul text-white p-2 text-center mt-2"
+                            className="absolute rounded-br-xl rounded-bl-xl -bottom-8 left-0 right-0 bg-azul text-white p-2 text-center mt-2"
                         >
                             {club.isComplete ? 'View/Edit Club' : 'Complete Club Info'}
                         </button>
@@ -299,7 +299,7 @@ const YourClubs: React.FC = () => {
             {/* Modal for creating a new club */}
             {isModalOpen && (
                 <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-                    <div className="bg-white p-6 rounded-lg w-96">
+                    <div className="bg-white p-6 rounded-xl w-96">
                         <div className="flex justify-between items-center mb-4">
                             <h2 className="text-2xl font-bold">Create New Club</h2>
                             <button onClick={() => setIsModalOpen(false)} className="text-gray-500 hover:text-gray-700">

@@ -87,7 +87,7 @@ export default function AdminPortal() {
   const UserManagement = () => (
     <div>
       <h2 className="text-2xl font-bold mb-4">User Management</h2>
-      <div className="bg-white rounded-lg shadow p-6">
+      <div className="bg-white rounded-xl shadow p-6">
         <p className="mb-4">Total users: {userCount}</p>
         <table className="min-w-full divide-y divide-gray-200">
           <thead className="bg-gray-50">
@@ -118,11 +118,11 @@ export default function AdminPortal() {
   const ClubManagement = () => (
     <div>
       <h2 className="text-2xl font-bold mb-4">Club Management</h2>
-      <div className="bg-white rounded-lg shadow p-6">
+      <div className="bg-white rounded-xl shadow p-6">
         <p className="mb-4">Total clubs: {clubCount}</p>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {/* Club cards would be populated from database */}
-          <div className="border rounded-lg p-4">
+          <div className="border rounded-xl p-4">
             <h3 className="text-lg font-medium">Coding Club</h3>
             <p className="text-gray-500">Members: 24</p>
             <div className="mt-4 flex justify-end">
@@ -138,11 +138,11 @@ export default function AdminPortal() {
   const EventManagement = () => (
     <div>
       <h2 className="text-2xl font-bold mb-4">Event Management</h2>
-      <div className="bg-white rounded-lg shadow p-6">
+      <div className="bg-white rounded-xl shadow p-6">
         <p className="mb-4">Total events: {eventCount}</p>
         <div className="space-y-4">
           {/* Event items would be populated from database */}
-          <div className="border rounded-lg p-4 flex justify-between items-center">
+          <div className="border rounded-xl p-4 flex justify-between items-center">
             <div>
               <h3 className="text-lg font-medium">Spring Hackathon</h3>
               <p className="text-gray-500">Date: May 15, 2025</p>
@@ -160,7 +160,7 @@ export default function AdminPortal() {
   const SystemSettings = () => (
     <div>
       <h2 className="text-2xl font-bold mb-4">System Settings</h2>
-      <div className="bg-white rounded-lg shadow p-6">
+      <div className="bg-white rounded-xl shadow p-6">
         <div className="space-y-6">
           <div>
             <h3 className="text-lg font-medium mb-2">Email Notifications</h3>
@@ -221,7 +221,7 @@ export default function AdminPortal() {
           <div className="p-4">
             {/* Dashboard Stats */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
-              <div className="bg-gray-50 p-4 rounded-lg shadow">
+              <div className="bg-gray-50 p-4 rounded-xl shadow">
                 <div className="flex items-center">
                   <FaUsers className="text-azul text-3xl mr-4" />
                   <div>
@@ -230,7 +230,7 @@ export default function AdminPortal() {
                   </div>
                 </div>
               </div>
-              <div className="bg-gray-50 p-4 rounded-lg shadow">
+              <div className="bg-gray-50 p-4 rounded-xl shadow">
                 <div className="flex items-center">
                   <FaClipboardList className="text-azul text-3xl mr-4" />
                   <div>
@@ -239,7 +239,7 @@ export default function AdminPortal() {
                   </div>
                 </div>
               </div>
-              <div className="bg-gray-50 p-4 rounded-lg shadow">
+              <div className="bg-gray-50 p-4 rounded-xl shadow">
                 <div className="flex items-center">
                   <FaCalendarAlt className="text-azul text-3xl mr-4" />
                   <div>

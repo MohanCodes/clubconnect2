@@ -141,7 +141,7 @@ const CalendarProp: React.FC<CalendarProps> = ({ events = [] }) => {
   
 
   return (
-    <div className="bg-cblack text-white p-6 rounded-lg shadow-lg max-w-7xl mx-auto">
+    <div className="bg-cblack text-white p-6 rounded-xl shadow-lg max-w-7xl mx-auto">
       <div className="flex justify-around items-center mb-4">
       <button onClick={prevPeriod} className="text-azul hover:text-blue-400 text-xl flex items-center space-x-2">
         <FaAngleLeft size={40}/> 

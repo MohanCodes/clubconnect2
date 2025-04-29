@@ -81,7 +81,7 @@ const DailyCode: React.FC = () => {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-cblack">
-      <div className="p-4 bg-gray-800 rounded-lg max-w-md w-full">
+      <div className="p-4 bg-gray-800 rounded-xl max-w-md w-full">
         <h2 className="text-xl font-bold text-white mb-4">Daily Code System</h2>
         
         <div className="mb-4">

@@ -416,7 +416,7 @@ const BiologyClubPage: React.FC = () => {
                     alt={`Biology Club activity ${index + 1}`}
                     layout="fill"
                     objectFit="cover"
-                    className="rounded-lg"
+                    className="rounded-xl"
                   />
                 </div>
               ))}
@@ -427,7 +427,7 @@ const BiologyClubPage: React.FC = () => {
 
       {isModalOpen && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
-          <div className="bg-white p-6 rounded-lg">
+          <div className="bg-white p-6 rounded-xl">
             <h3 className="text-xl font-bold mb-4">Add New Link</h3>
             <input
               type="text"

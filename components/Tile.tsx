@@ -95,7 +95,7 @@ const Tile: React.FC<TileProps> = ({
   });
 
   return (
-    <div className="rounded-lg p-9 transition-shadow duration-300 bg-[#2A2A2A] relative max-w-4xl">
+    <div className="rounded-xl p-9 transition-shadow duration-300 bg-[#2A2A2A] relative max-w-4xl">
         <div className="absolute top-10 right-0 flex items-center">
           <div className="flex items-center">
             {showVoteButton && ( // Check if showVoteButton is true
@@ -172,7 +172,7 @@ const Tile: React.FC<TileProps> = ({
       </div>
 
       {/* Bottom section with tags and links */}
-      <div className={`your-other-classes ${tags.length > 0 ? 'mb-6' : ''}`} />
+      <div className={`${tags.length > 0 ? 'mb-6' : ''}`} />
       <div className="grid grid-cols-[1fr,auto] gap-4 items-start">
         {/* Tags */}
         <div className="flex flex-wrap gap-2">

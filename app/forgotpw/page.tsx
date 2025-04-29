@@ -49,7 +49,7 @@ export default function ForgotPassword() {
               className="relative z-10 mx-auto mb-10 mt-6"
             />
             <h1 className="text-3xl font-semibold text-white">Forgot Password?</h1>
-            <p className="text-white mt-2">We'll send you a reset link</p>
+            <p className="text-white mt-2">We&apos;ll send you a reset link</p>
           </div>
           <div className="p-8">
             {error && (
