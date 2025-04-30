@@ -3,11 +3,19 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { getAuth, onAuthStateChanged } from 'firebase/auth';
-import { doc, getDoc } from 'firebase/firestore';
+import { doc, getDoc, collection, getCountFromServer, getDocs } from 'firebase/firestore';
 import { db } from '../../firebase/firebase';
 import Navbar from '@/components/Navbar';
 import { FaUsers, FaClipboardList, FaCalendarAlt, FaCog } from 'react-icons/fa';
 import LoadingModal from '@/components/LoadingModal';
+
+interface User {
+  id: string;
+  email: string;
+  displayName?: string;
+  isAdmin: boolean;
+  // Add other user properties as needed
+}
 
 export default function AdminPortal() {
   const [loading, setLoading] = useState(true);
@@ -16,6 +24,7 @@ export default function AdminPortal() {
   const [userCount, setUserCount] = useState(0);
   const [clubCount, setClubCount] = useState(0);
   const [eventCount, setEventCount] = useState(0);
+  const [users, setUsers] = useState<User[]>([]);
   const router = useRouter();
 
   useEffect(() => {
@@ -45,26 +54,50 @@ export default function AdminPortal() {
     };
     
     const fetchAdminStats = async () => {
-      // Simplified example - in production you would use proper queries
-      // to count documents or implement server-side functions
-      setUserCount(142);
-      setClubCount(27);
-      setEventCount(93);
+      try {
+        const usersSnap = await getCountFromServer(collection(db, "users"));
+        setUserCount(usersSnap.data().count);
+
+        const clubsSnap = await getCountFromServer(collection(db, "clubs"));
+        setClubCount(clubsSnap.data().count);
+
+        setEventCount(93);
+      } catch (err) {
+        setError('Failed to fetch admin stats');
+      }
+    };
+
+    const fetchUsers = async () => {
+      try {
+        const querySnapshot = await getDocs(collection(db, "users"));
+        const usersList: User[] = []; // Explicit type annotation
+        querySnapshot.forEach((doc) => {
+          usersList.push({
+            id: doc.id,
+            email: doc.data().email,
+            displayName: doc.data().displayName,
+            isAdmin: doc.data().isAdmin
+          });
+        });
+        setUsers(usersList);
+      } catch (err) {
+        setError('Failed to fetch users');
+      }
     };
     
+
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
       if (user) {
         const isAdmin = await checkAdminStatus(user.uid);
         if (isAdmin) {
-          await fetchAdminStats();
+          await Promise.all([fetchAdminStats(), fetchUsers()]);
         }
       } else {
-        // No user is signed in, redirect to signin
         router.push('/signin');
       }
       setLoading(false);
     });
-    
+
     return () => unsubscribe();
   }, [router]);
 
@@ -99,21 +132,22 @@ export default function AdminPortal() {
             </tr>
           </thead>
           <tbody className="bg-white divide-y divide-gray-200">
-            {/* User rows would be populated from database */}
-            <tr>
-              <td className="px-6 py-4 whitespace-nowrap">Admin User</td>
-              <td className="px-6 py-4 whitespace-nowrap">admin@example.com</td>
-              <td className="px-6 py-4 whitespace-nowrap">Admin</td>
-              <td className="px-6 py-4 whitespace-nowrap">
-                <button className="text-indigo-600 hover:text-indigo-900 mr-2">Edit</button>
-                <button className="text-red-600 hover:text-red-900">Delete</button>
-              </td>
-            </tr>
+            {users.map(user => (
+              <tr key={user.id}>
+                <td className="px-6 py-4 whitespace-nowrap">{user.displayName || '-'}</td>
+                <td className="px-6 py-4 whitespace-nowrap">{user.email}</td>
+                <td className="px-6 py-4 whitespace-nowrap">{user.isAdmin ? 'Admin' : 'User'}</td>
+                <td className="px-6 py-4 whitespace-nowrap">
+                  <button className="text-indigo-600 hover:text-indigo-900 mr-2">Edit</button>
+                  <button className="text-red-600 hover:text-red-900">Delete</button>
+                </td>
+              </tr>
+            ))}
           </tbody>
         </table>
       </div>
     </div>
-  );
+  );  
   
   const ClubManagement = () => (
     <div>
@@ -234,7 +268,7 @@ export default function AdminPortal() {
                 <div className="flex items-center">
                   <FaClipboardList className="text-azul text-3xl mr-4" />
                   <div>
-                    <p className="text-gray-500">Clubs</p>
+                    <p className="text-gray-500">All Clubs</p>
                     <p className="text-2xl font-bold">{clubCount}</p>
                   </div>
                 </div>

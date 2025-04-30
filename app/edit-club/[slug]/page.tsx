@@ -1087,8 +1087,8 @@ const EditClubPage = () => {
               </div>
             )}
           </div>
-          <div className="flex-shrink-0 max-w-full md:w-1/3 md:text-right text-sm">
-            <p className={`text-${clubInfo.isComplete ? 'white' : 'red-500'} ${clubInfo.isComplete ? '' : 'whitespace-normal'}`}>
+          <div className="flex-shrink-0 max-w-full md:w-1/2 md:text-right text-sm">
+            <p className={`text-${clubInfo.isComplete ? 'white whitespace-normal' : 'red-700 bg-red-100 border-l-4 border-red-500 p-4 mb-6'}`}>
               {clubInfo.isComplete 
                 ? 'Club information is complete!' 
                 : 'Club information is incomplete, and won\'t be shown on the main page until all fields have been filled.'}
@@ -1409,10 +1409,10 @@ const EditClubPage = () => {
               <h2 className="text-2xl font-bold text-white mb-2">Links</h2>
               {(clubInfo.links || []).map((link, index) => (
                 <div key={index} className="flex items-center mb-2">
-                  <a href={link.url} target="_blank" rel="noopener noreferrer" className="text-azul hover:underline flex items-center">
+                    <Link href={link.url} target="_blank" rel="noopener noreferrer" className="text-azul hover:underline flex items-center">
                     {getPlatformIcon(link.platform)}
                     <span className="ml-2">{link.platform}</span>
-                  </a>
+                    </Link>
                   {isEditing && (
                     <button onClick={() => handleRemoveLink(index)} className="text-red-500 ml-2">
                       <FaTrash />
@@ -1684,13 +1684,13 @@ const EditClubPage = () => {
                         alt={`Club activity ${index + 1}`}
                         layout="fill"
                         objectFit="cover"
-                        className="rounded-xl"
+                        className="rounded-md"
                         priority
                       />
                       {isEditing && ( // Only show the trash can when in edit mode
                         <button
                           onClick={() => handleImageDelete(src)}
-                          className="absolute top-2 right-2 bg-red-500 text-white p-1 rounded-xl"
+                          className="absolute top-2 right-2 bg-red-500 text-white p-1 rounded-md"
                         >
                           <FaTrash />
                         </button>
