@@ -62,7 +62,7 @@ export default function AdminPortal() {
         setClubCount(clubsSnap.data().count);
 
         setEventCount(93);
-      } catch (err) {
+      } catch (error) {
         setError('Failed to fetch admin stats');
       }
     };
