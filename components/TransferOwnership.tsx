@@ -43,7 +43,7 @@ const TransferOwnership: React.FC<TransferOwnershipProps> = ({ clubId, currentCr
     return (
         <div>
             <button onClick={handleTransferOwnership} className="bg-azul text-white px-2 py-1 rounded">
-                Transfer Ownership
+                Make Owner 
             </button>
             {errorMessage && <p className="text-red-500">{errorMessage}</p>}
         </div>

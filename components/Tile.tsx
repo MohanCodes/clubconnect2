@@ -13,7 +13,10 @@ import {
   FaLink,
   FaStar,
   FaRegStar,
-  FaCheckCircle
+  FaCheckCircle,
+  FaUser,
+  FaGlobe,
+  FaDollarSign
 } from 'react-icons/fa';
 
 interface TileProps {
@@ -73,7 +76,11 @@ const Tile: React.FC<TileProps> = ({
       case 'tiktok':
         return <FaTiktok className="text-azul w-5 h-5" />;
       case 'website':
+        return <FaGlobe className="text-azul w-5 h-5" />;
       case 'personal':
+        return <FaUser className="text-azul w-5 h-5" />;
+      case 'epay':
+        return <FaDollarSign className="text-azul w-5 h-5" />;
       case 'link':
         return <FaLink className="text-azul w-5 h-5" />;
       default:
@@ -95,8 +102,8 @@ const Tile: React.FC<TileProps> = ({
   });
 
   return (
-    <div className="rounded-xl p-9 transition-shadow duration-300 bg-[#2A2A2A] relative max-w-4xl">
-        <div className="absolute top-10 right-0 flex items-center">
+    <div className="rounded-xl p-8 transition-shadow duration-300 bg-[#2A2A2A] relative">
+        <div className="absolute top-8 right-0 flex items-center">
           <div className="flex items-center">
             {showVoteButton && ( // Check if showVoteButton is true
               <div>

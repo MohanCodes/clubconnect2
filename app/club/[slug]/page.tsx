@@ -220,6 +220,7 @@ const ClubPage = () => {
       case 'github': return <FaGithub />;
       case 'tiktok': return <FaTiktok />;
       case 'website': return <FaGlobe />;
+      case 'epay': return <FaDollarSign />;
       case 'personal': return <FaUser />;
       default: return <FaLink />;
     }
@@ -334,7 +335,7 @@ const ClubPage = () => {
                   >
                     <span className="flex items-center">
                       <FaEnvelope className="mr-2 flex-shrink-0" />
-                      <span className='truncate'>{advisor.email}</span>
+                      <span>{advisor.email}</span>
                     </span>
                   </Link>
                 </div>
@@ -447,8 +448,8 @@ const ClubPage = () => {
 
           <div className="space-y-10">
           {clubInfo.images && clubInfo.images.length > 0 && (
-            <>
-                <h2 className="text-2xl font-bold text-white -mb-8">Images</h2>
+            <div>
+                <h2 className="text-2xl font-bold text-white">Gallery</h2>
                 <div className="grid sm:grid-cols-2 gap-4">
                     {clubInfo.images.map((src: string, index: number) => (
                     <div key={index} className="relative h-64">
@@ -463,7 +464,7 @@ const ClubPage = () => {
                     </div>
                     ))}
                 </div>
-            </>
+            </div>
             )}
           <div>
             {clubInfo.blogIds && clubInfo.blogIds.length > 0 && (

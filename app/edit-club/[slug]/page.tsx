@@ -617,6 +617,7 @@ const EditClubPage = () => {
       case 'github': return <FaGithub />;
       case 'tiktok': return <FaTiktok />;
       case 'website': return <FaGlobe />;
+      case 'epay': return <FaDollarSign />;
       case 'personal': return <FaUser />;
       default: return <FaLink />;
     }
@@ -949,6 +950,7 @@ const EditClubPage = () => {
               <option value="discord">Discord</option>
               <option value="github">GitHub</option>
               <option value="tiktok">TikTok</option>
+              <option value="epay">Payment</option>
               <option value="website">Website</option>
               <option value="personal">Personal</option>
               <option value="other">Other</option>
@@ -1149,7 +1151,7 @@ const EditClubPage = () => {
                           onClick={() => handleRemoveEditor(editor.uid)}
                           className="bg-red-500 text-white px-2 py-1 rounded"
                         >
-                          Remove
+                          <FaTrash />
                         </button>
                       </div>
                     </li>
@@ -1671,7 +1673,7 @@ const EditClubPage = () => {
             <>
               {(clubInfo.images && clubInfo.images.length > 0 || isEditing) && (
                 <div className="mb-8">
-                  <h2 className="text-2xl font-bold text-white -mb-8">{`Images${isEditing ? ' (Max 4)' : ''}`}</h2>
+                  <h2 className="text-2xl font-bold text-white -mb-8">{`Gallery${isEditing ? ' (Max 4)' : ''}`}</h2>
                 </div>
               )}
                 <div className="grid sm:grid-cols-2 gap-4">
@@ -1733,7 +1735,7 @@ const EditClubPage = () => {
             </div>
           )}
 
-            {(blogs && blogs.length > 0 || isEditing) && (
+            {(blogs && blogs.length > 0 || !isEditing) && (
               <div className="mb-8">
                 <h2 className="text-2xl font-bold text-white mb-2">Blogs</h2>
               </div>

@@ -313,7 +313,7 @@ const YourClubs: React.FC = () => {
                         )}
                         <input 
                             type="text" 
-                            placeholder="Club Name" 
+                            placeholder="Club Name (Unmodifiable)" 
                             value={newClubName} 
                             onChange={(e) => setNewClubName(e.target.value)} 
                             className="w-full p-2 mb-4 border rounded" 
