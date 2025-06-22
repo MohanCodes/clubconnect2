@@ -751,45 +751,6 @@ const EditClubPage = () => {
     setHasUnsavedChanges(true);
   };
 
-  const handleAddBlog = async () => {
-    if (newBlogTitle.trim() && newBlogContent.trim()) {
-      try {
-        if (!clubInfo.id) {
-          console.error('Invalid club ID:', clubInfo.id);
-          return;
-        }
-  
-        const blogId = nanoid(6);
-        const newBlog = {
-          id: blogId,
-          title: newBlogTitle,
-          content: newBlogContent,
-          date: new Date(),
-          clubId: clubInfo.id,
-          clubName: clubInfo.name
-        };
-  
-        // Add the blog to the 'blogs' collection
-        const blogDocRef = doc(db, 'blogs', blogId);
-        await setDoc(blogDocRef, newBlog);
-  
-        // Update the club document with just the blog ID
-        const clubDocRef = doc(db, 'clubs', clubInfo.id);
-        await updateDoc(clubDocRef, {
-          blogIds: arrayUnion(blogId)
-        });
-  
-        setNewBlogTitle('');
-        setNewBlogContent('');
-        fetchClubInfo();
-      } catch (error) {
-        console.error('Error adding blog:', error);
-      }
-    } else {
-      console.error('Title and content cannot be empty');
-    }
-  };
-
   const handleDeleteBlog = async (blogId: string) => {
     try {
         const clubDocRef = doc(db, 'clubs', clubInfo.id);

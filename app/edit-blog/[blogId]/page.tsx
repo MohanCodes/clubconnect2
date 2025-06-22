@@ -35,6 +35,13 @@ import '@mdxeditor/editor/style.css';
 import { User } from 'firebase/auth';
 import { nanoid } from 'nanoid';
 
+interface ClubInfo {
+  id: string;
+  creatorId: string;
+  addedEditors?: string[];
+  name: string;
+}
+
 export default function EditBlogPage() {
   const { blogId } = useParams();
   const searchParams = useSearchParams();
@@ -45,7 +52,7 @@ export default function EditBlogPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [user, setUser] = useState<User | null>(null);
-  const [clubInfo, setClubInfo] = useState<any>(null);
+  const [clubInfo, setClubInfo] = useState<ClubInfo | null>(null);
 
   useEffect(() => {
     // Fetch user (assume firebase auth is available globally)
@@ -62,9 +69,15 @@ export default function EditBlogPage() {
         const clubRef = doc(db, 'clubs', clubId);
         const clubSnap = await getDoc(clubRef);
         if (clubSnap.exists()) {
-          setClubInfo(clubSnap.data());
+          const data = clubSnap.data();
+          setClubInfo({
+            id: clubSnap.id,
+            creatorId: data.creatorId,
+            name: data.name,
+            addedEditors: data.addedEditors || [],
+          });
         } else {
-          setError('Club not found.');
+          setClubInfo(null);
         }
         setLoading(false);
         return;
@@ -84,7 +97,17 @@ export default function EditBlogPage() {
           setContent(data.content);
           if (data.clubId) {
             const clubSnap = await getDoc(doc(db, 'clubs', data.clubId));
-            setClubInfo(clubSnap.exists() ? clubSnap.data() : null);
+            if (clubSnap.exists()) {
+              const clubData = clubSnap.data();
+              setClubInfo({
+                id: clubSnap.id,
+                creatorId: clubData.creatorId,
+                name: clubData.name,
+                addedEditors: clubData.addedEditors || [],
+              });
+            } else {
+              setClubInfo(null);
+            }
           }
         } else {
           setError('Blog not found.');
