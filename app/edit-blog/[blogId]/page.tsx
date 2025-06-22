@@ -181,7 +181,11 @@ export default function EditBlogPage() {
   if (loading) return <div className="text-white">Loading...</div>;
   if (error) return <div className="text-red-500">{error}</div>;
   if (!user || (clubInfo && (clubInfo.creatorId != user.uid && !clubInfo.addedEditors?.includes(user.uid)))) {
-    router.push(`/`);
+    if (blogId && blogId !== 'new') {
+      router.push(`/blog/${blogId}`);
+    } else {
+      router.push(`/`);
+    }
     return null;
   }
 
