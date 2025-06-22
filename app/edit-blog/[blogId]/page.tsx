@@ -112,7 +112,7 @@ export default function EditBlogPage() {
         } else {
           setError('Blog not found.');
         }
-      } catch (err) {
+      } catch {
         setError('Failed to fetch blog.');
       }
       setLoading(false);
@@ -152,7 +152,7 @@ export default function EditBlogPage() {
       // Update existing blog
       await updateDoc(doc(db, 'blogs', blogId), { title, content });
       router.push(`/blog/${blogId}`);
-    } catch (err) {
+    } catch {
       setError('Failed to save changes.');
       setLoading(false);
     }
@@ -171,7 +171,7 @@ export default function EditBlogPage() {
           });
         }
         router.push('/');
-      } catch (err) {
+      } catch {
         setError('Failed to delete blog.');
         setLoading(false);
       }
