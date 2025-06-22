@@ -1088,7 +1088,7 @@ const EditClubPage = () => {
             )}
           </div>
           <div className="flex-shrink-0 max-w-full md:w-1/2 md:text-right text-sm">
-            <p className={`text-${clubInfo.isComplete ? 'white whitespace-normal' : 'red-700 bg-red-100 border-l-4 border-red-500 p-4 mb-6'}`}>
+            <p className={`text-${clubInfo.isComplete ? 'white whitespace-normal' : 'red-500 mb-6'}`}>
               {clubInfo.isComplete 
                 ? 'Club information is complete!' 
                 : 'Club information is incomplete, and won\'t be shown on the main page until all fields have been filled.'}
@@ -1631,7 +1631,11 @@ const EditClubPage = () => {
                               </p>
                               
                               <p className="mt-2 font-semibold text-blue-400">
-                              Next meeting: {nextMeeting ? format(parseISO(nextMeeting), 'MMMM dd, yyyy') : 'No upcoming meeting'}
+                              Next meeting: {
+                                nextMeeting && /^\d{4}-\d{2}-\d{2}$/.test(nextMeeting)
+                                  ? format(parseISO(nextMeeting), 'MMMM dd, yyyy')
+                                  : nextMeeting || 'No upcoming meeting'
+                              }
                               </p>
 
                               {/* Display Exceptions */}
@@ -1712,23 +1716,10 @@ const EditClubPage = () => {
           <div>
             
           {isEditing && (
-            <div className="mb-8">
-              <h2 className="text-2xl font-bold text-white mb-2">Add New Blog</h2>
-              <input
-                type="text"
-                value={newBlogTitle}
-                onChange={(e) => setNewBlogTitle(e.target.value)}
-                placeholder="Blog Title"
-                className="w-full p-2 mb-2 text-grey bg-gray-800 rounded"
-              />
-              <textarea
-                value={newBlogContent}
-                onChange={(e) => setNewBlogContent(e.target.value)}
-                placeholder="Blog Content (Markdown supported)"
-                className="w-full h-40 p-2 mb-2 text-grey bg-gray-800 rounded"
-              />
+            <div className="mb-8 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+              <h2 className="text-2xl font-bold text-white mb-2 sm:mb-0">Add New Blog</h2>
               <button
-                onClick={handleAddBlog}
+                onClick={() => router.push(`/edit-blog/new?clubId=${clubInfo.id}`)}
                 className="bg-green-500 text-white px-2 py-1 rounded flex flex-row items-center">
                 <FaPlus className="mr-2" /> Add Blog
               </button>
@@ -1740,20 +1731,20 @@ const EditClubPage = () => {
                 <h2 className="text-2xl font-bold text-white mb-2">Blogs</h2>
               </div>
             )}
-            <div className="flex flex-col lg:flex-row gap-8">
+            <div className="flex flex-col gap-8">
               {blogs.map((blog) => (
                 <div key={blog.id} className="rounded-xl p-9 transition-shadow duration-300 bg-[#2A2A2A]">
                   <div className='flex flex-row justify-between'>
                     <h3 className="text-lg text-white font-bold">{blog.title}</h3>
                     {isEditing ? (
-                      // Show the trash can when isEditing is true
-                      <button onClick={() => handleDeleteBlog(blog.id)} className="text-red-500">
-                        <FaTrash />
-                      </button>
+                      // Show the pencil icon when isEditing is true
+                      <Link href={`/edit-blog/${blog.id}?clubId=${clubInfo.id}`} className="text-blue-500 hover:underline">
+                        <FaEdit />
+                      </Link>
                     ) : (
-                      // Show the link when isEditing is false
+                      // Show the eye icon when isEditing is false
                       <Link href={`/blog/${blog.id}`} className="text-blue-500 hover:underline">
-                        View
+                        <FaEye />
                       </Link>
                     )}
                   </div>

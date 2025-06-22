@@ -87,7 +87,7 @@ const CalendarProp: React.FC<CalendarProps> = ({ events = [] }) => {
   
     // 2. Generate column width classes
     const gridTemplateColumns = weekdayHasEvents
-      .map(hasEvents => hasEvents ? 'minmax(100px, 1fr)' : '1fr')
+      .map(hasEvents => hasEvents ? 'minmax(100px, 1fr)' : 'minmax(24px, 0.5fr)')
       .join(' ');
   
     // 3. Render calendar with dynamic columns
@@ -127,7 +127,7 @@ const CalendarProp: React.FC<CalendarProps> = ({ events = [] }) => {
                 <Link
                   key={index}
                   href={event.link}
-                  className="text-xs block mt-1 p-1 bg-[#2A2A2A] rounded hover:underline"
+                  className="text-sm block mt-1 p-1 bg-[#2A2A2A] rounded hover:underline"
                 >
                   {event.title}
                 </Link>

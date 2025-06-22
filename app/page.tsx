@@ -204,63 +204,63 @@ const Home: React.FC = () => {
               Currently a club platform for students located in the west metro.
             </p>
           </BlurFade>
-            <div className='bf1'>
-              <BlurFade delay={0.3}>
-                <div className="flex justify-center space-y-4 sm:space-y-0 sm:space-x-4 pt-4 flex-col sm:flex-row px-4 sm:px-0">
-                  <input
-                    type="text"
-                    placeholder="Search for a club:"
-                    value={searchQuery}
-                    onChange={(ppp) => setSearchQuery(ppp.target.value)}
-                    className="mb-8 px-5 py-2 sm:py-3 rounded-full border-none outline-none w-full sm:w-96 text-gray-700 sm:text-md text-sm"
-                  />
-                </div>
-              </BlurFade>
-              <div className='flex'>
-                <div className="flex flex-wrap gap-2 justify-center">
-                {tags.map((tag, index) => {
-                  const schoolStyle = schoolColors[tag.toLowerCase() as keyof typeof schoolColors] || { bg: 'bg-gray-200', text: 'text-black', ring: '' };
-                    const isSelected = selectedTag === tag; // Check if the tag is selected
-                    return (
-                      <BlurFade key={index} delay={0.4 + index * 0.05} inView>
-                      <button onClick={() => handleTagClick(tag)} className={`md:text-sm text-xs font-medium px-3 py-1 rounded-full break-words ${schoolStyle.bg} ${schoolStyle.text} ${isSelected ? `ring-2 ${schoolStyle.ring}` : ''}`}>
-                            {tag}
-                        </button>
-                      </BlurFade>
-                    );
-                })}
-                </div>
+          <div className='bf1'>
+            <BlurFade delay={0.3}>
+              <div className="flex justify-center space-y-4 sm:space-y-0 sm:space-x-4 pt-4 flex-col sm:flex-row px-4 sm:px-0">
+                <input
+                  type="text"
+                  placeholder="Search for a club:"
+                  value={searchQuery}
+                  onChange={(ppp) => setSearchQuery(ppp.target.value)}
+                  className="mb-8 px-5 py-2 sm:py-3 rounded-full border-none outline-none w-full sm:w-96 text-gray-700 sm:text-md text-sm"
+                />
+              </div>
+            </BlurFade>
+            <div className='flex mb-12'>
+              <div className="flex flex-wrap gap-2 justify-center">
+              {tags.map((tag, index) => {
+                const schoolStyle = schoolColors[tag.toLowerCase() as keyof typeof schoolColors] || { bg: 'bg-gray-200', text: 'text-black', ring: '' };
+                  const isSelected = selectedTag === tag; // Check if the tag is selected
+                  return (
+                    <BlurFade key={index} delay={0.4 + index * 0.05} inView>
+                    <button onClick={() => handleTagClick(tag)} className={`md:text-sm text-xs font-medium px-3 py-1 rounded-full break-words ${schoolStyle.bg} ${schoolStyle.text} ${isSelected ? `ring-2 ${schoolStyle.ring}` : ''}`}>
+                          {tag}
+                      </button>
+                    </BlurFade>
+                  );
+              })}
               </div>
             </div>
+          </div>
         </div>
         <div className="flex flex-col items-center">
-        <Masonry
-          breakpointCols={breakpointColumnsObj}
-          className="flex w-full gap-6 p-6"
-          columnClassName="masonry-column"
-        >
-            {filteredClubs.map((club, index) => (
-              <BlurFade key={index} delay={index * 0.05} inView>
-                <div 
-                  onClick={() => handleClubClick(club.id)}
-                  className="mb-6 break-inside-avoid cursor-pointer overflow-hidden"
-                >
-                  <Tile
-                    icon={club.icon}
-                    clubName={club.name}
-                    description={club.description}
-                    tags={club.tags}
-                    links={club.links}
-                    upvoteCount={club.upvoteCount}
-                    isUpvoted={upvotedClubs.includes(club.id)}
-                    onUpvoteClick={(e) => handleUpvoteClick(e, club.id)}
-                    isUpvoteLoading={isUpvoteLoading[club.id] || false}
-                    showVoteButton={!!user}
-                    isVerified={club.isVerified}
-                  />
-                </div>
-              </BlurFade>
-            ))}
+          <Masonry
+            breakpointCols={breakpointColumnsObj}
+            className="flex w-full gap-6 p-6"
+            columnClassName="masonry-column"
+          >
+              {filteredClubs.map((club, index) => (
+                <BlurFade key={index} delay={index * 0.05}>
+                  <div 
+                    onClick={() => handleClubClick(club.id)}
+                    className="mb-6 break-inside-avoid cursor-pointer overflow-hidden"
+                  >
+                    <Tile
+                      icon={club.icon}
+                      clubName={club.name}
+                      description={club.description}
+                      tags={club.tags}
+                      links={club.links}
+                      upvoteCount={club.upvoteCount}
+                      isUpvoted={upvotedClubs.includes(club.id)}
+                      onUpvoteClick={(e) => handleUpvoteClick(e, club.id)}
+                      isUpvoteLoading={isUpvoteLoading[club.id] || false}
+                      showVoteButton={!!user}
+                      isVerified={club.isVerified}
+                    />
+                  </div>
+                </BlurFade>
+              ))}
           </Masonry>
 
           {clubs.length === 0 && (

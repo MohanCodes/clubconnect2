@@ -7,7 +7,6 @@ import { or, collection, getDocs, query, where, serverTimestamp, setDoc, doc, up
 import { onAuthStateChanged } from 'firebase/auth';
 import Tile from '@/components/Tile';
 import Masonry from 'react-masonry-css';
-import { getTodayId, getDailyCode, validateCode } from '@/helpers/codeHelpers';
 
 
 const breakpointColumnsObj = {
@@ -58,9 +57,6 @@ const YourClubs: React.FC = () => {
     
     const [upvotedClubs, setUpvotedClubs] = useState<string[]>([]);
     const [isUpvoteLoading, setIsUpvoteLoading] = useState<{ [key: string]: boolean }>({});
-    
-    const [verificationCode, setVerificationCode] = useState('');
-    const [codeLoading, setCodeLoading] = useState(false);
 
     const router = useRouter();
 
@@ -118,11 +114,6 @@ const YourClubs: React.FC = () => {
           return;
         }
         
-        if (!verificationCode) {
-          setError('Verification code is required.');
-          return;
-        }
-    
         for (const district of schoolDistricts) {
             if (capitalizedClubName.includes(district)) {
               setError(`Please remove the district ${district} from the club name.`);
@@ -132,19 +123,6 @@ const YourClubs: React.FC = () => {
         
         if (user) {
           try {
-            setCodeLoading(true);
-            
-            // Validate verification code using codeHelpers
-            const todayId = getTodayId();
-            const currentCode = await getDailyCode(todayId);
-            const { valid } = await validateCode(verificationCode, todayId, currentCode);
-    
-            if (!valid) {
-              setError('Invalid verification code.');
-              setCodeLoading(false);
-              return;
-            }
-    
             const newClubRef = collection(db, 'clubs');
             const docId = `${capitalizedClubName.replace(/\s+/g, '-')}-${capitalizedSchool.replace(/\s+/g, '-')}`.toLowerCase();
             
@@ -156,7 +134,6 @@ const YourClubs: React.FC = () => {
             
             if (!clubDoc.empty) {
               setError('A club with this name already exists in the selected school district.');
-              setCodeLoading(false);
               return;
             }
             
@@ -174,14 +151,11 @@ const YourClubs: React.FC = () => {
             
             setNewClubName('');
             setNewClubSchool('');
-            setVerificationCode('');
             setIsModalOpen(false);
-            setCodeLoading(false);
             router.push(`/edit-club/${docId}`);
           } catch (error) {
             console.error("Error creating club:", error);
             setError('An error occurred while creating the club. Please try again.');
-            setCodeLoading(false);
           }
         }
     };
@@ -328,20 +302,11 @@ const YourClubs: React.FC = () => {
                                 <option key={district} value={district}>{district}</option>
                             ))}
                         </select>
-                        <input
-                            type="text"
-                            placeholder="Verification Code"
-                            value={verificationCode}
-                            onChange={(e) => setVerificationCode(e.target.value)}
-                            className="w-full p-2 mb-4 border rounded"
-                            maxLength={6}
-                        />
                         <button 
                             onClick={handleCreateClub} 
                             className="w-full bg-azul text-white p-2 rounded hover:bg-blue-600"
-                            disabled={codeLoading}
                         >
-                            {codeLoading ? 'Verifying...' : 'Create Club'}
+                            Create Club
                         </button>
                     </div>
                 </div>

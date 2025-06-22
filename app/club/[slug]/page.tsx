@@ -413,7 +413,15 @@ const ClubPage = () => {
                           </p>
                           
                           <p className="mt-2 font-semibold text-blue-400">
-                          Next meeting: {nextMeeting ? format(parseISO(nextMeeting), 'MMMM dd, yyyy') : 'No upcoming meeting'}
+                            Next meeting: {(() => {
+                              if (typeof nextMeeting === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(nextMeeting)) {
+                                const parsed = parseISO(nextMeeting);
+                                if (!isNaN(parsed.getTime())) {
+                                  return format(parsed, 'MMMM dd, yyyy');
+                                }
+                              }
+                              return nextMeeting || 'No upcoming meeting';
+                            })()}
                           </p>
 
                           {/* Display Exceptions */}
