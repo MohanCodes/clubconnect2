@@ -53,7 +53,6 @@ import {
 import { ref, uploadBytes, getDownloadURL, deleteObject } from 'firebase/storage';
 import { onAuthStateChanged } from 'firebase/auth';
 import { User as FirebaseUser } from 'firebase/auth';
-import { nanoid } from 'nanoid';
 import { parseISO, isBefore, isAfter, addDays, startOfWeek, nextMonday, format } from 'date-fns';
 import TransferOwnership from '@/components/TransferOwnership';
 import LoadingModal from '@/components/LoadingModal';
@@ -204,8 +203,6 @@ const EditClubPage = () => {
     date: new Date().toISOString().split('T')[0], // This will give you 'YYYY-MM-DD'
     title: ''
   });
-  const [newBlogTitle, setNewBlogTitle] = useState<string>('');
-  const [newBlogContent, setNewBlogContent] = useState<string>('');
   const [blogToDelete] = useState<Blog | null>(null);
   const [blogs, setBlogs] = useState<Blog[]>([]);
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
