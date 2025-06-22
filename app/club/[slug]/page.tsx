@@ -478,7 +478,7 @@ const ClubPage = () => {
             {clubInfo.blogIds && clubInfo.blogIds.length > 0 && (
             <h2 className="text-2xl font-bold text-white mb-2">Blogs</h2>
             )}
-            <div className="flex flex-col lg:flex-row gap-8">
+            <div className="flex flex-col gap-8">
               {blogs.map((blog) => (
                 <div key={blog.id} className="rounded-xl p-9 transition-shadow duration-300 bg-[#2A2A2A]">
                   <Link href={`/blog/${blog.id}`} passHref>
