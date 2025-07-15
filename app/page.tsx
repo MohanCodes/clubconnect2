@@ -233,7 +233,8 @@ const Home: React.FC = () => {
             </div>
           </div>
         </div>
-        <div className="flex flex-col items-center">
+        {/* Clubs Section */}
+        <div className="flex flex-col items-center w-full">
           <Masonry
             breakpointCols={breakpointColumnsObj}
             className="flex w-full gap-6 p-6"
@@ -284,7 +285,7 @@ const Home: React.FC = () => {
               </div>
             </BlurFade>
           )}
-      </div>
+        </div>
       </main>
     </div>
   );
