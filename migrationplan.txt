@@ -1,1 +1,145 @@
-here is where i will define what information i need to have in my db
+Migration Plan: SQL Database Schema for ClubConnect
+====================================================
+
+This document outlines the proposed SQL schema for migrating the ClubConnect platform from Firestore to a relational SQL database. The schema is designed to capture all major entities, their fields, relationships, and constraints, based on the current Firestore structure and application logic.
+
+---
+
+1. Users Table
+--------------
+- **users**
+  - `id` (PRIMARY KEY, string/UUID): Unique user identifier (matches Firebase UID or new UUID).
+  - `email` (UNIQUE, string): User's email address.
+  - `display_name` (string): User's display name.
+  - `created_at` (timestamp): Account creation date.
+  - `updated_at` (timestamp): Last profile update.
+  - `role` (string, optional): User role (e.g., admin, student, advisor).
+  - `upvoted_clubs` (deprecated, see upvotes table).
+
+2. Clubs Table
+--------------
+- **clubs**
+  - `id` (PRIMARY KEY, string/slug): Unique club identifier (slug or UUID).
+  - `name` (string): Club name.
+  - `school` (string): School or district name.
+  - `creator_id` (FOREIGN KEY -> users.id): User who created the club.
+  - `description` (text): Club description.
+  - `length` (string): Duration/length of club meetings.
+  - `meeting_times` (string): Meeting times (freeform or structured).
+  - `meeting_site` (string): Meeting location/site.
+  - `eligibility` (string): Eligibility requirements.
+  - `costs` (string): Cost information.
+  - `is_complete` (boolean): Whether club info is complete.
+  - `is_displayed` (boolean): Whether club is visible to users.
+  - `is_verified` (boolean): Whether club is verified by admin.
+  - `upvote_count` (integer): Cached upvote count.
+  - `created_at` (timestamp): Creation date.
+  - `updated_at` (timestamp): Last update.
+
+3. Club Tags Table
+------------------
+- **club_tags**
+  - `club_id` (FOREIGN KEY -> clubs.id): Club reference.
+  - `tag` (string): Tag value (e.g., school district).
+  - PRIMARY KEY: (`club_id`, `tag`)
+
+4. Club Links Table
+-------------------
+- **club_links**
+  - `id` (PRIMARY KEY, auto-increment): Unique link ID.
+  - `club_id` (FOREIGN KEY -> clubs.id): Club reference.
+  - `platform` (string): Platform name (e.g., Twitter, Instagram).
+  - `url` (string): Link URL.
+
+5. Advisors Table
+-----------------
+- **advisors**
+  - `id` (PRIMARY KEY, auto-increment): Unique advisor ID.
+  - `club_id` (FOREIGN KEY -> clubs.id): Club reference.
+  - `name` (string): Advisor name.
+  - `email` (string): Advisor email.
+
+6. Student Leads Table
+----------------------
+- **student_leads**
+  - `id` (PRIMARY KEY, auto-increment): Unique lead ID.
+  - `club_id` (FOREIGN KEY -> clubs.id): Club reference.
+  - `name` (string): Student lead name.
+  - `role` (string): Role/title.
+  - `email` (string): Email address.
+
+7. Club Images Table
+--------------------
+- **club_images**
+  - `id` (PRIMARY KEY, auto-increment): Unique image ID.
+  - `club_id` (FOREIGN KEY -> clubs.id): Club reference.
+  - `url` (string): Image URL/path.
+
+8. Recurring Events Table
+-------------------------
+- **recurring_events**
+  - `id` (PRIMARY KEY, auto-increment): Unique event ID.
+  - `club_id` (FOREIGN KEY -> clubs.id): Club reference.
+  - `title` (string): Event title.
+  - `frequency` (enum: weekly, biweekly, monthly): Frequency.
+  - `day_of_week` (integer): Day of week (0=Sunday, 6=Saturday).
+  - `start_date` (date): Start date.
+  - `end_date` (date): End date.
+
+9. Recurring Event Exceptions Table
+-----------------------------------
+- **recurring_event_exceptions**
+  - `event_id` (FOREIGN KEY -> recurring_events.id): Event reference.
+  - `exception_date` (date): Date to skip.
+  - PRIMARY KEY: (`event_id`, `exception_date`)
+
+10. One-Off Events Table
+------------------------
+- **one_off_events**
+  - `id` (PRIMARY KEY, auto-increment): Unique event ID.
+  - `club_id` (FOREIGN KEY -> clubs.id): Club reference.
+  - `date` (date): Event date.
+  - `title` (string): Event title.
+
+11. Blogs Table
+---------------
+- **blogs**
+  - `id` (PRIMARY KEY, string/UUID): Unique blog ID.
+  - `club_id` (FOREIGN KEY -> clubs.id): Club reference.
+  - `title` (string): Blog title.
+  - `content` (text): Blog content (markdown or HTML).
+  - `date` (timestamp): Date posted.
+
+12. Club Editors Table
+----------------------
+- **club_editors**
+  - `club_id` (FOREIGN KEY -> clubs.id): Club reference.
+  - `user_id` (FOREIGN KEY -> users.id): Editor user reference.
+  - PRIMARY KEY: (`club_id`, `user_id`)
+
+13. Upvotes Table
+-----------------
+- **upvotes**
+  - `user_id` (FOREIGN KEY -> users.id): User who upvoted.
+  - `club_id` (FOREIGN KEY -> clubs.id): Club that was upvoted.
+  - `created_at` (timestamp): When the upvote was made.
+  - PRIMARY KEY: (`user_id`, `club_id`)
+
+---
+
+**Relationships and Constraints:**
+- Clubs belong to a creator (user) and can have multiple editors (users).
+- Clubs can have multiple tags, links, advisors, student leads, images, events, and blogs.
+- Blogs belong to a club.
+- Upvotes are tracked per user per club (no duplicate upvotes).
+- All foreign keys are enforced for referential integrity.
+- Timestamps are used for auditing and sorting.
+
+**Notes:**
+- Some fields (like upvote_count) are denormalized for performance but should be kept in sync with the upvotes table.
+- All IDs can be UUIDs or slugs as appropriate for your application.
+- You may want to add additional audit fields (created_by, updated_by) or soft-delete flags as needed.
+
+---
+
+This schema is designed to be flexible, scalable, and to closely match the current Firestore data model while leveraging the strengths of a relational database.
