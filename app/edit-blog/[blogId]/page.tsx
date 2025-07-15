@@ -10,11 +10,8 @@ import {
   headingsPlugin,
   listsPlugin,
   quotePlugin,
-  linkPlugin,
-  tablePlugin,
   codeBlockPlugin,
   codeMirrorPlugin,
-  imagePlugin,
   frontmatterPlugin,
   markdownShortcutPlugin,
   diffSourcePlugin,
@@ -23,9 +20,6 @@ import {
   UndoRedo,
   BoldItalicUnderlineToggles,
   BlockTypeSelect,
-  CreateLink,
-  InsertTable,
-  InsertImage,
   ListsToggle,
   CodeToggle,
   Separator,
@@ -34,6 +28,8 @@ import {
 import '@mdxeditor/editor/style.css';
 import { User } from 'firebase/auth';
 import { nanoid } from 'nanoid';
+import Navbar from '@/components/Navbar';
+import LoadingModal from '@/components/LoadingModal';
 
 interface ClubInfo {
   id: string;
@@ -53,6 +49,7 @@ export default function EditBlogPage() {
   const [error, setError] = useState('');
   const [user, setUser] = useState<User | null>(null);
   const [clubInfo, setClubInfo] = useState<ClubInfo | null>(null);
+  const [isSaving, setIsSaving] = useState(false);
 
   useEffect(() => {
     // Fetch user (assume firebase auth is available globally)
@@ -124,7 +121,7 @@ export default function EditBlogPage() {
   const canEdit = user && clubInfo && (clubInfo.creatorId === user.uid || (clubInfo.addedEditors && clubInfo.addedEditors.includes(user.uid)));
 
   const handleSave = async () => {
-    setLoading(true);
+    setIsSaving(true);
     try {
       if (blogId === 'new' && clubId && canEdit) {
         // Create new blog
@@ -141,20 +138,22 @@ export default function EditBlogPage() {
         await updateDoc(doc(db, 'clubs', clubId), {
           blogIds: arrayUnion(newBlogId),
         });
-        router.push(`/blog/${newBlogId}`);
+        // router.push(`/blog/${newBlogId}`); // Remove navigation after save
+        setIsSaving(false);
         return;
       }
       if (!blogId || typeof blogId !== 'string') {
         setError('Invalid blog ID.');
-        setLoading(false);
+        setIsSaving(false);
         return;
       }
       // Update existing blog
       await updateDoc(doc(db, 'blogs', blogId), { title, content });
-      router.push(`/blog/${blogId}`);
+      // router.push(`/blog/${blogId}`); // Remove navigation after save
+      setIsSaving(false);
     } catch {
       setError('Failed to save changes.');
-      setLoading(false);
+      setIsSaving(false);
     }
   };
 
@@ -178,7 +177,7 @@ export default function EditBlogPage() {
     }
   };
 
-  if (loading) return <div className="text-white">Loading...</div>;
+  if (loading || isSaving) return <LoadingModal loadingMessage={isSaving ? 'Saving blog...' : 'Loading blog...'} />;
   if (error) return <div className="text-red-500">{error}</div>;
   if (!user || (clubInfo && (clubInfo.creatorId != user.uid && !clubInfo.addedEditors?.includes(user.uid)))) {
     if (blogId && blogId !== 'new') {
@@ -191,20 +190,24 @@ export default function EditBlogPage() {
 
   return (
     <div className="bg-cblack min-h-screen">
-      <main className="container mx-auto px-4 py-12 max-w-3xl">
+      <Navbar />
+      <main className="container mx-auto px-4 py-12 max-w-6xl">
         <div className="flex flex-col gap-4">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-4 gap-2">
             <h1 className="text-5xl font-bold text-white">Edit Blog</h1>
             <div className="flex gap-2 mt-2 sm:mt-0">
               <button onClick={handleSave} className="bg-green-600 hover:bg-green-700 px-4 py-2 rounded text-white font-semibold">Save</button>
               <button onClick={() => router.back()} className="bg-gray-600 hover:bg-gray-700 px-4 py-2 rounded text-white">Cancel</button>
+              {clubInfo && clubInfo.id && (
+                <button onClick={() => router.push(`/edit-club/${clubInfo.id}`)} className="bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded text-white font-semibold">Club</button>
+              )}
               {blogId !== 'new' && (
                 <button onClick={handleDelete} className="bg-red-600 hover:bg-red-700 px-4 py-2 rounded text-white">Delete</button>
               )}
             </div>
           </div>
           <input
-            className="w-full p-4 rounded bg-[#18181b] text-white border-none text-3xl font-bold placeholder-gray-500 focus:outline-none mb-4"
+            className="w-full py-4 rounded bg-[#18181b] text-white border-none text-3xl font-bold placeholder-gray-500 focus:outline-none mb-4"
             value={title}
             onChange={e => setTitle(e.target.value)}
             placeholder="Blog Title"
@@ -227,29 +230,18 @@ export default function EditBlogPage() {
                       <Separator />
                       <ListsToggle />
                       <Separator />
-                      <CreateLink />
-                      <Separator />
-                      <InsertTable />
-                      <Separator />
-                      <InsertImage />
-                      <Separator />
                       <CodeToggle />
                       <Separator />
-                      <DiffSourceToggleWrapper>Source</DiffSourceToggleWrapper>
                     </>
                   )
                 }),
                 headingsPlugin(),
                 listsPlugin(),
                 quotePlugin(),
-                linkPlugin(),
-                tablePlugin(),
                 codeBlockPlugin(),
                 codeMirrorPlugin(),
-                imagePlugin(),
                 frontmatterPlugin(),
                 markdownShortcutPlugin(),
-                diffSourcePlugin(),
                 directivesPlugin(),
                 sandpackPlugin(),
               ]}

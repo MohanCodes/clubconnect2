@@ -1,0 +1,1 @@
+here is where i will define what information i need to have in my db
