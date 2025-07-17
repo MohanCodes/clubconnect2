@@ -14,7 +14,6 @@ import {
   codeMirrorPlugin,
   frontmatterPlugin,
   markdownShortcutPlugin,
-  diffSourcePlugin,
   directivesPlugin,
   sandpackPlugin,
   UndoRedo,
@@ -23,7 +22,6 @@ import {
   ListsToggle,
   CodeToggle,
   Separator,
-  DiffSourceToggleWrapper,
 } from '@mdxeditor/editor';
 import '@mdxeditor/editor/style.css';
 import { User } from 'firebase/auth';
