@@ -81,6 +81,8 @@ const Home: React.FC = () => {
       );
       const querySnapshot = await getDocs(q);
       const clubsData = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })) as DisplayClub[];
+      // Sort ONCE here
+      clubsData.sort((a, b) => b.upvoteCount - a.upvoteCount);
       setClubs(clubsData);
     };
 
