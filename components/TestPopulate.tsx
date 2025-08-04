@@ -33,8 +33,7 @@ const schoolDistricts = [
   { name: "Hopkins", colors: ["Green", "Gold"] },
   { name: "St. Louis Park", colors: ["Blue", "Yellow"] },
   { name: "Osseo", colors: ["Blue", "White"] },
-  { name: "Robbinsdale", colors: ["Red", "White"] },
-  { name: "Anoka-Hennepin", colors: ["Blue", "Gold"] }
+  { name: "Robbinsdale", colors: ["Red", "White"] }
 ];
 
 const PopulateClubs: React.FC = () => {

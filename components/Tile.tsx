@@ -41,8 +41,7 @@ const schoolColors: { [key: string]: { bg: string; text: string } } = {
     'st-louis-park': { bg: 'bg-orange-500', text: 'text-black' },
     'osseo': { bg: 'bg-orange-600', text: 'text-white' },
     'robbinsdale': { bg: 'bg-cyan-600', text: 'text-white' },
-    'anoka-hennepin': { bg: 'bg-blue-900', text: 'text-white' },
-  };
+};
 
 const Tile: React.FC<TileProps> = ({ 
   icon, 

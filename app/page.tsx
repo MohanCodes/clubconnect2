@@ -53,8 +53,7 @@ const Home: React.FC = () => {
     "Hopkins",
     "St-Louis-Park",
     "Osseo",
-    "Robbinsdale",
-    "Anoka-Hennepin"
+    "Robbinsdale"
   ];
 
   const schoolColors: { [key: string]: { bg: string; text: string; ring: string } } = {
@@ -65,7 +64,6 @@ const Home: React.FC = () => {
     'st-louis-park': { bg: 'bg-orange-500', text: 'text-amber-950', ring: 'ring-amber-950' },
     'osseo': { bg: 'bg-orange-600', text: 'text-white', ring: 'ring-white' },
     'robbinsdale': { bg: 'bg-cyan-600', text: 'text-white', ring: 'ring-white' },
-    'anoka-hennepin': { bg: 'bg-blue-900', text: 'text-white', ring: 'ring-white' },
   };
 
   const handleClubClick = (clubId: string) => {

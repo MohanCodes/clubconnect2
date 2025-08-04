@@ -42,8 +42,7 @@ const schoolDistricts = [
     "Hopkins",
     "St-Louis-Park",
     "Osseo",
-    "Robbinsdale",
-    "Anoka-Hennepin"
+    "Robbinsdale"
 ];
 
 const YourClubs: React.FC = () => {
