@@ -46,25 +46,25 @@ const Home: React.FC = () => {
   const [isSearchSticky, setIsSearchSticky] = useState(false);
   const router = useRouter();
 
-  const tags = [
-    "Wayzata",
-    "Minnetonka",
-    "Edina",
-    "Hopkins",
-    "St-Louis-Park",
-    "Osseo",
-    "Robbinsdale"
-  ];
+  // const tags = [
+  //   "Wayzata",
+  //   "Minnetonka",
+  //   "Edina",
+  //   "Hopkins",
+  //   "St-Louis-Park",
+  //   "Osseo",
+  //   "Robbinsdale"
+  // ];
 
-  const schoolColors: { [key: string]: { bg: string; text: string; ring: string } } = {
-    'wayzata': { bg: 'bg-yellow-400', text: 'text-blue-500', ring: 'ring-blue-500' },
-    'minnetonka': { bg: 'bg-blue-600', text: 'text-white', ring: 'ring-white' },
-    'edina': { bg: 'bg-green-700', text: 'text-white', ring: 'ring-white' },
-    'hopkins': { bg: 'bg-gray-200', text: 'text-blue-500', ring: 'ring-blue-500' },
-    'st-louis-park': { bg: 'bg-orange-500', text: 'text-amber-950', ring: 'ring-amber-950' },
-    'osseo': { bg: 'bg-orange-600', text: 'text-white', ring: 'ring-white' },
-    'robbinsdale': { bg: 'bg-cyan-600', text: 'text-white', ring: 'ring-white' },
-  };
+  // const schoolColors: { [key: string]: { bg: string; text: string; ring: string } } = {
+  //   'wayzata': { bg: 'bg-yellow-400', text: 'text-blue-500', ring: 'ring-blue-500' },
+  //   'minnetonka': { bg: 'bg-blue-600', text: 'text-white', ring: 'ring-white' },
+  //   'edina': { bg: 'bg-green-700', text: 'text-white', ring: 'ring-white' },
+  //   'hopkins': { bg: 'bg-gray-200', text: 'text-blue-500', ring: 'ring-blue-500' },
+  //   'st-louis-park': { bg: 'bg-orange-500', text: 'text-amber-950', ring: 'ring-amber-950' },
+  //   'osseo': { bg: 'bg-orange-600', text: 'text-white', ring: 'ring-white' },
+  //   'robbinsdale': { bg: 'bg-cyan-600', text: 'text-white', ring: 'ring-white' },
+  // };
 
   const handleClubClick = (clubId: string) => {
     router.push(`/club/${clubId}`);
@@ -216,10 +216,10 @@ const Home: React.FC = () => {
     return matchesSearchQuery && matchesTag;
   });
 
-  const handleTagClick = (tag: string) => {
-    // Toggle the selected tag
-    setSelectedTag(prevTag => (prevTag === tag ? null : tag));
-  };
+  // const handleTagClick = (tag: string) => {
+  //   // Toggle the selected tag
+  //   setSelectedTag(prevTag => (prevTag === tag ? null : tag));
+  // };
 
   return (
     <div className="bg-cblack">
