@@ -10,7 +10,7 @@ export default function About() {
       <main className="flex-grow flex items-center justify-center px-4 py-16">
         <div className='max-w-3xl w-full'>
           <h1 className='font-semibold text-white text-5xl mb-12 text-center'>
-            About <span className='text-grey'>MN</span>Club<span className="text-azul">Connect</span>
+            About Us
           </h1>
           
           <div className="space-y-12">
