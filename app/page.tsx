@@ -36,7 +36,6 @@ const breakpointColumnsObj = {
   640: 1        // <640px (sm and below)
 };
 
-
 const Home: React.FC = () => {
   const [clubs, setClubs] = useState<DisplayClub[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
@@ -44,6 +43,7 @@ const Home: React.FC = () => {
   const [upvotedClubs, setUpvotedClubs] = useState<string[]>([])
   const [isUpvoteLoading, setIsUpvoteLoading] = useState<{ [key: string]: boolean }>({});;
   const [selectedTag, setSelectedTag] = useState<string | null>(null);
+  const [isSearchSticky, setIsSearchSticky] = useState(false);
   const router = useRouter();
 
   const tags = [
@@ -69,6 +69,37 @@ const Home: React.FC = () => {
   const handleClubClick = (clubId: string) => {
     router.push(`/club/${clubId}`);
   };
+
+  // Scroll handler for sticky search bar
+  useEffect(() => {
+    const handleScroll = () => {
+      const heroSection = document.querySelector('.hero-section') as HTMLElement;
+      if (heroSection) {
+        const heroHeight = heroSection.offsetHeight;
+        const scrollPosition = window.scrollY;
+        const threshold = heroHeight * 0.5;
+        
+        setIsSearchSticky(scrollPosition > threshold);
+      }
+    };
+
+    // Throttle scroll events for better performance
+    let ticking = false;
+    const requestTick = () => {
+      if (!ticking) {
+        requestAnimationFrame(handleScroll);
+        ticking = true;
+      }
+    };
+
+    const throttledScrollHandler = () => {
+      requestTick();
+      ticking = false;
+    };
+
+    window.addEventListener('scroll', throttledScrollHandler);
+    return () => window.removeEventListener('scroll', throttledScrollHandler);
+  }, []);
 
   useEffect(() => {
     const fetchClubs = async () => {
@@ -189,11 +220,32 @@ const Home: React.FC = () => {
     // Toggle the selected tag
     setSelectedTag(prevTag => (prevTag === tag ? null : tag));
   };
+
   return (
     <div className="bg-cblack">
       <Navbar />
+      
+      {/* Sticky Search Bar */}
+      <div 
+        className={`fixed top-24 left-1/2 transform -translate-x-1/2 z-50 transition-all duration-300 ${
+          isSearchSticky 
+            ? 'opacity-100 translate-y-0' 
+            : 'opacity-0 translate-y-[-20px] pointer-events-none'
+        }`}
+      >
+        <div className="">
+          <input
+            type="text"
+            placeholder="Search for a club:"
+            value={searchQuery}
+            onChange={(ppp) => setSearchQuery(ppp.target.value)}
+            className="mb-8 px-5 py-2 sm:py-3 rounded-full border-none outline-none w-full sm:w-96 text-gray-700 sm:text-md text-sm"
+          />
+        </div>
+      </div>
+
       <main className="relative flex min-h-screen flex-col items-center justify-center bg-cblack text-center -mt-16">
-        <div className='max-w-lg flex flex-col justify-center h-[90vh] items-center'>
+        <div className='hero-section max-w-lg flex flex-col justify-center h-[100vh] items-center'>
           <BlurFade delay={0.1}>
             <div className='font-semibold text-white text-4xl lg:text-5xl text-center'>
               <span className='text-azul'>Connect</span> with your club community.
@@ -216,8 +268,8 @@ const Home: React.FC = () => {
                 />
               </div>
             </BlurFade>
-            <div className='flex mb-12'>
-              <div className="flex flex-wrap gap-2 justify-center">
+            {/* <div className='flex mb-12'>
+              <div className="flex flex-wrap gap-2 justify-center md:px-12">
               {tags.map((tag, index) => {
                 const schoolStyle = schoolColors[tag.toLowerCase() as keyof typeof schoolColors] || { bg: 'bg-gray-200', text: 'text-black', ring: '' };
                   const isSelected = selectedTag === tag; // Check if the tag is selected
@@ -230,11 +282,12 @@ const Home: React.FC = () => {
                   );
               })}
               </div>
-            </div>
+            </div> */}
           </div>
         </div>
+        
         {/* Clubs Section */}
-        <div className="flex flex-col items-center w-full">
+        <div className="flex flex-col items-center w-full -mt-[18vh]">
           <Masonry
             breakpointCols={breakpointColumnsObj}
             className="flex w-full gap-6 p-6"
