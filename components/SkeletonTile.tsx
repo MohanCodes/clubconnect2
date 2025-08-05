@@ -5,7 +5,6 @@ const SkeletonTile: React.FC = () => {
     <div className="rounded-xl p-6 transition-shadow duration-300 bg-[#2A2A2A] relative w-full h-full flex flex-col justify-between">
       {/* Icon and Club Name */}
       <div className="flex items-center mb-4 space-x-4">
-        <div className="w-[55px] h-[55px] bg-gray-700 rounded-full animate-pulse"></div>
         <div className="h-8 bg-gray-700 rounded w-3/4 animate-pulse"></div>
       </div>
 

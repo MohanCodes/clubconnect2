@@ -42,7 +42,7 @@ const Home: React.FC = () => {
   const [user, setUser] = useState<FirebaseUser | null>(null);
   const [upvotedClubs, setUpvotedClubs] = useState<string[]>([])
   const [isUpvoteLoading, setIsUpvoteLoading] = useState<{ [key: string]: boolean }>({});;
-  const [selectedTag, setSelectedTag] = useState<string | null>(null);
+  // const [selectedTag, setSelectedTag] = useState<string | null>(null);
   const [isSearchSticky, setIsSearchSticky] = useState(false);
   const router = useRouter();
 
@@ -212,8 +212,9 @@ const Home: React.FC = () => {
 
   const filteredClubs = clubs.filter(club => {
     const matchesSearchQuery = club.name.toLowerCase().includes(searchQuery.toLowerCase()) || club.description.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesTag = selectedTag ? club.tags.includes(selectedTag) : true;
-    return matchesSearchQuery && matchesTag;
+    // const matchesTag = selectedTag ? club.tags.includes(selectedTag) : true;
+    // return matchesSearchQuery && matchesTag;
+    return matchesSearchQuery;
   });
 
   // const handleTagClick = (tag: string) => {
