@@ -112,6 +112,12 @@ const YourClubs: React.FC = () => {
           setError('Club name is required.');
           return;
         }
+
+        if (!newClubSchool) {
+            setError('Please select a school district.');
+            return;
+        }   
+
         
         for (const district of schoolDistricts) {
             if (capitalizedClubName.includes(district)) {
@@ -151,7 +157,7 @@ const YourClubs: React.FC = () => {
             setNewClubName('');
             setNewClubSchool('');
             setIsModalOpen(false);
-            router.push(`/edit-club/${docId}`);
+            router.push(`/edit-club/${docId}?onboarding=true`);
           } catch (error) {
             console.error("Error creating club:", error);
             setError('An error occurred while creating the club. Please try again.');

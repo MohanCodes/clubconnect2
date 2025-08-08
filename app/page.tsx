@@ -77,7 +77,7 @@ const Home: React.FC = () => {
       if (heroSection) {
         const heroHeight = heroSection.offsetHeight;
         const scrollPosition = window.scrollY;
-        const threshold = heroHeight * 0.5;
+        const threshold = heroHeight * 0.55;
         
         setIsSearchSticky(scrollPosition > threshold);
       }
@@ -227,22 +227,22 @@ const Home: React.FC = () => {
       <Navbar />
       
       {/* Sticky Search Bar */}
-      <div 
-        className={`fixed top-24 left-1/2 transform -translate-x-1/2 z-50 transition-all duration-300 ${
-          isSearchSticky 
-            ? 'opacity-100 translate-y-0' 
-            : 'opacity-0 translate-y-[-20px] pointer-events-none'
-        }`}
-      >
-        <div className="">
-          <input
-            type="text"
-            placeholder="Search for a club:"
-            value={searchQuery}
-            onChange={(ppp) => setSearchQuery(ppp.target.value)}
-            className="mb-8 px-5 py-2 sm:py-3 rounded-full border-none outline-none w-full sm:w-96 text-gray-700 sm:text-md text-sm"
-          />
-        </div>
+      <div
+          className={`fixed top-24 left-1/2 transform -translate-x-1/2 z-50 transition-all duration-300 ${
+            isSearchSticky
+              ? 'opacity-100 translate-y-0'
+              : 'opacity-0 translate-y-[-20px] pointer-events-none'
+          } hidden sm:block`} // <-- add hidden sm:block here
+        >
+          <div className="flex justify-center sm:space-y-0 sm:space-x-4 pt-4 flex-col sm:flex-row px-4 sm:px-0">
+                <input
+                  type="text"
+                  placeholder="Search for a club:"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="mb-8 px-6 py-3 rounded-full border-none outline-none w-full sm:w-96 text-gray-700 sm:text-lg text-md"
+                />
+          </div>
       </div>
 
       <main className="relative flex min-h-screen flex-col items-center justify-center bg-cblack text-center -mt-16">
@@ -259,13 +259,13 @@ const Home: React.FC = () => {
           </BlurFade>
           <div className='bf1'>
             <BlurFade delay={0.3}>
-              <div className="flex justify-center space-y-4 sm:space-y-0 sm:space-x-4 pt-4 flex-col sm:flex-row px-4 sm:px-0">
+              <div className="flex justify-center sm:space-y-0 sm:space-x-4 pt-4 flex-col sm:flex-row px-4 sm:px-0">
                 <input
                   type="text"
                   placeholder="Search for a club:"
                   value={searchQuery}
-                  onChange={(ppp) => setSearchQuery(ppp.target.value)}
-                  className="mb-8 px-5 py-2 sm:py-3 rounded-full border-none outline-none w-full sm:w-96 text-gray-700 sm:text-md text-sm"
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="mb-8 px-6 py-3 rounded-full border-none outline-none w-full sm:w-96 text-gray-700 sm:text-lg text-md"
                 />
               </div>
             </BlurFade>

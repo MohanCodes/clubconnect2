@@ -1,9 +1,9 @@
 "use client";
 
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { useRouter, useParams } from 'next/navigation';
+import { useRouter, useParams, useSearchParams } from 'next/navigation';
 import {
   FaEnvelope,
   FaTimes,
@@ -56,6 +56,8 @@ import { User as FirebaseUser } from 'firebase/auth';
 import { parseISO, isBefore, isAfter, addDays, startOfWeek, nextMonday, format } from 'date-fns';
 import TransferOwnership from '@/components/TransferOwnership';
 import LoadingModal from '@/components/LoadingModal';
+import { AddButton } from '@/components/AddButton';
+import OnboardingWizard from '@/components/OnboardingWizard';
 
 interface Advisor {
   name: string;
@@ -88,7 +90,7 @@ interface RecurringEvent {
 }
 
 interface Blog {
-  id: string; // Add ID property
+  id: string;
   title: string;
   content: string;
   date: Date;
@@ -217,6 +219,10 @@ const EditClubPage = () => {
   const params = useParams();
   const slug = params.slug;
 
+  const searchParams = useSearchParams()
+  const onboardingSearch = searchParams.get('onboarding')
+  const isOnboarding = onboardingSearch === "true";
+
   const fetchClubInfo = useCallback(async () => {
     setIsLoading(true);
     try {
@@ -307,6 +313,20 @@ const EditClubPage = () => {
     window.addEventListener('beforeunload', handleBeforeUnload);
     return () => window.removeEventListener('beforeunload', handleBeforeUnload);
   }, [hasUnsavedChanges]);
+
+  // Debounced auto-save
+  const saveTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  useEffect(() => {
+    if (hasUnsavedChanges && !isUploading) {
+      if (saveTimeoutRef.current) clearTimeout(saveTimeoutRef.current);
+      saveTimeoutRef.current = setTimeout(() => {
+        handleUpload();
+      }, 3000); // 3-second debounce
+    }
+    return () => {
+      if (saveTimeoutRef.current) clearTimeout(saveTimeoutRef.current);
+    };
+  }, [hasUnsavedChanges, isUploading]);
 
   useEffect(() => {
     const fetchEditorDetails = async () => {
@@ -825,7 +845,21 @@ const EditClubPage = () => {
 
   if (!user || (clubInfo.creatorId != user.uid && !clubInfo.addedEditors?.includes(user.uid))) {
     router.push(`/`);
-    return null; // Prevent rendering if user is not authenticated or not an editor
+    return null;
+  }
+
+  if (isOnboarding) {
+    return (
+      <div className="bg-cblack min-h-screen">
+        <Navbar />
+        <main className="container mx-auto py-8 max-w-3xl px-4">
+          <h1 className="text-3xl md:text-4xl font-bold text-white mb-4">
+            {clubInfo.name}
+          </h1>
+          <OnboardingWizard slug={slug} />
+        </main>
+      </div>
+    );
   }
 
   return (
@@ -917,9 +951,7 @@ const EditClubPage = () => {
               <button onClick={() => setIsLinkModalOpen(false)} className="bg-gray-300 text-black px-4 py-2 rounded mr-2">
                 Cancel
               </button>
-              <button onClick={handleAddLink} className="bg-azul text-white px-4 py-2 rounded">
-                Add Link
-              </button>
+              <AddButton label="Add Link" onClick={handleAddLink} />
             </div>
           </div>
         </div>
@@ -927,7 +959,7 @@ const EditClubPage = () => {
       
         <div className="flex flex-col lg:flex-row justify-between py-4 -mt-4 sticky top-[5.2rem] z-40 bg-cblack break-words">
           <h1 className="text-3xl md:text-4xl font-bold text-white mb-4">
-            {clubInfo.name === "" ? 'Enter Club Name Here' : clubInfo.name}
+            {clubInfo.name}
           </h1>
 
           <div className='flex flex-wrap items-center gap-2'>
@@ -972,38 +1004,13 @@ const EditClubPage = () => {
                 </>
               )}
             </button>
-            
-            <button 
-              onClick={handleUpload} 
-              className={`${isUploading ? 'bg-gray-500' : hasUnsavedChanges ? 'bg-red-500' : 'bg-azul'} text-white text-xs sm:text-sm px-3 sm:px-4 py-2 rounded whitespace-nowrap`}
-              disabled={isUploading}
-            >
-              {isUploading ? (
-                <>
-                  <FaCircleNotch className="animate-spin inline mr-1" />
-                  Uploading...
-                </>
-              ) : hasUnsavedChanges ? (
-                <>
-                  <FaSave className="inline mr-1" />
-                  Save Changes
-                </>
-              ) : (
-                <>
-                  <FaCheck className="inline mr-1" />
-                  Changes Saved
-                </>
-              )}
-            </button>
 
             {user.uid === clubInfo.creatorId && (
               <button
                 onClick={() => setIsDeleteModalOpen(true)}
-                className="bg-red-500 text-white text-xs sm:text-sm py-2.5 px-4 rounded"
+                className="bg-red-500 text-white text-xs sm:text-sm px-3 sm:px-4 py-[11.1px] rounded whitespace-nowrap"
               >
-                <div>
-                  <FaTrash/>
-                </div>
+                <FaTrash />
               </button>
             )}
           </div>
@@ -1037,20 +1044,11 @@ const EditClubPage = () => {
                   value={newTag}
                   onChange={(e) => setNewTag(e.target.value)}
                   placeholder="Add a new tag"
-                  className="bg-gray-800 text-white p-1 rounded sm:text-md text-sm"
+                  className="bg-gray-800 text-white p-1 rounded sm:text-md text-sm mr-2"
                 />
-                <button onClick={handleAddTag} className="bg-green-500 text-white px-2 py-1 rounded ml-2 sm:text-md text-sm">
-                  Add
-                </button>
+                <AddButton label="Add Tag" onClick={handleAddTag} />
               </div>
             )}
-          </div>
-          <div className="flex-shrink-0 max-w-full md:w-1/2 md:text-right text-sm">
-            <p className={`text-${clubInfo.isComplete ? 'white whitespace-normal' : 'red-500 mb-6'}`}>
-              {clubInfo.isComplete 
-                ? 'Club information is complete!' 
-                : 'Club information is incomplete, and won\'t be shown on the main page until all fields have been filled.'}
-            </p>
           </div>
         </div>
 
@@ -1304,9 +1302,7 @@ const EditClubPage = () => {
                 </div>
               ))}
               {isEditing && (
-                <button onClick={handleAddAdvisor} className="bg-green-500 text-white px-2 py-1 rounded flex flex-row items-center">
-                  <FaPlus className="mr-2" /> Add Advisor
-                </button>
+                <AddButton label="Add Advisor" onClick={handleAddAdvisor} />
               )}
             </div>
 
@@ -1357,19 +1353,17 @@ const EditClubPage = () => {
                 </div>
               ))}
               {isEditing && (
-                <button onClick={handleAddStudentLead} className="bg-green-500 text-white px-2 py-1 rounded flex flex-row items-center">
-                  <FaPlus className="mr-2" /> Add Student Lead
-                </button>
+                <AddButton label="Add Student Lead" onClick={handleAddStudentLead} />
               )}
             </div>
 
             <div>
               <h2 className="text-2xl font-bold text-white mb-2">Links</h2>
               {(clubInfo.links || []).map((link, index) => (
-                <div key={index} className="flex items-center mb-2">
+                <div key={index} className="grid grid-cols-2 items-center mb-2 max-w-xs">
                     <Link href={link.url} target="_blank" rel="noopener noreferrer" className="text-azul hover:underline flex items-center">
-                    {getPlatformIcon(link.platform)}
-                    <span className="ml-2">{link.platform}</span>
+                      {getPlatformIcon(link.platform)}
+                      <span className="ml-2">{link.platform}</span>
                     </Link>
                   {isEditing && (
                     <button onClick={() => handleRemoveLink(index)} className="text-red-500 ml-2">
@@ -1379,9 +1373,7 @@ const EditClubPage = () => {
                 </div>
               ))}
               {isEditing && (
-                <button onClick={() => setIsLinkModalOpen(true)} className="bg-green-500 text-white px-2 py-1 rounded flex flex-row items-center mt-3">
-                  <FaPlus className="mr-2" /> Add Link
-                </button>
+                <AddButton label="Add Link" onClick={() => setIsLinkModalOpen(true)} />
               )}
             </div>
 
@@ -1416,7 +1408,7 @@ const EditClubPage = () => {
               )}
               {isEditing && (
                 <div>
-                  <div className="flex flex-col sm:flex-row sm:items-center mt-2">
+                  <div className="flex flex-col sm:flex-row sm:items-center my-2">
                     <input
                       type="date"
                       value={newOneOffEvent.date}
@@ -1431,9 +1423,7 @@ const EditClubPage = () => {
                       className="bg-gray-800 text-white p-1 rounded sm:mt-0 mt-2"
                     />
                   </div>
-                  <button onClick={handleAddOneOffEvent} className="mt-3 bg-green-500 text-white px-2 py-1 rounded flex flex-row items-center">
-                    <FaPlus className="mr-2" /> Push Event
-                  </button>
+                  <AddButton label="Push Event" onClick={handleAddOneOffEvent} />
                 </div>
               )}
             </div>
@@ -1550,14 +1540,8 @@ const EditClubPage = () => {
                     </div>
                   ))}
 
-                  {/* Add Recurring Event Button - only show when editing */}
                   {isEditing && (
-                    <button
-                      onClick={handleAddRecurringEvent}
-                      className="bg-green-500 text-white px-4 py-2 rounded flex flex-row items-center mt-4"
-                    >
-                      <FaPlus className="mr-2" /> Add Recurring Event
-                    </button>
+                    <AddButton label="Add Recurring Event" onClick={handleAddRecurringEvent} />
                   )}
                 </>
               ) : (
@@ -1676,11 +1660,7 @@ const EditClubPage = () => {
           {isEditing && (
             <div className="mb-8 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
               <h2 className="text-2xl font-bold text-white mb-2 sm:mb-0">Add New Blog</h2>
-              <button
-                onClick={() => router.push(`/edit-blog/new?clubId=${clubInfo.id}`)}
-                className="bg-green-500 text-white px-2 py-1 rounded flex flex-row items-center">
-                <FaPlus className="mr-2" /> Add Blog
-              </button>
+              <AddButton label="Add Blog" onClick={() => router.push(`/edit-blog/new?clubId=${clubInfo.id}`)} />
             </div>
           )}
 
@@ -1689,9 +1669,9 @@ const EditClubPage = () => {
                 <h2 className="text-2xl font-bold text-white mb-2">Blogs</h2>
               </div>
             )}
-            <div className="flex flex-col gap-8">
+            <div className="flex flex-col gap-6">
               {blogs.map((blog) => (
-                <div key={blog.id} className="rounded-xl p-9 transition-shadow duration-300 bg-[#2A2A2A]">
+                <div key={blog.id} className="rounded-xl p-6 transition-shadow duration-300 bg-[#2A2A2A]">
                   <div className='flex flex-row justify-between'>
                     <h3 className="text-lg text-white font-bold">{blog.title}</h3>
                     {isEditing ? (
