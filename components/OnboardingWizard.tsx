@@ -68,7 +68,7 @@ function stepTitle(step: WizardStep) {
 
 export default function OnboardingWizard({ slug }: { slug: string }) {
   const router = useRouter();
-  const [userId, setUserId] = useState<string | null>(null);
+  const [_userId, setUserId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
