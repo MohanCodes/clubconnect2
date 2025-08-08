@@ -618,7 +618,7 @@ export default function OnboardingWizard({ slug }: { slug: string }) {
                 disabled={!clubInfo.isComplete}
                 className={`w-full py-3 rounded ${clubInfo.isComplete ? 'bg-azul hover:opacity-90' : 'bg-gray-600 cursor-not-allowed'}`}
               >
-                Go to editor page
+                Editor Page
               </button>
             </div>
             {!clubInfo.isComplete && (
