@@ -68,7 +68,6 @@ function stepTitle(step: WizardStep) {
 
 export default function OnboardingWizard({ slug }: { slug: string }) {
   const router = useRouter();
-  const [_userId, setUserId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -103,11 +102,7 @@ export default function OnboardingWizard({ slug }: { slug: string }) {
 
   useEffect(() => {
     const unsub = onAuthStateChanged(auth, (u) => {
-      if (!u) {
-        router.push("/");
-      } else {
-        setUserId(u.uid);
-      }
+      if (!u) router.push("/");
     });
     return () => unsub();
   }, [router]);
@@ -490,7 +485,6 @@ export default function OnboardingWizard({ slug }: { slug: string }) {
                           onChange={(e) => updateAdvisor(i, 'name', e.target.value)}
                         />
                         <div className="flex sm:justify-end">
-                          {/* First trash button: show only on small screens */}
                           <button
                             className="bg-red-500 rounded p-2 h-[38px] block sm:hidden"
                             onClick={() => removeAdvisor(i)}
@@ -510,7 +504,6 @@ export default function OnboardingWizard({ slug }: { slug: string }) {
                     </div>
 
                     <div className="flex sm:justify-end">
-                      {/* Second trash button: show only on sm and larger */}
                       <button
                         className="bg-red-500 rounded p-2 h-[38px] hidden sm:block"
                         onClick={() => removeAdvisor(i)}
@@ -592,26 +585,42 @@ export default function OnboardingWizard({ slug }: { slug: string }) {
             <h3 className="text-lg font-semibold">Ready to publish?</h3>
             <p className="text-gray-300 text-sm">You can always add more details later in the full editor.</p>
             <button
-              onClick={() => {
-                publish();
-                router.push(`/edit-club/${clubInfo.id || slug}`);
+              onClick={async () => {
+                await publish();
+                const destination = `/club/${clubInfo.id || slug}`;
+                await router.push(destination);
+                window.location.href = destination;
               }}
               disabled={!clubInfo.isComplete}
               className={`w-full py-3 rounded ${clubInfo.isComplete ? 'bg-azul hover:opacity-90' : 'bg-gray-600 cursor-not-allowed'}`}
             >
-              Publish and go to full editor
+              Publish and go to club page
             </button>
-            <button
-              onClick={() => {
-                publish();
-                navigator.clipboard.writeText(`https://mnclubconnect.com/club/${slug}`);
-                setCopied(true);
-                setTimeout(() => setCopied(false), 2000);
-              }}
-              className={`w-full py-3 rounded ${clubInfo.isComplete ? 'bg-azul hover:opacity-90' : 'bg-gray-600 cursor-not-allowed'}`}
-            >
-              {copied ? "Copied!" : "Copy Link"}
-            </button>
+            <div className="flex space-x-2">
+              <button
+                onClick={async () => {
+                  await publish();
+                  navigator.clipboard.writeText(`https://mnclubconnect.com/club/${slug}`);
+                  setCopied(true);
+                  setTimeout(() => setCopied(false), 2000);
+                }}
+                className={`w-full py-3 rounded ${clubInfo.isComplete ? 'bg-azul hover:opacity-90' : 'bg-gray-600 cursor-not-allowed'}`}
+              >
+                {copied ? "Copied!" : "Copy Club Link"}
+              </button>
+              <button
+                onClick={async () => {
+                  await publish();
+                  const destination = `/club/${clubInfo.id || slug}`;
+                  await router.push(destination);
+                  window.location.href = destination;
+                }}
+                disabled={!clubInfo.isComplete}
+                className={`w-full py-3 rounded ${clubInfo.isComplete ? 'bg-azul hover:opacity-90' : 'bg-gray-600 cursor-not-allowed'}`}
+              >
+                Go to editor page
+              </button>
+            </div>
             {!clubInfo.isComplete && (
               <p className="text-xs text-red-400">Complete required fields first (description, core info, advisors, student leads).</p>
             )}
@@ -631,11 +640,27 @@ export default function OnboardingWizard({ slug }: { slug: string }) {
 
       {/* Nav buttons */}
       <div className="flex items-center justify-between mt-6">
-        <button onClick={handleBack} disabled={currentStep === 0 || saving} className="px-4 py-2 rounded bg-gray-700 disabled:opacity-50">Back</button>
-        <button onClick={handleNext} disabled={!canProceed || saving} className="px-4 py-2 rounded bg-azul disabled:opacity-50">
+        <button
+          onClick={handleBack}
+          disabled={currentStep === 0 || saving}
+          className={`px-4 py-2 rounded bg-gray-700 disabled:opacity-50 ${
+            currentStep === 0 ? 'invisible' : ''
+          }`}
+        >
+          Back
+        </button>
+
+        <button
+          onClick={handleNext}
+          disabled={!canProceed || saving}
+          className={`px-4 py-2 rounded bg-azul disabled:opacity-50 ${
+            currentStep === 4 ? 'invisible' : ''
+          }`}
+        >
           {currentStep === 4 ? 'Finish' : 'Next'}
         </button>
       </div>
+
 
       {error && <div className="text-red-400 text-sm mt-3">{error}</div>}
     </div>
