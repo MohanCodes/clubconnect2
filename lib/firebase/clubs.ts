@@ -1,9 +1,4 @@
-import {
-  doc,
-  setDoc,
-  updateDoc,
-  deleteDoc,
-} from 'firebase/firestore';
+import { doc, getDoc, deleteDoc, collection, query, where, getDocs, writeBatch, setDoc, updateDoc } from 'firebase/firestore';
 import { ref, uploadBytes, getDownloadURL, deleteObject } from 'firebase/storage';
 import { db, storage } from '@/firebase/firebase';
 import { ClubInfo } from '@/types/club';
@@ -52,19 +47,35 @@ export const patchClub = async (
  * Delete the club document and any associated images stored under
  * `clubs/{clubId}/`.
  */
+
 export const deleteClub = async (clubId: string): Promise<void> => {
-  // NB: Firebase Storage does not support deleting a folder directly.
-  // The caller should supply the list of objects to delete. For simplicity we
-  // fetch the club doc first to obtain its image URLs.
   const clubDocRef = doc(db, 'clubs', clubId);
-  const snap = await clubDocRef.get();
+
+  // Fetch the club document to get images
+  const snap = await getDoc(clubDocRef);
   if (snap.exists()) {
     const data = snap.data() as ClubInfo;
+
+    // Delete all images associated with the club (if any)
     const deletePromises = (data.images || []).map((url) => {
       const imageRef = ref(storage, url);
       return deleteObject(imageRef);
     });
     await Promise.all(deletePromises);
   }
+
+  // Delete all blogs associated with this club
+  const blogsCollectionRef = collection(db, 'blogs');
+  const blogsQuery = query(blogsCollectionRef, where('clubId', '==', clubId));
+  const blogsSnapshot = await getDocs(blogsQuery);
+
+  // Use a batch to delete all blog documents
+  const batch = writeBatch(db);
+  blogsSnapshot.forEach((blogDoc) => {
+    batch.delete(blogDoc.ref);
+  });
+  await batch.commit();
+
+  // Finally, delete the club document itself
   await deleteDoc(clubDocRef);
 };

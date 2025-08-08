@@ -311,6 +311,44 @@ const EditClubPage = () => {
     return () => window.removeEventListener('beforeunload', handleBeforeUnload);
   }, [hasUnsavedChanges]);
 
+  // Debounced auto-save
+  const saveTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  useEffect(() => {
+    if (hasUnsavedChanges && !isUploading) {
+      if (saveTimeoutRef.current) clearTimeout(saveTimeoutRef.current);
+      saveTimeoutRef.current = setTimeout(() => {
+        handleUpload();
+      }, 3000); // 3-second debounce
+    }
+    return () => {
+      if (saveTimeoutRef.current) clearTimeout(saveTimeoutRef.current);
+    };
+  }, [hasUnsavedChanges, isUploading]);
+
+  useEffect(() => {
+    const fetchEditorDetails = async () => {
+      if (clubInfo.addedEditors && clubInfo.addedEditors.length > 0) {
+        const editorPromises = clubInfo.addedEditors.map(async (editorUid) => {
+          const userDocRef = doc(db, 'users', editorUid);
+          const userSnapshot = await getDoc(userDocRef);
+          if (userSnapshot.exists()) {
+            const userData = userSnapshot.data();
+            return {
+              uid: editorUid,
+              email: userData.email,
+              name: userData.displayName || userData.name
+            };
+          }
+          return null;
+        });
+        const editorDetails = (await Promise.all(editorPromises)).filter((editor) => editor !== null);
+        setEditors(editorDetails);
+      }
+    };
+
+    fetchEditorDetails();
+  }, [clubInfo.addedEditors]);
+
   const checkCompletion = (info: ClubInfo): boolean => {
     const requiredFields: (keyof ClubInfo)[] = [
         'description',
@@ -341,83 +379,6 @@ const EditClubPage = () => {
 
     return isComplete;
   };
-
-  const handleUpload = useCallback(async () => {
-    setIsUploading(true);
-    try {
-      const clubDocRef = doc(db, 'clubs', clubInfo.id);
-
-      // Create the club data object
-      const clubData: ClubInfo = {
-        ...clubInfo,
-        isComplete: checkCompletion(clubInfo),
-      };
-
-      // Only include recurringEvents if they exist
-      if (clubInfo.recurringEvents && clubInfo.recurringEvents.length > 0) {
-        clubData.recurringEvents = clubInfo.recurringEvents.map(event => ({
-          ...event,
-          startDate: event.startDate, // Assuming these are already in the correct format
-          endDate: event.endDate,
-          exceptions: event.exceptions,
-        }));
-      }
-
-      // Only include oneOffEvents if they exist
-      if (clubInfo.oneOffEvents && clubInfo.oneOffEvents.length > 0) {
-        clubData.oneOffEvents = clubInfo.oneOffEvents.map(event => ({
-          ...event,
-          date: event.date, // Assuming these are already in the correct format
-        }));
-      }
-
-      await setDoc(clubDocRef, clubData);
-      setHasUnsavedChanges(false);
-      console.log('Club data uploaded successfully');
-    } catch (error) {
-      console.error('Error uploading club data:', error);
-    } finally {
-      setIsUploading(false);
-    }
-  }, [clubInfo, checkCompletion, db, setIsUploading, setHasUnsavedChanges]);
-
-  // Debounced auto-save
-  const saveTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  useEffect(() => {
-    if (hasUnsavedChanges && !isUploading) {
-      if (saveTimeoutRef.current) clearTimeout(saveTimeoutRef.current);
-      saveTimeoutRef.current = setTimeout(() => {
-        handleUpload();
-      }, 3000); // 3-second debounce
-    }
-    return () => {
-      if (saveTimeoutRef.current) clearTimeout(saveTimeoutRef.current);
-    };
-  }, [hasUnsavedChanges, isUploading, handleUpload]);
-
-  useEffect(() => {
-    const fetchEditorDetails = async () => {
-      if (clubInfo.addedEditors && clubInfo.addedEditors.length > 0) {
-        const editorPromises = clubInfo.addedEditors.map(async (editorUid) => {
-          const userDocRef = doc(db, 'users', editorUid);
-          const userSnapshot = await getDoc(userDocRef);
-          if (userSnapshot.exists()) {
-            const userData = userSnapshot.data();
-            return {
-              uid: editorUid,
-              email: userData.email,
-              name: userData.displayName || userData.name
-            };
-          }
-          return null;
-        });
-        const editorDetails = (await Promise.all(editorPromises)).filter((editor) => editor !== null);
-        setEditors(editorDetails);
-      }
-    };
-
-    fetchEditorDetails();
-  }, [clubInfo.addedEditors]);
 
   const handleEdit = () => setIsEditing(true);
   const handleSave = () => setIsEditing(false);
@@ -594,6 +555,45 @@ const EditClubPage = () => {
   const handleRemoveLink = (index: number) => {
     const updatedLinks = clubInfo.links.filter((_, i) => i !== index);
     setClubInfo({ ...clubInfo, links: updatedLinks });
+  };
+
+  const handleUpload = async () => {
+    setIsUploading(true);
+    try {
+      const clubDocRef = doc(db, 'clubs', clubInfo.id);
+  
+      // Create the club data object
+      const clubData: ClubInfo = {
+        ...clubInfo,
+        isComplete: checkCompletion(clubInfo),
+      };
+  
+      // Only include recurringEvents if they exist
+      if (clubInfo.recurringEvents && clubInfo.recurringEvents.length > 0) {
+        clubData.recurringEvents = clubInfo.recurringEvents.map(event => ({
+          ...event,
+          startDate: event.startDate, // Assuming these are already in the correct format
+          endDate: event.endDate,
+          exceptions: event.exceptions,
+        }));
+      }
+  
+      // Only include oneOffEvents if they exist
+      if (clubInfo.oneOffEvents && clubInfo.oneOffEvents.length > 0) {
+        clubData.oneOffEvents = clubInfo.oneOffEvents.map(event => ({
+          ...event,
+          date: event.date, // Assuming these are already in the correct format
+        }));
+      }
+  
+      await setDoc(clubDocRef, clubData);
+      setHasUnsavedChanges(false);
+      console.log('Club data uploaded successfully');
+    } catch (error) {
+      console.error('Error uploading club data:', error);
+    } finally {
+      setIsUploading(false);
+    }
   };
 
   const handleDeleteClub = async () => {
@@ -853,7 +853,9 @@ const EditClubPage = () => {
           <h1 className="text-3xl md:text-4xl font-bold text-white mb-4">
             {clubInfo.name}
           </h1>
-          <OnboardingWizard slug={slug} />
+          {typeof slug == 'string' && (
+            <OnboardingWizard slug={slug} />
+          )}
         </main>
       </div>
     );

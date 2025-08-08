@@ -66,7 +66,7 @@ function stepTitle(step: WizardStep) {
   }
 }
 
-export default function OnboardingWizard({ slug }: { slug: any }) {
+export default function OnboardingWizard({ slug }: { slug: string }) {
   const router = useRouter();
   const [userId, setUserId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
@@ -130,11 +130,14 @@ export default function OnboardingWizard({ slug }: { slug: any }) {
             recurringEvents: data.recurringEvents || [],
           });
         } else {
-          // initialize with slug as id
           setClubInfo((prev) => ({ ...prev, id: slug }));
         }
-      } catch (e: any) {
-        setError(e.message || "Failed to load club");
+      } catch (e: unknown) {
+        if (e instanceof Error) {
+          setError(e.message);
+        } else {
+          setError("Failed to load club");
+        }
       } finally {
         setLoading(false);
       }
@@ -154,25 +157,47 @@ export default function OnboardingWizard({ slug }: { slug: any }) {
 
   const checkCompletion = (info: ClubInfo): boolean => {
     const required: (keyof ClubInfo)[] = [
-      'description', 'length', 'meetingTimes', 'meetingSite', 'eligibility', 'costs'
+      "description",
+      "length",
+      "meetingTimes",
+      "meetingSite",
+      "eligibility",
+      "costs",
     ];
-    const allFields = required.every((f) => (info[f] as any) && (info[f] as any) !== "");
-    const hasAdvisor = Array.isArray(info.advisors) && info.advisors.length > 0 && info.advisors.every(a => a.name && a.email);
-    const hasLead = Array.isArray(info.studentLeads) && info.studentLeads.length > 0 && info.studentLeads.every(l => l.name && l.role && l.email);
+    const allFields = required.every((f) => {
+      const val = info[f];
+      return typeof val === "string" && val.trim() !== "";
+    });
+    const hasAdvisor =
+      Array.isArray(info.advisors) &&
+      info.advisors.length > 0 &&
+      info.advisors.every((a) => a.name && a.email);
+    const hasLead =
+      Array.isArray(info.studentLeads) &&
+      info.studentLeads.length > 0 &&
+      info.studentLeads.every((l) => l.name && l.role && l.email);
     return allFields && hasAdvisor && hasLead;
   };
 
   const canProceed = useMemo(() => {
     switch (currentStep) {
       case 0:
-        // tags or editor email optional; always allow next
         return true;
       case 1:
         return (clubInfo.description ?? "").trim().length > 0;
       case 2:
-        return !!clubInfo.length && !!clubInfo.meetingSite && !!clubInfo.costs && !!clubInfo.meetingTimes && !!clubInfo.eligibility;
+        return (
+          !!clubInfo.length &&
+          !!clubInfo.meetingSite &&
+          !!clubInfo.costs &&
+          !!clubInfo.meetingTimes &&
+          !!clubInfo.eligibility
+        );
       case 3:
-        return (clubInfo.advisors?.length ?? 0) > 0 && (clubInfo.studentLeads?.length ?? 0) > 0;
+        return (
+          (clubInfo.advisors?.length ?? 0) > 0 &&
+          (clubInfo.studentLeads?.length ?? 0) > 0
+        );
       case 4:
         return true;
       default:
@@ -188,10 +213,14 @@ export default function OnboardingWizard({ slug }: { slug: any }) {
         ...clubInfo,
         isComplete: checkCompletion(clubInfo),
       };
-      await setDoc(doc(db, 'clubs', clubInfo.id || slug), data);
+      await setDoc(doc(db, "clubs", clubInfo.id || slug), data);
       setClubInfo((prev) => ({ ...prev, isComplete: data.isComplete }));
-    } catch (e: any) {
-      setError(e.message || 'Failed to save');
+    } catch (e: unknown) {
+      if (e instanceof Error) {
+        setError(e.message);
+      } else {
+        setError("Failed to save");
+      }
       throw e;
     } finally {
       setSaving(false);
@@ -222,19 +251,26 @@ export default function OnboardingWizard({ slug }: { slug: any }) {
     setError(null);
     setSuccessMessage(null);
     try {
-      const qUsers = query(collection(db, 'users'), where('email', '==', editorEmail));
+      const qUsers = query(
+        collection(db, "users"),
+        where("email", "==", editorEmail)
+      );
       const qs = await getDocs(qUsers);
       if (qs.empty) {
-        setError('No user with that email');
+        setError("No user with that email");
         return;
       }
       const editorUid = qs.docs[0].id;
-      const clubRef = doc(db, 'clubs', clubInfo.id || slug);
+      const clubRef = doc(db, "clubs", clubInfo.id || slug);
       await updateDoc(clubRef, { addedEditors: arrayUnion(editorUid) });
       setEditorEmail("");
-      setSuccessMessage('Editor added successfully.');
-    } catch (e: any) {
-      setError(e.message || 'Failed to add editor');
+      setSuccessMessage("Editor added successfully.");
+    } catch (e: unknown) {
+      if (e instanceof Error) {
+        setError(e.message);
+      } else {
+        setError("Failed to add editor");
+      }
     }
   };
 
@@ -263,9 +299,15 @@ export default function OnboardingWizard({ slug }: { slug: any }) {
 
   const publish = async () => {
     try {
-      await updateDoc(doc(db, 'clubs', clubInfo.id || slug), { isDisplayed: true });
-    } catch (e: any) {
-      setError(e.message || 'Failed to publish');
+      await updateDoc(doc(db, "clubs", clubInfo.id || slug), {
+        isDisplayed: true,
+      });
+    } catch (e: unknown) {
+      if (e instanceof Error) {
+        setError(e.message);
+      } else {
+        setError("Failed to publish");
+      }
     }
   };
 
