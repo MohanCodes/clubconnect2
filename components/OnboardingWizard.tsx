@@ -611,7 +611,7 @@ export default function OnboardingWizard({ slug }: { slug: string }) {
               <button
                 onClick={async () => {
                   await publish();
-                  const destination = `/club/${clubInfo.id || slug}`;
+                  const destination = `/edit-club/${clubInfo.id || slug}`;
                   await router.push(destination);
                   window.location.href = destination;
                 }}
