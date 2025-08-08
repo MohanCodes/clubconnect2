@@ -3,8 +3,6 @@ import {
   setDoc,
   updateDoc,
   deleteDoc,
-  arrayUnion,
-  FirestoreDataConverter,
 } from 'firebase/firestore';
 import { ref, uploadBytes, getDownloadURL, deleteObject } from 'firebase/storage';
 import { db, storage } from '@/firebase/firebase';

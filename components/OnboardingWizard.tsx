@@ -13,7 +13,6 @@ import {
   where,
   getDocs,
   arrayUnion,
-  arrayRemove,
 } from "firebase/firestore";
 import { onAuthStateChanged } from "firebase/auth";
 import { FaTimes, FaTrash } from "react-icons/fa";
