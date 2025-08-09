@@ -51,9 +51,9 @@ type WizardStep = 0 | 1 | 2 | 3 | 4;
 
 type TemplateNumber = 1 | 2 | 3;
 const templateDescriptions: Record<TemplateNumber, string> = {
-    1: "The {clubName} is a fun and relaxed group for students interested in ____________. We meet occasionally to hang out, share ideas, and participate in light activities like ____________ and ____________. Whether you can join us once in a while or just want to drop by for a specific event, everyone is welcome!",
-    2: "The {clubName} is an engaging community focused on ____________. We meet bi-weekly on ____________ at ____________ to plan and participate in activities such as ____________, ____________, and ____________. Members are encouraged to attend regularly and contribute their ideas, but we understand that life can get busy! If you're looking to make new friends while exploring your interests, this club is for you.",
-    3: "The {clubName} is a dedicated group committed to ____________ and making a meaningful impact in our school community. We meet weekly on ____________ at ____________, where we engage in planning extensive projects, events, and initiatives such as ____________, ____________, and ____________. Members are expected to actively participate and contribute their time and talents. If you're passionate about ____________ and ready to take on challenges, we'd love for you to join us!"
+    1: "The {clubName} is a fun and relaxed group for students interested in __. We meet occasionally to hang out, share ideas, and participate in light activities like __ and __. Whether you can join us once in a while or just want to drop by for a specific event, everyone is welcome!",
+    2: "The {clubName} is an engaging community focused on __. We plan and participate in activities such as __, __, and __. Members are encouraged to attend regularly and contribute their ideas, but we understand that life can get busy! If you're looking to make new friends while exploring your interests, this club is for you.",
+    3: "The {clubName} is a dedicated group committed to __ and making a meaningful impact in our school community. We engage in planning extensive events and initiatives such as __, __, and __. Members are expected to actively participate and contribute their time and talents. If you're passionate about __ and ready to take on challenges, we'd love for you to join us!"
 };
 
 function stepTitle(step: WizardStep) {

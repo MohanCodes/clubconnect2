@@ -172,9 +172,12 @@ export default function CalendarPage() {
 
   return (
     <div className="container mx-auto px-4 py-8">
-      <h1 className="text-white text-3xl font-bold mb-8">
+      <h1 className="text-white text-3xl font-bold mb-4">
           Your Calendar {events.length === 0 && ' - No events currently'}
       </h1>
+      <p className="text-gray-300 mb-6">
+        If you star a club on the main page and they have posted any events, you'll be able to see the events here.
+      </p>
       <CalendarProp events={events} />
     </div>
   );
