@@ -176,7 +176,7 @@ export default function CalendarPage() {
           Your Calendar {events.length === 0 && ' - No events currently'}
       </h1>
       <p className="text-gray-300 mb-6">
-        If you star a club on the main page and they have posted any events, you'll be able to see the events here.
+        If you star a club on the main page and they have posted any events, you&apos;ll be able to see the events here.
       </p>
       <CalendarProp events={events} />
     </div>
