@@ -15,14 +15,49 @@ import {
   arrayUnion,
 } from "firebase/firestore";
 import { onAuthStateChanged } from "firebase/auth";
-import { FaTimes, FaTrash } from "react-icons/fa";
+import {
+  FaDiscord,
+  FaDollarSign,
+  FaFacebook,
+  FaGithub,
+  FaGlobe,
+  FaInstagram,
+  FaLink,
+  FaLinkedin,
+  FaTiktok,
+  FaTimes,
+  FaTrash,
+  FaTwitter,
+  FaUser,
+  FaYoutube,
+} from "react-icons/fa";
 import { AddButton } from "@/components/AddButton";
 
-interface Advisor { name: string; email: string; }
-interface StudentLead { name: string; role: string; email: string; }
-interface ClubLink { url: string; platform: string; }
-interface OneOffEvent { date: string; title: string; }
-interface RecurringEvent { title: string; frequency: 'weekly' | 'biweekly' | 'monthly'; dayOfWeek: number; startDate: string; endDate: string; exceptions: string[]; }
+interface Advisor {
+  name: string;
+  email: string;
+}
+interface StudentLead {
+  name: string;
+  role: string;
+  email: string;
+}
+interface ClubLink {
+  url: string;
+  platform: string;
+}
+interface OneOffEvent {
+  date: string;
+  title: string;
+}
+interface RecurringEvent {
+  title: string;
+  frequency: "weekly" | "biweekly" | "monthly";
+  dayOfWeek: number;
+  startDate: string;
+  endDate: string;
+  exceptions: string[];
+}
 interface ClubInfo {
   id: string;
   isComplete: boolean;
@@ -47,22 +82,29 @@ interface ClubInfo {
   addedEditors?: string[];
 }
 
-type WizardStep = 0 | 1 | 2 | 3 | 4;
-
+type WizardStep = 0 | 1 | 2 | 3 | 4 | 5;
 type TemplateNumber = 1 | 2 | 3;
+
 const templateDescriptions: Record<TemplateNumber, string> = {
-    1: "The {clubName} is a fun and relaxed group for students interested in __. We meet occasionally to hang out, share ideas, and participate in light activities like __ and __. Whether you can join us once in a while or just want to drop by for a specific event, everyone is welcome!",
-    2: "The {clubName} is an engaging community focused on __. We plan and participate in activities such as __, __, and __. Members are encouraged to attend regularly and contribute their ideas, but we understand that life can get busy! If you're looking to make new friends while exploring your interests, this club is for you.",
-    3: "The {clubName} is a dedicated group committed to __ and making a meaningful impact in our school community. We engage in planning extensive events and initiatives such as __, __, and __. Members are expected to actively participate and contribute their time and talents. If you're passionate about __ and ready to take on challenges, we'd love for you to join us!"
+  1: "The {clubName} is a fun and relaxed group for students interested in __. We meet occasionally to hang out, share ideas, and participate in light activities like __ and __. Whether you can join us once in a while or just want to drop by for a specific event, everyone is welcome!",
+  2: "The {clubName} is an engaging community focused on __. We plan and participate in activities such as __, __, and __. Members are encouraged to attend regularly and contribute their ideas, but we understand that life can get busy! If you're looking to make new friends while exploring your interests, this club is for you.",
+  3: "The {clubName} is a dedicated group committed to __ and making a meaningful impact in our school community. We engage in planning extensive events and initiatives such as __, __, and __. Members are expected to actively participate and contribute their time and talents. If you're passionate about __ and ready to take on challenges, we'd love for you to join us!",
 };
 
 function stepTitle(step: WizardStep) {
   switch (step) {
-    case 0: return "Tags & Editors";
-    case 1: return "Description";
-    case 2: return "Core Info";
-    case 3: return "Advisors & Student Leads";
-    case 4: return "Publish";
+    case 0:
+      return "Tags & Editors";
+    case 1:
+      return "Description";
+    case 2:
+      return "Core Info";
+    case 3:
+      return "Advisors & Student Leads";
+    case 4:
+      return "Links";
+    case 5:
+      return "Publish";
   }
 }
 
@@ -100,6 +142,35 @@ export default function OnboardingWizard({ slug }: { slug: string }) {
     blogIds: [],
   });
 
+  const getPlatformIcon = (platform: string) => {
+    switch (platform) {
+      case "twitter":
+        return <FaTwitter />;
+      case "instagram":
+        return <FaInstagram />;
+      case "facebook":
+        return <FaFacebook />;
+      case "linkedin":
+        return <FaLinkedin />;
+      case "youtube":
+        return <FaYoutube />;
+      case "discord":
+        return <FaDiscord />;
+      case "github":
+        return <FaGithub />;
+      case "tiktok":
+        return <FaTiktok />;
+      case "website":
+        return <FaGlobe />;
+      case "epay":
+        return <FaDollarSign />;
+      case "personal":
+        return <FaUser />;
+      default:
+        return <FaLink />;
+    }
+  };
+
   useEffect(() => {
     const unsub = onAuthStateChanged(auth, (u) => {
       if (!u) router.push("/");
@@ -128,11 +199,7 @@ export default function OnboardingWizard({ slug }: { slug: string }) {
           setClubInfo((prev) => ({ ...prev, id: slug }));
         }
       } catch (e: unknown) {
-        if (e instanceof Error) {
-          setError(e.message);
-        } else {
-          setError("Failed to load club");
-        }
+        setError(e instanceof Error ? e.message : "Failed to load club");
       } finally {
         setLoading(false);
       }
@@ -142,13 +209,10 @@ export default function OnboardingWizard({ slug }: { slug: string }) {
 
   useEffect(() => {
     if (successMessage) {
-      const timer = setTimeout(() => {
-        setSuccessMessage(null);
-      }, 3000);
+      const timer = setTimeout(() => setSuccessMessage(null), 3000);
       return () => clearTimeout(timer);
     }
   }, [successMessage]);
-
 
   const checkCompletion = (info: ClubInfo): boolean => {
     const required: (keyof ClubInfo)[] = [
@@ -159,16 +223,13 @@ export default function OnboardingWizard({ slug }: { slug: string }) {
       "eligibility",
       "costs",
     ];
-    const allFields = required.every((f) => {
-      const val = info[f];
-      return typeof val === "string" && val.trim() !== "";
-    });
+    const allFields = required.every(
+      (f) => typeof info[f] === "string" && (info[f] as string).trim() !== ""
+    );
     const hasAdvisor =
-      Array.isArray(info.advisors) &&
       info.advisors.length > 0 &&
       info.advisors.every((a) => a.name && a.email);
     const hasLead =
-      Array.isArray(info.studentLeads) &&
       info.studentLeads.length > 0 &&
       info.studentLeads.every((l) => l.name && l.role && l.email);
     return allFields && hasAdvisor && hasLead;
@@ -194,6 +255,8 @@ export default function OnboardingWizard({ slug }: { slug: string }) {
           (clubInfo.studentLeads?.length ?? 0) > 0
         );
       case 4:
+        return true; // Links are optional
+      case 5:
         return true;
       default:
         return false;
@@ -211,11 +274,7 @@ export default function OnboardingWizard({ slug }: { slug: string }) {
       await setDoc(doc(db, "clubs", clubInfo.id || slug), data);
       setClubInfo((prev) => ({ ...prev, isComplete: data.isComplete }));
     } catch (e: unknown) {
-      if (e instanceof Error) {
-        setError(e.message);
-      } else {
-        setError("Failed to save");
-      }
+      setError(e instanceof Error ? e.message : "Failed to save");
       throw e;
     } finally {
       setSaving(false);
@@ -224,7 +283,7 @@ export default function OnboardingWizard({ slug }: { slug: string }) {
 
   const handleNext = async () => {
     await saveStep();
-    if (currentStep < 4) setCurrentStep((s) => (s + 1) as WizardStep);
+    if (currentStep < 5) setCurrentStep((s) => (s + 1) as WizardStep);
   };
 
   const handleBack = () => {
@@ -238,9 +297,12 @@ export default function OnboardingWizard({ slug }: { slug: string }) {
       setNewTag("");
     }
   };
-  const handleRemoveTag = (i: number) => {
-    setClubInfo((p) => ({ ...p, tags: p.tags.filter((_, idx) => idx !== i) }));
-  };
+  const handleRemoveTag = (i: number) =>
+    setClubInfo((p) => ({
+      ...p,
+      tags: p.tags.filter((_, idx) => idx !== i),
+    }));
+
   const handleAddEditor = async () => {
     if (!editorEmail) return;
     setError(null);
@@ -261,36 +323,68 @@ export default function OnboardingWizard({ slug }: { slug: string }) {
       setEditorEmail("");
       setSuccessMessage("Editor added successfully.");
     } catch (e: unknown) {
-      if (e instanceof Error) {
-        setError(e.message);
-      } else {
-        setError("Failed to add editor");
-      }
+      setError(e instanceof Error ? e.message : "Failed to add editor");
     }
   };
 
   // Step 1 helper: apply a description template
   const updateDescriptionTemplate = (templateNumber: TemplateNumber) => {
-    const newDescription = templateDescriptions[templateNumber].replace(/{clubName}/g, clubInfo.name || 'Our club');
+    const newDescription = templateDescriptions[templateNumber].replace(
+      /{clubName}/g,
+      clubInfo.name || "Our club"
+    );
     setClubInfo((prev) => ({ ...prev, description: newDescription }));
   };
 
   // Step 3 handlers
-  const addAdvisor = () => setClubInfo((p) => ({ ...p, advisors: [...p.advisors, { name: '', email: '' }] }));
+  const addAdvisor = () =>
+    setClubInfo((p) => ({
+      ...p,
+      advisors: [...p.advisors, { name: "", email: "" }],
+    }));
   const updateAdvisor = (i: number, field: keyof Advisor, val: string) => {
     const copy = [...clubInfo.advisors];
-    copy[i] = { ...copy[i], [field]: val } as Advisor;
+    copy[i] = { ...copy[i], [field]: val };
     setClubInfo({ ...clubInfo, advisors: copy });
   };
-  const removeAdvisor = (i: number) => setClubInfo((p) => ({ ...p, advisors: p.advisors.filter((_, idx) => idx !== i) }));
+  const removeAdvisor = (i: number) =>
+    setClubInfo((p) => ({
+      ...p,
+      advisors: p.advisors.filter((_, idx) => idx !== i),
+    }));
 
-  const addLead = () => setClubInfo((p) => ({ ...p, studentLeads: [...p.studentLeads, { name: '', role: '', email: '' }] }));
+  const addLead = () =>
+    setClubInfo((p) => ({
+      ...p,
+      studentLeads: [...p.studentLeads, { name: "", role: "", email: "" }],
+    }));
   const updateLead = (i: number, field: keyof StudentLead, val: string) => {
     const copy = [...clubInfo.studentLeads];
-    copy[i] = { ...copy[i], [field]: val } as StudentLead;
+    copy[i] = { ...copy[i], [field]: val };
     setClubInfo({ ...clubInfo, studentLeads: copy });
   };
-  const removeLead = (i: number) => setClubInfo((p) => ({ ...p, studentLeads: p.studentLeads.filter((_, idx) => idx !== i) }));
+  const removeLead = (i: number) =>
+    setClubInfo((p) => ({
+      ...p,
+      studentLeads: p.studentLeads.filter((_, idx) => idx !== i),
+    }));
+
+  // Step 4 link handlers
+  const addLink = () =>
+    setClubInfo((p) => ({
+      ...p,
+      links: [...p.links, { url: "", platform: "website" }],
+    }));
+  const updateLink = (i: number, field: keyof ClubLink, val: string) => {
+    const copy = [...clubInfo.links];
+    copy[i] = { ...copy[i], [field]: val };
+    setClubInfo({ ...clubInfo, links: copy });
+  };
+  const removeLink = (i: number) =>
+    setClubInfo((p) => ({
+      ...p,
+      links: p.links.filter((_, idx) => idx !== i),
+    }));
 
   const publish = async () => {
     try {
@@ -298,54 +392,66 @@ export default function OnboardingWizard({ slug }: { slug: string }) {
         isDisplayed: true,
       });
     } catch (e: unknown) {
-      if (e instanceof Error) {
-        setError(e.message);
-      } else {
-        setError("Failed to publish");
-      }
+      setError(e instanceof Error ? e.message : "Failed to publish");
     }
   };
 
-  if (loading) return <div className="min-h-screen flex items-center justify-center text-white">Loading...</div>;
+  if (loading)
+    return (
+      <div className="min-h-screen flex items-center justify-center text-white">
+        Loading...
+      </div>
+    );
 
   return (
     <div className="w-full mx-auto text-white px-4 py-6">
       {/* Step header */}
       <div className="flex items-center justify-between mb-4">
         <div className="text-xl font-semibold">{stepTitle(currentStep)}</div>
-        <div className="text-sm text-gray-300">Step {currentStep + 1} / 5</div>
+        <div className="text-sm text-gray-300">
+          Step {currentStep + 1} / 6
+        </div>
       </div>
 
+      {/* Progress dots */}
       <div className="flex space-x-2 mb-6">
-        {[0, 1, 2, 3, 4].map((i) => (
+        {[0, 1, 2, 3, 4, 5].map((i) => (
           <span
             key={i}
             className={`h-2 w-2 rounded-full transition-colors duration-300 ease-in-out ${
-              i <= currentStep ? 'bg-azul' : 'bg-gray-600'
+              i <= currentStep ? "bg-azul" : "bg-gray-600"
             }`}
             style={{
-              transform: i === currentStep ? 'scale(1.5)' : 'scale(1)',
-              transition: 'background-color 300ms ease-in-out, transform 300ms ease-in-out',
+              transform: i === currentStep ? "scale(1.5)" : "scale(1)",
+              transition:
+                "background-color 300ms ease-in-out, transform 300ms ease-in-out",
             }}
           />
         ))}
       </div>
 
-
       {/* Panel */}
       <div className="bg-tilegrey rounded-xl p-4 sm:p-6">
+        {/* Step 0: Tags and Editors */}
         {currentStep === 0 && (
           <div className="space-y-6">
             {/* Tags */}
             <div>
-              <h3 className="text-lg font-semibold mb-2">Tags <span className="text-xs text-gray-400 mt-2">hit add</span></h3>
+              <h3 className="text-lg font-semibold mb-2">
+                Tags <span className="text-xs text-gray-400 mt-2">hit add</span>
+              </h3>
               <div className="flex flex-wrap gap-2 mb-3">
                 {(clubInfo.tags || []).map((tag, idx) => (
-                  <span key={idx} className="inline-flex items-center bg-blue-100 text-azul text-xs font-medium px-3 py-1 rounded-full sm:text-sm pr-1 transition-colors duration-200">
+                  <span
+                    key={idx}
+                    className="inline-flex items-center bg-blue-100 text-azul text-xs font-medium px-3 py-1 rounded-full sm:text-sm pr-1 transition-colors duration-200"
+                  >
                     {tag}
-                    <button onClick={() => handleRemoveTag(idx)}
+                    <button
+                      onClick={() => handleRemoveTag(idx)}
                       className="ml-1 text-red-500 hover:text-red-700 focus:outline-none rounded-full px-1 text-bold"
-                      aria-label={`Remove ${tag} tag`}>
+                      aria-label={`Remove ${tag} tag`}
+                    >
                       <FaTimes />
                     </button>
                   </span>
@@ -358,13 +464,17 @@ export default function OnboardingWizard({ slug }: { slug: string }) {
                   placeholder="Add a tag"
                   className="flex-grow bg-gray-800 rounded-l p-2 outline-none"
                 />
-                <button onClick={handleAddTag} className="bg-azul px-4 rounded-r">Add</button>
+                <button onClick={handleAddTag} className="bg-azul px-4 rounded-r">
+                  Add
+                </button>
               </div>
             </div>
 
             {/* Add editor */}
             <div>
-              <h3 className="text-lg font-semibold mb-2">Add Editor <span className="text-xs text-gray-400 mt-2">if u want</span></h3>
+              <h3 className="text-lg font-semibold mb-2">
+                Add Editor <span className="text-xs text-gray-400 mt-2">if u want</span>
+              </h3>
               <div className="flex">
                 <input
                   type="email"
@@ -373,39 +483,43 @@ export default function OnboardingWizard({ slug }: { slug: string }) {
                   placeholder="editor@email.com"
                   className="flex-grow bg-gray-800 rounded-l p-2 outline-none"
                 />
-                <button onClick={handleAddEditor} className="bg-azul px-4 rounded-r">Add</button>
+                <button onClick={handleAddEditor} className="bg-azul px-4 rounded-r">
+                  Add
+                </button>
               </div>
-              <p className="text-xs text-gray-400 mt-2">Editors can help you complete your club page. Use the email they signed up with.</p>
+              <p className="text-xs text-gray-400 mt-2">
+                Editors can help you complete your club page. Use the email they signed up with.
+              </p>
             </div>
           </div>
         )}
 
+        {/* Step 1: Description */}
         {currentStep === 1 && (
           <div>
             <h3 className="text-lg font-semibold mb-2">Write a description</h3>
             <div className="mb-3 space-y-2">
               <p className="text-sm text-gray-300">Use a template to get started:</p>
               <div className="grid grid-cols-3 gap-2">
-                <button 
-                  onClick={() => updateDescriptionTemplate(1)} 
+                <button
+                  onClick={() => updateDescriptionTemplate(1)}
                   className="px-3 py-2 rounded bg-gray-700 hover:bg-gray-600 text-sm"
                 >
                   <span className="hidden sm:inline">Template </span>1
                 </button>
-                <button 
-                  onClick={() => updateDescriptionTemplate(2)} 
+                <button
+                  onClick={() => updateDescriptionTemplate(2)}
                   className="px-3 py-2 rounded bg-gray-700 hover:bg-gray-600 text-sm"
                 >
                   <span className="hidden sm:inline">Template </span>2
                 </button>
-                <button 
-                  onClick={() => updateDescriptionTemplate(3)} 
+                <button
+                  onClick={() => updateDescriptionTemplate(3)}
                   className="px-3 py-2 rounded bg-gray-700 hover:bg-gray-600 text-sm"
                 >
                   <span className="hidden sm:inline">Template </span>3
                 </button>
               </div>
-
             </div>
             <textarea
               value={clubInfo.description}
@@ -414,10 +528,13 @@ export default function OnboardingWizard({ slug }: { slug: string }) {
               placeholder="One paragraph description"
               maxLength={750}
             />
-            <div className="text-right text-xs text-gray-400">{(clubInfo.description||'').length}/750</div>
+            <div className="text-right text-xs text-gray-400">
+              {(clubInfo.description || "").length}/750
+            </div>
           </div>
         )}
 
+        {/* Step 2: Core Info */}
         {currentStep === 2 && (
           <div>
             <h3 className="text-lg font-semibold mb-2">Enter in the Core Info</h3>
@@ -426,7 +543,7 @@ export default function OnboardingWizard({ slug }: { slug: string }) {
                 <input
                   className="w-full bg-gray-800 rounded p-2"
                   value={clubInfo.length}
-                  onChange={(e)=>setClubInfo({...clubInfo, length: e.target.value})}
+                  onChange={(e) => setClubInfo({ ...clubInfo, length: e.target.value })}
                   placeholder="e.g., whole year"
                 />
               </Field>
@@ -434,7 +551,7 @@ export default function OnboardingWizard({ slug }: { slug: string }) {
                 <input
                   className="w-full bg-gray-800 rounded p-2"
                   value={clubInfo.meetingSite}
-                  onChange={(e)=>setClubInfo({...clubInfo, meetingSite: e.target.value})}
+                  onChange={(e) => setClubInfo({ ...clubInfo, meetingSite: e.target.value })}
                   placeholder="e.g., A111"
                 />
               </Field>
@@ -442,7 +559,7 @@ export default function OnboardingWizard({ slug }: { slug: string }) {
                 <input
                   className="w-full bg-gray-800 rounded p-2"
                   value={clubInfo.costs}
-                  onChange={(e)=>setClubInfo({...clubInfo, costs: e.target.value})}
+                  onChange={(e) => setClubInfo({ ...clubInfo, costs: e.target.value })}
                   placeholder="e.g., FREE"
                 />
               </Field>
@@ -450,7 +567,7 @@ export default function OnboardingWizard({ slug }: { slug: string }) {
                 <input
                   className="w-full bg-gray-800 rounded p-2"
                   value={clubInfo.meetingTimes}
-                  onChange={(e)=>setClubInfo({...clubInfo, meetingTimes: e.target.value})}
+                  onChange={(e) => setClubInfo({ ...clubInfo, meetingTimes: e.target.value })}
                   placeholder="e.g., 3:30-4:30 on Wednesdays"
                 />
               </Field>
@@ -458,7 +575,7 @@ export default function OnboardingWizard({ slug }: { slug: string }) {
                 <input
                   className="w-full bg-gray-800 rounded p-2"
                   value={clubInfo.eligibility}
-                  onChange={(e)=>setClubInfo({...clubInfo, eligibility: e.target.value})}
+                  onChange={(e) => setClubInfo({ ...clubInfo, eligibility: e.target.value })}
                   placeholder="e.g., Anyone can join!"
                 />
               </Field>
@@ -466,6 +583,7 @@ export default function OnboardingWizard({ slug }: { slug: string }) {
           </div>
         )}
 
+        {/* Step 3: Advisors & Student Leads */}
         {currentStep === 3 && (
           <div className="space-y-6">
             <section>
@@ -475,14 +593,17 @@ export default function OnboardingWizard({ slug }: { slug: string }) {
               </div>
               <div className="space-y-3">
                 {clubInfo.advisors.map((a, i) => (
-                  <div key={i} className="grid grid-cols-1 sm:grid-cols-[1fr_auto] gap-2 items-start">
+                  <div
+                    key={i}
+                    className="grid grid-cols-1 sm:grid-cols-[1fr_auto] gap-2 items-start"
+                  >
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 ">
                       <div className="flex gap-2">
                         <input
                           className="bg-gray-800 rounded p-2 flex-grow"
                           placeholder="Name"
                           value={a.name}
-                          onChange={(e) => updateAdvisor(i, 'name', e.target.value)}
+                          onChange={(e) => updateAdvisor(i, "name", e.target.value)}
                         />
                         <div className="flex sm:justify-end">
                           <button
@@ -499,7 +620,7 @@ export default function OnboardingWizard({ slug }: { slug: string }) {
                         className="bg-gray-800 rounded p-2"
                         placeholder="Email"
                         value={a.email}
-                        onChange={(e) => updateAdvisor(i, 'email', e.target.value)}
+                        onChange={(e) => updateAdvisor(i, "email", e.target.value)}
                       />
                     </div>
 
@@ -524,20 +645,23 @@ export default function OnboardingWizard({ slug }: { slug: string }) {
               </div>
               <div className="space-y-3">
                 {clubInfo.studentLeads.map((l, i) => (
-                  <div key={i} className="grid grid-cols-1 sm:grid-cols-[1fr_auto] gap-2 items-start">
+                  <div
+                    key={i}
+                    className="grid grid-cols-1 sm:grid-cols-[1fr_auto] gap-2 items-start"
+                  >
                     <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
                       <input
-                          className="bg-gray-800 rounded p-2 flex-grow hidden sm:block"
-                          placeholder="Name"
-                          value={l.name}
-                          onChange={(e) => updateLead(i, 'name', e.target.value)}
+                        className="bg-gray-800 rounded p-2 flex-grow hidden sm:block"
+                        placeholder="Name"
+                        value={l.name}
+                        onChange={(e) => updateLead(i, "name", e.target.value)}
                       />
                       <div className="flex gap-2 sm:hidden">
                         <input
                           className="bg-gray-800 rounded p-2 flex-grow"
                           placeholder="Name"
                           value={l.name}
-                          onChange={(e) => updateLead(i, 'name', e.target.value)}
+                          onChange={(e) => updateLead(i, "name", e.target.value)}
                         />
                         {/* First trash button: show only on small screens */}
                         <button
@@ -552,13 +676,13 @@ export default function OnboardingWizard({ slug }: { slug: string }) {
                         className="bg-gray-800 rounded p-2"
                         placeholder="Role"
                         value={l.role}
-                        onChange={(e) => updateLead(i, 'role', e.target.value)}
+                        onChange={(e) => updateLead(i, "role", e.target.value)}
                       />
                       <input
                         className="bg-gray-800 rounded p-2"
                         placeholder="Email"
                         value={l.email}
-                        onChange={(e) => updateLead(i, 'email', e.target.value)}
+                        onChange={(e) => updateLead(i, "email", e.target.value)}
                       />
                     </div>
 
@@ -574,16 +698,101 @@ export default function OnboardingWizard({ slug }: { slug: string }) {
                     </div>
                   </div>
                 ))}
-
               </div>
             </section>
           </div>
         )}
 
+        {/* Step 4: Links (optional) */}
         {currentStep === 4 && (
+          <div>
+            <div className="flex items-center justify-between mb-2">
+              <h3 className="text-lg font-semibold">
+                Links <span className="text-xs text-gray-400 ml-2">optional</span>
+              </h3>
+              <AddButton label="Add Link" onClick={addLink} />
+            </div>
+            <p className="text-sm text-gray-300 mb-4">
+              Add social media, website, or other relevant links for your club.
+            </p>
+
+            <div className="space-y-3">
+              {clubInfo.links.map((link, i) => (
+                <div
+                  key={i}
+                  className="grid grid-cols-1 sm:grid-cols-[auto_1fr_auto] gap-2 items-start"
+                >
+                  {/* Platform selector */}
+                  <div className="flex items-center gap-2">
+                    <div className="flex items-center justify-center w-10 h-10 bg-gray-700 rounded">
+                      {getPlatformIcon(link.platform)}
+                    </div>
+                    <select
+                      value={link.platform}
+                      onChange={(e) => updateLink(i, "platform", e.target.value)}
+                      className="bg-gray-800 rounded p-2 text-sm min-w-[100px] flex-grow"
+                    >
+                      <option value="website">Website</option>
+                      <option value="instagram">Instagram</option>
+                      <option value="twitter">Twitter</option>
+                      <option value="facebook">Facebook</option>
+                      <option value="discord">Discord</option>
+                      <option value="youtube">YouTube</option>
+                      <option value="tiktok">TikTok</option>
+                      <option value="linkedin">LinkedIn</option>
+                      <option value="github">GitHub</option>
+                      <option value="epay">Payment</option>
+                      <option value="personal">Personal</option>
+                      <option value="other">Other</option>
+                    </select>
+                    <button
+                      className="bg-red-500 rounded p-2 h-[38px] block sm:hidden"
+                      onClick={() => removeLink(i)}
+                      aria-label="Remove link"
+                    >
+                      <FaTrash />
+                    </button>
+                  </div>
+                  {/* URL input */}
+                  <div className="flex gap-2">
+                    <input
+                      className="bg-gray-800 rounded p-2 flex-grow"
+                      placeholder="https://example.com"
+                      value={link.url}
+                      onChange={(e) => updateLink(i, "url", e.target.value)}
+                    />
+                  </div>
+
+                  {/* Desktop trash button */}
+                  <div className="flex sm:justify-end">
+                    <button
+                      className="bg-red-500 rounded p-2 h-[38px] hidden sm:block"
+                      onClick={() => removeLink(i)}
+                      aria-label="Remove link"
+                    >
+                      <FaTrash />
+                    </button>
+                  </div>
+                </div>
+              ))}
+
+              {clubInfo.links.length === 0 && (
+                <div className="text-center py-8 text-gray-400">
+                  <FaLink className="mx-auto mb-2 text-2xl" />
+                  <p className="text-sm">No links added yet. Click "Add Link" to get started!</p>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* Step 5: Publish */}
+        {currentStep === 5 && (
           <div className="space-y-3">
             <h3 className="text-lg font-semibold">Ready to publish?</h3>
-            <p className="text-gray-300 text-sm">You can always add more details later in the full editor.</p>
+            <p className="text-gray-300 text-sm">
+              You can always add more details later in the full editor.
+            </p>
             <button
               onClick={async () => {
                 await publish();
@@ -592,7 +801,9 @@ export default function OnboardingWizard({ slug }: { slug: string }) {
                 window.location.href = destination;
               }}
               disabled={!clubInfo.isComplete}
-              className={`w-full py-3 rounded ${clubInfo.isComplete ? 'bg-azul hover:opacity-90' : 'bg-gray-600 cursor-not-allowed'}`}
+              className={`w-full py-3 rounded ${
+                clubInfo.isComplete ? "bg-azul hover:opacity-90" : "bg-gray-600 cursor-not-allowed"
+              }`}
             >
               Publish and go to club page
             </button>
@@ -604,38 +815,41 @@ export default function OnboardingWizard({ slug }: { slug: string }) {
                   setCopied(true);
                   setTimeout(() => setCopied(false), 2000);
                 }}
-                className={`w-full py-3 rounded ${clubInfo.isComplete ? 'bg-azul hover:opacity-90' : 'bg-gray-600 cursor-not-allowed'}`}
+                className={`w-full py-3 rounded ${
+                  clubInfo.isComplete ? "bg-azul hover:opacity-90" : "bg-gray-600 cursor-not-allowed"
+                }`}
               >
-                {copied ? "Copied!" : "Copy Club Link"}
+                {copied ? "Copied!" : "Copy Link"}
               </button>
               <button
                 onClick={async () => {
-                  await publish();
                   const destination = `/edit-club/${clubInfo.id || slug}`;
                   await router.push(destination);
                   window.location.href = destination;
                 }}
                 disabled={!clubInfo.isComplete}
-                className={`w-full py-3 rounded ${clubInfo.isComplete ? 'bg-azul hover:opacity-90' : 'bg-gray-600 cursor-not-allowed'}`}
+                className={`w-full py-3 rounded ${
+                  clubInfo.isComplete ? "bg-azul hover:opacity-90" : "bg-gray-600 cursor-not-allowed"
+                }`}
               >
                 Editor Page
               </button>
             </div>
             {!clubInfo.isComplete && (
-              <p className="text-xs text-red-400">Complete required fields first (description, core info, advisors, student leads).</p>
+              <p className="text-xs text-red-400">
+                Complete required fields first (description, core info, advisors, student leads).
+              </p>
             )}
           </div>
         )}
 
         <p
           className={`mt-2 text-xs text-green-400 transition-opacity duration-500 ${
-            successMessage ? 'opacity-100' : 'opacity-0'
+            successMessage ? "opacity-100" : "opacity-0"
           }`}
         >
           {successMessage}
         </p>
-
-
       </div>
 
       {/* Nav buttons */}
@@ -644,7 +858,7 @@ export default function OnboardingWizard({ slug }: { slug: string }) {
           onClick={handleBack}
           disabled={currentStep === 0 || saving}
           className={`px-4 py-2 rounded bg-gray-700 disabled:opacity-50 ${
-            currentStep === 0 ? 'invisible' : ''
+            currentStep === 0 ? "invisible" : ""
           }`}
         >
           Back
@@ -654,13 +868,12 @@ export default function OnboardingWizard({ slug }: { slug: string }) {
           onClick={handleNext}
           disabled={!canProceed || saving}
           className={`px-4 py-2 rounded bg-azul disabled:opacity-50 ${
-            currentStep === 4 ? 'invisible' : ''
+            currentStep === 5 ? "invisible" : ""
           }`}
         >
-          {currentStep === 4 ? 'Finish' : 'Next'}
+          {currentStep === 5 ? "Finish" : "Next"}
         </button>
       </div>
-
 
       {error && <div className="text-red-400 text-sm mt-3">{error}</div>}
     </div>

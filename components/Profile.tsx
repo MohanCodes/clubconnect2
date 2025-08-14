@@ -12,7 +12,7 @@ import InviteLink from './InviteLink';
 
 interface User {
   uid: string;
-  displayName: string | null;
+  name: string | null;
 }
 
 interface Advisor {
@@ -105,7 +105,7 @@ const Profile: React.FC = () => {
       if (currentUser) {
         const typedUser: User = {
           uid: currentUser.uid,
-          displayName: currentUser.displayName,
+          name: currentUser.displayName,
         };
         setUser(typedUser);
         fetchUserData(currentUser.uid); // Call fetchUserData

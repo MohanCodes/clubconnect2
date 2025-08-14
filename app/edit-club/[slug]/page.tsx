@@ -208,7 +208,7 @@ const EditClubPage = () => {
   const [filledFieldsCount, setFilledFieldsCount] = useState(0);
   const [editorEmail, setEditorEmail] = useState('');
   const [editors, setEditors] = useState<{ uid: string; email: string; name: string }[]>([]);
-  const [creatorInfo, setCreatorInfo] = useState({ displayName: "", email: "" });
+  const [creatorInfo, setCreatorInfo] = useState({ name: "", email: "" });
   const [newTag, setNewTag] = useState("");
   const [isDisplayed, setIsDisplayed] = useState(clubInfo.isDisplayed);
 
@@ -267,7 +267,7 @@ const EditClubPage = () => {
             if (creatorSnapshot.exists()) {
                 const creatorData = creatorSnapshot.data();
                 setCreatorInfo({
-                    displayName: creatorData.displayName || creatorData.name,
+                    name: creatorData.name,
                     email: creatorData.email,
                 });
             }
@@ -336,7 +336,7 @@ const EditClubPage = () => {
             return {
               uid: editorUid,
               email: userData.email,
-              name: userData.displayName || userData.name
+              name: userData.name
             };
           }
           return null;
@@ -352,11 +352,8 @@ const EditClubPage = () => {
   const checkCompletion = (info: ClubInfo): boolean => {
     const requiredFields: (keyof ClubInfo)[] = [
         'description',
-        'length',
-        'meetingTimes',
-        'meetingSite',
-        'eligibility',
-        'costs'
+        'length', 
+        'meetingTimes', 'meetingSite', 'eligibility', 'costs'
     ];
     
     const isAllFieldsFilled = requiredFields.every(field => {
@@ -968,9 +965,6 @@ const EditClubPage = () => {
           </div>
 
           <div className='flex flex-wrap items-center gap-2'>
-            <div className="hidden bg-azul text-white text-sm px-3 sm:px-4 py-2 rounded-full">
-              <span className="text-white">{filledFieldsCount} / 6</span>
-            </div>
             <button
               onClick={handleDisplayToggle}
               disabled={!clubInfo.isComplete}
@@ -1048,7 +1042,7 @@ const EditClubPage = () => {
                   value={newTag}
                   onChange={(e) => setNewTag(e.target.value)}
                   placeholder="Add a new tag"
-                  className="bg-gray-800 text-white p-1 rounded sm:text-md text-sm mr-2"
+                  className="bg-gray-800 text-white p-1 rounded w-full"
                 />
                 <AddButton label="Add Tag" onClick={handleAddTag} />
               </div>
@@ -1082,7 +1076,7 @@ const EditClubPage = () => {
                     <FaCrown size={20} />
                   </div>
                   <div className=''>
-                    {creatorInfo.displayName} ({creatorInfo.email})
+                    {creatorInfo.name} ({creatorInfo.email})
                   </div>
                 </div>
                 <div className="bg-yellow-500 text-white px-2 py-1 rounded text-xs hidden sm:block">
@@ -1555,7 +1549,7 @@ const EditClubPage = () => {
                         clubInfo.recurringEvents.map((event, index) => {
                           const nextMeeting = getNextMeetingDate(event);
                           return (
-                            <div key={index} className="mb-6 p-6 bg-gray-800 rounded-xl shadow-md text-white lg:w-5/6">
+                            <div key={index} className="mb-6 p-6 bg-gray-800 rounded-xl shadow-md lg:w-5/6">
                               {/* Event Title */}
                               <p className="font-semibold text-lg">Event: {event.title || 'Untitled Event'}</p>
 

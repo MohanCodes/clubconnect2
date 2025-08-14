@@ -259,9 +259,9 @@ const Home: React.FC = () => {
       </div>
 
       <main className="relative flex min-h-screen flex-col items-center justify-center bg-cblack text-center -mt-16">
-        <div className='hero-section max-w-lg flex flex-col justify-center h-[100vh] items-center'>
+        <div className='hero-section sm:max-w-xl max-w-lg flex flex-col justify-center h-[100vh] items-center'>
           <BlurFade delay={0.1}>
-            <div className='font-semibold text-white text-4xl lg:text-5xl text-center'>
+            <div className='font-semibold text-white text-5xl lg:text-6xl text-center'>
               <span className='text-azul'>Connect</span> with your club community.
             </div>
           </BlurFade>
@@ -270,7 +270,7 @@ const Home: React.FC = () => {
               Currently a club platform for students located in the west metro.
             </p>
           </BlurFade>
-          <div className='bf1'>
+          <div className='bf1 sm:block hidden'>
             <BlurFade delay={0.3}>
               <div className="flex justify-center sm:space-y-0 sm:space-x-4 pt-4 flex-col sm:flex-row px-4 sm:px-0">
                 <input

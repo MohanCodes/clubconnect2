@@ -24,7 +24,7 @@ export default function Signin() {
       // If the user doesn't exist in Firestore, create a new document
       await setDoc(userRef, {
         email: user.email,
-        displayName: user.displayName || '',
+        name: user.displayName || '',
         photoURL: user.photoURL || '',
         createdAt: new Date(),
       });

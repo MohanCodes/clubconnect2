@@ -37,9 +37,11 @@ import { deleteObject } from 'firebase/storage';
 import { GoogleAuthProvider, reauthenticateWithPopup } from 'firebase/auth';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
+import DataExportButton from '@/components/DataExport';
 
 interface UserProfile {
   id: string;
+  displayName: string;
   name: string;
   email: string;
   photoURL?: string;
@@ -95,6 +97,7 @@ export default function SettingsPage() {
   const [passwordSaving, setPasswordSaving] = useState(false);
   const [profile, setProfile] = useState<UserProfile>({
     id: '',
+    displayName: '',
     name: '',
     email: '',
     photoURL: '',
@@ -486,7 +489,7 @@ export default function SettingsPage() {
                   <input
                     type="text"
                     name="name"
-                    value={profile.name}
+                    value={profile.displayName}
                     onChange={handleInputChange}
                     className="w-full px-3 py-2 border border-gray-600 bg-gray-700 text-white rounded-md shadow-sm focus:outline-none focus:ring-azul focus:border-azul"
                   />
@@ -730,13 +733,12 @@ export default function SettingsPage() {
                   <h3 className="text-base font-medium text-white">Export Data</h3>
                   <p className="text-sm text-gray-400 mt-1">Download a copy of your account data</p>
                 </div>
-                <button
-                  type="button"
+                <DataExportButton
                   className="inline-flex items-center px-4 py-2 border border-gray-600 shadow-sm text-sm font-medium rounded-md text-white bg-gray-700 hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-azul transition-colors"
                 >
                   <FaDownload className="-ml-1 mr-2 h-5 w-5 text-gray-300" />
                   Download
-                </button>
+                </DataExportButton>
               </div>
               <div className="flex flex-col sm:flex-row sm:items-center justify-between">
                 <div className="mb-4 sm:mb-0">
