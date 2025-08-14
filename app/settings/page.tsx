@@ -733,12 +733,7 @@ export default function SettingsPage() {
                   <h3 className="text-base font-medium text-white">Export Data</h3>
                   <p className="text-sm text-gray-400 mt-1">Download a copy of your account data</p>
                 </div>
-                <DataExportButton
-                  className="inline-flex items-center px-4 py-2 border border-gray-600 shadow-sm text-sm font-medium rounded-md text-white bg-gray-700 hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-azul transition-colors"
-                >
-                  <FaDownload className="-ml-1 mr-2 h-5 w-5 text-gray-300" />
-                  Download
-                </DataExportButton>
+                <DataExportButton />
               </div>
               <div className="flex flex-col sm:flex-row sm:items-center justify-between">
                 <div className="mb-4 sm:mb-0">

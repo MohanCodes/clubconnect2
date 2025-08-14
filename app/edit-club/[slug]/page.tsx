@@ -205,7 +205,6 @@ const EditClubPage = () => {
   const [blogToDelete] = useState<Blog | null>(null);
   const [blogs, setBlogs] = useState<Blog[]>([]);
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
-  const [filledFieldsCount, setFilledFieldsCount] = useState(0);
   const [editorEmail, setEditorEmail] = useState('');
   const [editors, setEditors] = useState<{ uid: string; email: string; name: string }[]>([]);
   const [creatorInfo, setCreatorInfo] = useState({ name: "", email: "" });
@@ -782,20 +781,6 @@ const EditClubPage = () => {
         console.error('Error deleting blog:', error);
     }
   };
-
-  const countFilledFields = (info: ClubInfo) => {
-    const requiredFields: (keyof ClubInfo)[] = [
-        'description', 'length', 
-        'meetingTimes', 'meetingSite', 'eligibility', 'costs'
-    ];
-    const filledCount = requiredFields.filter(field => info[field] !== undefined && info[field] !== '').length;
-    setFilledFieldsCount(filledCount);
-  };
-
-  // Call this function whenever clubInfo changes
-  useEffect(() => {
-      countFilledFields(clubInfo);
-  }, [clubInfo]);
 
   type TemplateNumber = 1 | 2 | 3;
   const templateDescriptions: Record<TemplateNumber, string> = {

@@ -41,11 +41,7 @@ interface FirestoreUserData extends Partial<UserProfile> {
   upvotedClubs?: string[];
 }
 
-interface DataExportButtonProps {
-  children: ReactNode; // text or elements between <DataExportButton> ... </DataExportButton>
-}
-
-export function DataExportButton({ children }: DataExportButtonProps) {
+export function DataExportButton() {
   const [isGenerating, setIsGenerating] = useState(false);
   const [firebaseUser, setFirebaseUser] = useState<User | null>(null);
   const [profile, setProfile] = useState<UserProfile | null>(null);

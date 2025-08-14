@@ -779,7 +779,7 @@ export default function OnboardingWizard({ slug }: { slug: string }) {
               {clubInfo.links.length === 0 && (
                 <div className="text-center py-8 text-gray-400">
                   <FaLink className="mx-auto mb-2 text-2xl" />
-                  <p className="text-sm">No links added yet. Click "Add Link" to get started!</p>
+                  <p className="text-sm">No links added yet. Click &quot;Add Link&quot; to get started!</p>
                 </div>
               )}
             </div>
