@@ -36,7 +36,7 @@ export default function About() {
                   Our <span className='text-azul'>Vision</span>
                 </h2>
                 <p className="text-grey text-lg leading-relaxed">
-                  To be Minnesota's premier platform for student engagement, fostering 
+                  To be Minnesota&apos;s premier platform for student engagement, fostering 
                   meaningful connections and building stronger campus communities across the state.
                 </p>
               </div>
@@ -113,7 +113,7 @@ export default function About() {
                     </li>
                     <li className="flex items-start">
                       <span className="bg-azul text-white rounded-full w-6 h-6 flex items-center justify-center text-sm font-semibold mr-3 mt-0.5 flex-shrink-0">4</span>
-                      Track engagement and grow your club's presence on campus
+                      Track engagement and grow your club&apos;s presence on campus
                     </li>
                   </ol>
                 </div>
@@ -151,7 +151,7 @@ export default function About() {
                 Ready to Get <span className='text-azul'>Connected</span>?
               </h2>
               <p className="text-grey text-lg mb-8 max-w-2xl mx-auto">
-                Whether you're looking to join your first club or expand your campus involvement, 
+                Whether you&apos;re looking to join your first club or expand your campus involvement, 
                 MNClubConnect is here to help you find your community and make lasting connections.
               </p>
               <div className="flex flex-col sm:flex-row gap-4 justify-center">

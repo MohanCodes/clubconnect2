@@ -104,7 +104,7 @@ const Navbar: React.FC = () => {
 
             <Link href="/" className="text-white transition duration-300 hover:opacity-70">Home</Link>
             <Link href="/about" className="text-white transition duration-300 hover:opacity-70">About</Link>
-            <Link href="/blog" className="text-white transition duration-300 hover:opacity-70">Blog</Link>
+            {/* <Link href="/blog" className="text-white transition duration-300 hover:opacity-70">Blog</Link> */}
 
             {user && (
               <div className={`flex ${isOpen ? 'flex-col space-y-4' : 'hidden lg:flex lg:flex-row lg:space-x-10'} text-center`}>
