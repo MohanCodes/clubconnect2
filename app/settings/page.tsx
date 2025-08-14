@@ -19,7 +19,16 @@ import {
 import Navbar from '@/components/Navbar';
 import { db, auth } from '@/firebase/firebase';
 import { doc, getDoc, updateDoc, deleteDoc } from 'firebase/firestore';
-import { onAuthStateChanged, updateProfile, signOut, updatePassword, reauthenticateWithCredential, EmailAuthProvider } from 'firebase/auth';
+import { 
+  onAuthStateChanged, 
+  updateProfile, 
+  signOut, 
+  updatePassword, 
+  reauthenticateWithCredential, 
+  EmailAuthProvider,
+  User,
+  AuthError
+} from 'firebase/auth';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { storage } from '@/firebase/firebase';
 import LoadingModal from '@/components/LoadingModal';
@@ -52,6 +61,25 @@ interface UserProfile {
   };
 }
 
+type NotificationKeys = keyof NonNullable<UserProfile['notifications']>;
+type PrivacyKeys = keyof NonNullable<UserProfile['privacy']>;
+
+const DEFAULT_NOTIFICATIONS: NonNullable<UserProfile['notifications']> = {
+  email: true,
+  meetingReminders: true,
+  eventAnnouncements: true,
+  clubInvitations: false,
+  weeklyDigest: false,
+};
+
+const DEFAULT_PRIVACY: NonNullable<UserProfile['privacy']> = {
+  profileVisible: false,
+  showClubMembership: false,
+  allowContact: false,
+};
+
+const GRADE_LEVELS = ['Freshman', 'Sophomore', 'Junior', 'Senior', 'Graduate'] as const;
+
 export default function SettingsPage() {
   const [userId, setUserId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
@@ -74,21 +102,17 @@ export default function SettingsPage() {
     phone: '',
     gradeLevel: 'Junior',
     major: '',
-    notifications: {
-      email: true,
-      meetingReminders: true,
-      eventAnnouncements: true,
-      clubInvitations: false,
-      weeklyDigest: false,
-    },
-    privacy: {
-      profileVisible: false,
-      showClubMembership: false,
-      allowContact: false,
-    },
+    notifications: DEFAULT_NOTIFICATIONS,
+    privacy: DEFAULT_PRIVACY,
   });
 
-  const handlePasswordUpdate = async () => {
+  const router = useRouter();
+
+  const isAuthError = (error: unknown): error is AuthError => {
+    return typeof error === 'object' && error !== null && 'code' in error;
+  };
+
+  const handlePasswordUpdate = async (): Promise<void> => {
     if (!auth.currentUser) {
       alert('No user logged in');
       return;
@@ -143,23 +167,28 @@ export default function SettingsPage() {
       setConfirmPassword('');
 
       alert('Password updated successfully!');
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Error updating password:', error);
-      if (error.code === 'auth/wrong-password') {
-        alert('Current password is incorrect');
-      } else if (error.code === 'auth/weak-password') {
-        alert('New password is too weak');
-      } else {
+      
+      if (isAuthError(error)) {
+        if (error.code === 'auth/wrong-password') {
+          alert('Current password is incorrect');
+        } else if (error.code === 'auth/weak-password') {
+          alert('New password is too weak');
+        } else {
+          alert(error.message || 'Error updating password. Please try again.');
+        }
+      } else if (error instanceof Error) {
         alert(error.message || 'Error updating password. Please try again.');
+      } else {
+        alert('Error updating password. Please try again.');
       }
     } finally {
       setPasswordSaving(false);
     }
   };
 
-  const router = useRouter();
-
-  const handleDeleteAccount = async () => {
+  const handleDeleteAccount = async (): Promise<void> => {
     if (!auth.currentUser || !userId) return;
   
     const confirmDelete = window.confirm(
@@ -198,8 +227,8 @@ export default function SettingsPage() {
         try {
           const imageRef = ref(storage, `profile-pictures/${userId}`);
           await deleteObject(imageRef);
-        } catch {
-          console.warn("Profile picture not found or already deleted.");
+        } catch (deleteError) {
+          console.warn("Profile picture not found or already deleted.", deleteError);
         }
       }
   
@@ -212,55 +241,56 @@ export default function SettingsPage() {
       alert("Your account has been deleted.");
       window.location.href = "/";
   
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("Error deleting account:", error);
-      alert(error.message || "Error deleting account.");
+      if (error instanceof Error) {
+        alert(error.message || "Error deleting account.");
+      } else {
+        alert("Error deleting account.");
+      }
+    }
+  };
+
+  const handleSignOut = async (): Promise<void> => {
+    try {
+      await signOut(auth);
+      window.location.href = '/';
+    } catch (error) {
+      console.error('Error signing out:', error);
     }
   };
   
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (user) => {
+    const unsubscribe = onAuthStateChanged(auth, (user: User | null) => {
       if (user) {
         setUserId(user.uid);
         loadUserData(user.uid);
       } else {
-        router.push('/signin'); // redirect if not signed in
+        router.push('/signin');
       }
     });
 
     return () => unsubscribe();
-  }, []);
+  }, [router]);
 
-  // Load user data from Firebase
-  useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (user) => {
-      if (user) {
-        setUserId(user.uid);
-        loadUserData(user.uid);
-      }
-    });
-    return () => unsubscribe();
-    // eslint-disable-next-line
-  }, []);
-
-  const loadUserData = async (uid: string) => {
+  const loadUserData = async (uid: string): Promise<void> => {
     try {
       const userDoc = await getDoc(doc(db, 'users', uid));
       if (userDoc.exists()) {
-        const userData = userDoc.data() as UserProfile;
+        const userData = userDoc.data() as Partial<UserProfile>;
         setProfile(prev => ({
           ...prev,
           ...userData,
           notifications: {
-            ...prev.notifications!,
+            ...DEFAULT_NOTIFICATIONS,
             ...(userData.notifications || {})
           },
           privacy: {
-            ...prev.privacy!,
+            ...DEFAULT_PRIVACY,
             ...(userData.privacy || {})
           }
         }));
-        setHasLoaded(true); // signal that load is done
+        setHasLoaded(true);
       }
     } catch (error) {
       console.error('Error loading user data:', error);
@@ -272,6 +302,7 @@ export default function SettingsPage() {
   // Auto-update Firestore when profile changes, with debounce
   useEffect(() => {
     if (!userId || !hasLoaded) return;
+    
     setIsSaving(true);
     const timeout = setTimeout(async () => {
       try {
@@ -284,12 +315,12 @@ export default function SettingsPage() {
       } finally {
         setIsSaving(false);
       }
-    }, 500); // 500ms debounce
+    }, 500);
 
     return () => clearTimeout(timeout);
   }, [profile, userId, hasLoaded]);
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>): void => {
     const { name, value } = e.target;
     setProfile(prev => ({
       ...prev,
@@ -297,7 +328,7 @@ export default function SettingsPage() {
     }));
   };
 
-  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>): Promise<void> => {
     if (!e.target.files || !e.target.files[0] || !userId) return;
     
     const file = e.target.files[0];
@@ -341,37 +372,30 @@ export default function SettingsPage() {
     }
   };
 
-  const handleNotificationChange = (key: keyof NonNullable<UserProfile['notifications']>) => {
+  const handleNotificationChange = (key: NotificationKeys): void => {
     setProfile(prev => ({
       ...prev,
       notifications: {
-        ...(prev.notifications || {
-          email: true,
-          meetingReminders: true,
-          eventAnnouncements: true,
-          clubInvitations: true,
-          weeklyDigest: true,
-        }),
-        [key]: !prev.notifications?.[key as keyof NonNullable<UserProfile['notifications']>]
+        ...(prev.notifications || DEFAULT_NOTIFICATIONS),
+        [key]: !prev.notifications?.[key]
       }
     }));
   };
 
-  const handlePrivacyChange = (key: keyof NonNullable<UserProfile['privacy']>) => {
+  const handlePrivacyChange = (key: PrivacyKeys): void => {
     setProfile(prev => ({
       ...prev,
       privacy: {
-        ...(prev.privacy || {
-          profileVisible: true,
-          showClubMembership: true,
-          allowContact: true,
-        }),
-        [key]: !prev.privacy?.[key as keyof NonNullable<UserProfile['privacy']>]
+        ...(prev.privacy || DEFAULT_PRIVACY),
+        [key]: !prev.privacy?.[key]
       }
     }));
   };
 
-  const gradeLevels = ['Freshman', 'Sophomore', 'Junior', 'Senior', 'Graduate'];
+  const handleGradeSelection = (level: typeof GRADE_LEVELS[number]): void => {
+    setProfile(prev => ({ ...prev, gradeLevel: level }));
+    setShowGradeDropdown(false);
+  };
 
   if (loading) {
     return (
@@ -380,6 +404,20 @@ export default function SettingsPage() {
       </div>
     );
   }
+
+  const notificationOptions = [
+    { id: 'email' as const, label: 'Email Notifications', description: 'Receive notifications via email' },
+    { id: 'meetingReminders' as const, label: 'Club Meeting Reminders', description: 'Get reminded about upcoming club meetings' },
+    { id: 'eventAnnouncements' as const, label: 'Event Announcements', description: 'Stay updated on club events and activities' },
+    { id: 'clubInvitations' as const, label: 'New Club Invitations', description: 'Get notified when invited to join new clubs' },
+    { id: 'weeklyDigest' as const, label: 'Weekly Digest', description: 'Receive a weekly summary of club activities' },
+  ];
+
+  const privacyOptions = [
+    { id: 'profileVisible' as const, label: 'Profile Visibility', description: 'Allow other students to view your profile' },
+    { id: 'showClubMembership' as const, label: 'Show Club Membership', description: 'Display which clubs you\'re a member of' },
+    { id: 'allowContact' as const, label: 'Contact Information', description: 'Allow club officers to contact you directly' },
+  ];
 
   return (
     <div className="min-h-screen bg-cblack flex flex-col">
@@ -409,7 +447,8 @@ export default function SettingsPage() {
                         src={profile.photoURL}
                         alt="Profile Picture"
                         className="w-full h-full object-cover"
-                        layout="fill"
+                        width={128}
+                        height={128}
                         priority
                         quality={100}
                       />
@@ -440,7 +479,6 @@ export default function SettingsPage() {
                   </label>
                   <p className="text-xs text-gray-400 text-center mt-3">JPG, PNG or GIF.</p>
                 </div>
-
               </div>
               <div className="flex-1 space-y-4">
                 <div>
@@ -486,17 +524,14 @@ export default function SettingsPage() {
                     </button>
                     {showGradeDropdown && (
                       <div className="absolute z-10 mt-1 w-full bg-gray-700 shadow-lg rounded-md py-1 border border-gray-600">
-                        {gradeLevels.map((level) => (
+                        {GRADE_LEVELS.map((level) => (
                           <button
                             key={level}
-                            onClick={() => {
-                              setProfile(prev => ({ ...prev, gradeLevel: level }));
-                              setShowGradeDropdown(false);
-                            }}
+                            onClick={() => handleGradeSelection(level)}
                             className={`w-full text-left px-4 py-2 text-sm hover:bg-gray-600 flex items-center ${profile.gradeLevel === level ? 'bg-azul/20 text-white' : 'text-gray-300'}`}
                           >
                             {profile.gradeLevel === level && <FaCheck className="mr-2 h-4 w-4" />}
-                            <span className={profile.gradeLevel === level ? 'ml-6' : 'ml-6'}>{level}</span>
+                            <span className="ml-6">{level}</span>
                           </button>
                         ))}
                       </div>
@@ -618,21 +653,15 @@ export default function SettingsPage() {
               <FaBell className="mr-2" /> Notification Preferences
             </h2>
             <div className="space-y-4">
-              {[
-                { id: 'email', label: 'Email Notifications', description: 'Receive notifications via email' },
-                { id: 'meetingReminders', label: 'Club Meeting Reminders', description: 'Get reminded about upcoming club meetings' },
-                { id: 'eventAnnouncements', label: 'Event Announcements', description: 'Stay updated on club events and activities' },
-                { id: 'clubInvitations', label: 'New Club Invitations', description: 'Get notified when invited to join new clubs' },
-                { id: 'weeklyDigest', label: 'Weekly Digest', description: 'Receive a weekly summary of club activities' },
-              ].map(({ id, label, description }) => (
+              {notificationOptions.map(({ id, label, description }) => (
                 <div key={id} className="flex items-start">
                   <div className="flex items-center h-5">
                     <input
                       id={id}
                       name={id}
                       type="checkbox"
-                      checked={profile.notifications?.[id as keyof NonNullable<UserProfile['notifications']>] || false}
-                      onChange={() => handleNotificationChange(id as keyof NonNullable<UserProfile['notifications']>)}
+                      checked={profile.notifications?.[id] || false}
+                      onChange={() => handleNotificationChange(id)}
                       className="h-4 w-4 rounded border-gray-500 bg-gray-700 text-azul focus:ring-azul"
                     />
                   </div>
@@ -653,19 +682,15 @@ export default function SettingsPage() {
               <FaLock className="mr-2" /> Privacy Settings
             </h2>
             <div className="space-y-4">
-              {[
-                { id: 'profileVisible', label: 'Profile Visibility', description: 'Allow other students to view your profile' },
-                { id: 'showClubMembership', label: 'Show Club Membership', description: 'Display which clubs you\'re a member of' },
-                { id: 'allowContact', label: 'Contact Information', description: 'Allow club officers to contact you directly' },
-              ].map(({ id, label, description }) => (
+              {privacyOptions.map(({ id, label, description }) => (
                 <div key={id} className="flex items-start">
                   <div className="flex items-center h-5">
                     <input
                       id={`privacy-${id}`}
                       name={`privacy-${id}`}
                       type="checkbox"
-                      checked={profile.privacy?.[id as keyof NonNullable<UserProfile['privacy']>] || false}
-                      onChange={() => handlePrivacyChange(id as keyof NonNullable<UserProfile['privacy']>)}
+                      checked={profile.privacy?.[id] || false}
+                      onChange={() => handlePrivacyChange(id)}
                       className="h-4 w-4 rounded border-gray-500 bg-gray-700 text-azul focus:ring-azul cursor-pointer"
                     />
                   </div>
@@ -693,14 +718,7 @@ export default function SettingsPage() {
                 </div>
                 <button
                   type="button"
-                  onClick={async () => {
-                    try {
-                      await signOut(auth);
-                      window.location.href = '/';
-                    } catch (error) {
-                      console.error('Error signing out:', error);
-                    }
-                  }}
+                  onClick={handleSignOut}
                   className="inline-flex items-center px-4 py-2 border border-gray-600 shadow-sm text-sm font-medium rounded-md text-white bg-gray-700 hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-azul transition-colors"
                 >
                   <FaSignOutAlt className="-ml-1 mr-2 h-5 w-5" />
