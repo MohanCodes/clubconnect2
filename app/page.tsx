@@ -14,6 +14,7 @@ import { useRouter } from 'next/navigation';
 import { onAuthStateChanged } from 'firebase/auth';
 import { User as FirebaseUser } from 'firebase/auth';
 import SkeletonTile from '@/components/SkeletonTile';
+import { FaArrowDown } from 'react-icons/fa';
 
 interface DisplayClub {
   id: string;
@@ -241,11 +242,11 @@ const Home: React.FC = () => {
       
       {/* Sticky Search Bar */}
       <div
-          className={`fixed top-24 left-1/2 transform -translate-x-1/2 z-50 transition-all duration-300 ${
+          className={`fixed top-24 left-1/2 transform -translate-x-1/2 z-50 transition-all duration-300 w-80 sm:w-96 ${
             isSearchSticky
               ? 'opacity-100 translate-y-0'
               : 'opacity-0 translate-y-[-20px] pointer-events-none'
-          } hidden sm:block`} // <-- add hidden sm:block here
+          } `}
         >
           <div className="flex justify-center sm:space-y-0 sm:space-x-4 pt-4 flex-col sm:flex-row px-4 sm:px-0">
                 <input
@@ -258,11 +259,11 @@ const Home: React.FC = () => {
           </div>
       </div>
 
-      <main className="relative flex min-h-screen flex-col items-center justify-center bg-cblack text-center -mt-16">
+      <main className="relative flex min-h-screen flex-col items-center justify-center text-center -mt-16">
         <div className='hero-section sm:max-w-xl max-w-lg flex flex-col justify-center h-[100vh] items-center'>
           <BlurFade delay={0.1}>
             <div className='font-semibold text-white text-5xl lg:text-6xl text-center'>
-              <span className='text-azul'>Connect</span> with your club community.
+              <span className='text-azul'>Connect</span> with your club community<span className='text-azul'>.</span>
             </div>
           </BlurFade>
           <BlurFade delay={0.3}>
@@ -302,6 +303,9 @@ const Home: React.FC = () => {
         
         
         <div className="flex flex-col items-center w-full -mt-[18vh]">
+          <FaArrowDown
+            className="animate-bounce transition duration-1000 text-white opacity-50"
+          />
           <Masonry
             breakpointCols={breakpointColumnsObj}
             className="flex w-full gap-6 p-6"

@@ -1021,13 +1021,13 @@ const EditClubPage = () => {
             </span>
           ))}
             {isEditing && (
-              <div className="flex items-center mt-2 max-w-screen">
+              <div className="flex items-center mt-2 gap-2">
                 <input
                   type="text"
                   value={newTag}
                   onChange={(e) => setNewTag(e.target.value)}
                   placeholder="Add a new tag"
-                  className="bg-gray-800 text-white p-1 rounded w-full"
+                  className="bg-gray-800 text-white p-1 rounded w-56"
                 />
                 <AddButton label="Add Tag" onClick={handleAddTag} />
               </div>
@@ -1619,7 +1619,7 @@ const EditClubPage = () => {
                       {isEditing && ( // Only show the trash can when in edit mode
                         <button
                           onClick={() => handleImageDelete(src)}
-                          className="absolute top-2 right-2 bg-red-500 text-white p-1 rounded-md"
+                          className="absolute top-2 right-2 bg-red-500 text-white p-2 rounded-md"
                         >
                           <FaTrash />
                         </button>

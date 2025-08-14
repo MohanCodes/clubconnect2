@@ -277,7 +277,7 @@ const YourClubs: React.FC = () => {
               {club.isComplete && (
                 <div className="absolute top-0 right-0 bg-green-500 text-black p-2 rounded-tr-xl rounded-bl-xl flex items-center">
                   <FaCheckCircle />
-                  <span className="text-sm hidden sm:inline ml-2">Complete</span>
+                  <span className="text-sm hidden sm:inline ml-2">Undone</span>
                 </div>
               )}
               <button
