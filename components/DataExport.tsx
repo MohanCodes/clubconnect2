@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, ReactNode } from 'react';
+import React, { useState, useEffect } from 'react';
 import { FaDownload, FaSpinner } from 'react-icons/fa';
 import { db, auth } from '@/firebase/firebase'; // ✅ Make sure auth is exported from your firebase config
 import { doc, getDoc, collection, query, where, getDocs } from 'firebase/firestore';

@@ -7,7 +7,6 @@ import {
   FaBell,
   FaEye,
   FaEyeSlash,
-  FaDownload,
   FaTrash,
   FaChevronDown,
   FaCheck,
