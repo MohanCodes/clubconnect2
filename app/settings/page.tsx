@@ -427,7 +427,7 @@ export default function SettingsPage() {
           <div className='text-5xl mb-2 font-semibold text-white'>
             Your <span className="text-azul">Settings</span>
           </div>
-          <p className="mt-1 text-sm text-gray-400">
+          <p className="mt-1 text-md text-gray-400">
             Manage your account preferences and profile information
           </p>
         </div>

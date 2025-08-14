@@ -32,20 +32,6 @@ export default function About() {
             </div>
 
             <div>
-              <h2 className="text-2xl font-semibold text-white mb-4">Club <span className='text-azul'>Leaders</span></h2>
-              <p className="text-grey">
-                Club leaders play a crucial role in organizing and managing club activities. They are responsible for ensuring the smooth functioning of the club and engaging members in meaningful ways.
-              </p>
-            </div>
-
-            <div>
-              <h2 className="text-2xl font-semibold text-white mb-4">Club <span className='text-azul'>Members</span></h2>
-              <p className="text-grey">
-                Club members are the heart of any club. They participate in activities, contribute ideas, and help in achieving the club&apos;s goals.
-              </p>
-            </div>
-
-            <div>
               <h2 className="text-2xl font-semibold text-white mb-4">How to Use <span className='text-azul'>MNClubConnect</span></h2>
               <p className="text-grey mb-6">
                 Follow these steps to make the most out of MNClubConnect:

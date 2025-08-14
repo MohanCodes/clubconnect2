@@ -687,6 +687,7 @@ const EditClubPage = () => {
 
   const handleOneOffEventChange = (field: 'date' | 'title', value: string) => {
     setNewOneOffEvent(prev => ({ ...prev, [field]: value }));
+    setHasUnsavedChanges(true);
   };
   
   const handleAddOneOffEvent = () => {
@@ -699,8 +700,6 @@ const EditClubPage = () => {
     }
     setHasUnsavedChanges(true);
   };
-  
-  // Similarly for recurring events when adding or updating
   
   const handleRemoveOneOffEvent = (index: number) => {
     setClubInfo(prevState => ({
@@ -745,15 +744,17 @@ const EditClubPage = () => {
       ...prevState,
       recurringEvents: prevState.recurringEvents.filter((_, i) => i !== index)
     }));
+    setHasUnsavedChanges(true);
   };
   
   const handleAddException = (eventIndex: number, date: string) => {
     setClubInfo(prevState => {
       const updatedEvents = [...prevState.recurringEvents];
-      updatedEvents[eventIndex].exceptions.push(date);
+      const updatedExceptions = [...updatedEvents[eventIndex].exceptions, date];
+      updatedEvents[eventIndex] = { ...updatedEvents[eventIndex], exceptions: updatedExceptions };
       return { ...prevState, recurringEvents: updatedEvents };
     });
-    setHasUnsavedChanges(true);
+    setHasUnsavedChanges(true);    
   };
   
   const handleRemoveException = (eventIndex: number, exceptionIndex: number) => {
@@ -957,15 +958,19 @@ const EditClubPage = () => {
       )}
       
         <div className="flex flex-col lg:flex-row justify-between py-4 -mt-4 sticky top-[5.2rem] z-40 bg-cblack break-words">
-          <h1 className="text-3xl md:text-4xl font-bold text-white mb-4">
-            {clubInfo.name}
-          </h1>
+          <div className='flex flex-row items-center gap-2'>
+            <h1 className="text-3xl md:text-4xl font-bold text-white mb-4">
+              {clubInfo.name}
+            </h1>
+            <p className="text-sm text-gray-400">
+                {isUploading || hasUnsavedChanges ? 'Saving...' : 'Saved!'}
+            </p>
+          </div>
 
           <div className='flex flex-wrap items-center gap-2'>
             <div className="hidden bg-azul text-white text-sm px-3 sm:px-4 py-2 rounded-full">
               <span className="text-white">{filledFieldsCount} / 6</span>
             </div>
-            
             <button
               onClick={handleDisplayToggle}
               disabled={!clubInfo.isComplete}
