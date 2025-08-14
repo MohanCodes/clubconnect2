@@ -27,6 +27,7 @@ import { deleteUser } from 'firebase/auth';
 import { deleteObject } from 'firebase/storage';
 import { GoogleAuthProvider, reauthenticateWithPopup } from 'firebase/auth';
 import { useRouter } from 'next/navigation';
+import Image from 'next/image';
 
 interface UserProfile {
   id: string;
@@ -404,10 +405,13 @@ export default function SettingsPage() {
                 <div className="relative w-32 h-32 mx-auto" style={{ minWidth: 128, minHeight: 128 }}>
                   <div className="rounded-full bg-gray-700 overflow-hidden w-32 h-32 flex items-center justify-center">
                     {profile.photoURL ? (
-                      <img
+                      <Image
                         src={profile.photoURL}
-                        alt="Profile"
+                        alt="Profile Picture"
                         className="w-full h-full object-cover"
+                        layout="fill"
+                        priority
+                        quality={100}
                       />
                     ) : (
                       <span className="text-4xl text-gray-400 select-none">

@@ -8,7 +8,6 @@ import { onAuthStateChanged } from 'firebase/auth';
 import Tile from '@/components/Tile';
 import Masonry from 'react-masonry-css';
 import ScrollLock from './ScrollLock';
-import Link from 'next/link';
 
 const breakpointColumnsObj = {
   default: 4,
