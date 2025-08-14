@@ -333,12 +333,12 @@ export default function OnboardingWizard({ slug }: { slug: string }) {
 
 
       {/* Panel */}
-      <div className="bg-[#2A2A2A] rounded-xl p-4 sm:p-6">
+      <div className="bg-tilegrey rounded-xl p-4 sm:p-6">
         {currentStep === 0 && (
           <div className="space-y-6">
             {/* Tags */}
             <div>
-              <h3 className="text-lg font-semibold mb-2">Tags <span className="text-xs text-gray-400 mt-2">help people find ur club</span></h3>
+              <h3 className="text-lg font-semibold mb-2">Tags <span className="text-xs text-gray-400 mt-2">hit add</span></h3>
               <div className="flex flex-wrap gap-2 mb-3">
                 {(clubInfo.tags || []).map((tag, idx) => (
                   <span key={idx} className="inline-flex items-center bg-blue-100 text-azul text-xs font-medium px-3 py-1 rounded-full sm:text-sm pr-1 transition-colors duration-200">

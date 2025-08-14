@@ -101,7 +101,7 @@ const Tile: React.FC<TileProps> = ({
   });
 
   return (
-    <div className="rounded-xl p-8 transition-shadow duration-300 bg-[#2A2A2A] relative">
+    <div className="rounded-xl p-8 transition-shadow duration-300 bg-tilegrey relative">
         <div className="absolute top-8 right-0 flex items-center">
           <div className="flex items-center">
             {showVoteButton && ( // Check if showVoteButton is true

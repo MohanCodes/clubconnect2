@@ -2,13 +2,13 @@ import React from 'react';
 
 const SkeletonTile: React.FC = () => {
   return (
-    <div className="rounded-xl p-6 transition-shadow duration-300 bg-[#2A2A2A] relative w-full h-full flex flex-col justify-between">
+    <div className="rounded-xl p-6 transition-shadow duration-300 bg-tilegrey relative w-full h-full flex flex-col justify-between">
       {/* Icon and Club Name */}
       <div className="flex items-center mb-4 space-x-4">
         <div className="h-8 bg-gray-700 rounded w-3/4 animate-pulse"></div>
       </div>
 
-      <p className="text-md text-grey mb-4 text-left line-clamp-4 invisible">ClubConnect is a dynamic platform designed to foster community engagement among students in the West Metro area. It serves as a centralized hub where users can discover and connect with various clubs tailored to their interests.</p>
+      <p className="text-md text-grey mb-4 text-left line-clamp-4 invisible">MNClubConnect is a dynamic platform designed to foster community engagement among students in the West Metro area. It serves as a centralized hub where users can discover and connect with various clubs tailored to their interests.</p>
 
       {/* Club Description */}
       <div className="space-y-2 flex-grow -mt-28">

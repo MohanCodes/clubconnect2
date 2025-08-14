@@ -100,7 +100,7 @@ export default function ProfileCard() {
       <p className="text-gray-300 mb-6">
         This is where you can change your profile picture and name.
       </p>
-      <div className="bg-[#2A2A2A] rounded-xl p-4 space-y-4 max-w-lg">
+      <div className="bg-tilegrey rounded-xl p-4 space-y-4 max-w-lg">
         {/* Profile Picture */}
         <div className="flex items-center space-x-4">
           <div 

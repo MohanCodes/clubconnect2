@@ -1605,7 +1605,7 @@ const EditClubPage = () => {
                 <p className="text-grey">
                   For more information, please{' '}
                   <Link href="mailto:hello@mnclubconnect.com" className="text-azul hover:underline">
-                    contact ClubConnect.
+                    contact MNClubConnect.
                   </Link>
                 </p>
               </div>
@@ -1670,7 +1670,7 @@ const EditClubPage = () => {
             )}
             <div className="flex flex-col gap-6">
               {blogs.map((blog) => (
-                <div key={blog.id} className="rounded-xl p-6 transition-shadow duration-300 bg-[#2A2A2A]">
+                <div key={blog.id} className="rounded-xl p-6 transition-shadow duration-300 bg-tilegrey">
                   <div className='flex flex-row justify-between'>
                     <h3 className="text-lg text-white font-bold">{blog.title}</h3>
                     {isEditing ? (

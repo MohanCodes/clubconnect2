@@ -15,7 +15,7 @@ const CoolDash: React.FC = () => {
                 </div>
 
                 {/* Dashboard Summary Section */}
-                <div className="bg-[#2A2A2A] rounded-xl p-6 mb-8">
+                <div className="bg-tilegrey rounded-xl p-6 mb-8">
                     <h2 className="text-2xl font-semibold text-white mb-4">Dashboard Summary</h2>
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                         <div className="bg-[#3A3A3A] p-4 rounded-xl">
@@ -34,7 +34,7 @@ const CoolDash: React.FC = () => {
                 </div>
 
                 {/* Quick Actions Section */}
-                <div className="bg-[#2A2A2A] rounded-xl p-6 mb-8">
+                <div className="bg-tilegrey rounded-xl p-6 mb-8">
                     <h2 className="text-2xl font-semibold text-white mb-4">Quick Actions</h2>
                     <div className="flex flex-wrap gap-4">
                         <button className="bg-azul text-white px-4 py-2 rounded-xl">Explore New Clubs</button>
@@ -44,7 +44,7 @@ const CoolDash: React.FC = () => {
                 </div>
 
                 {/* Recent Activity Feed */}
-                <div className="bg-[#2A2A2A] rounded-xl p-6 mb-8">
+                <div className="bg-tilegrey rounded-xl p-6 mb-8">
                     <h2 className="text-2xl font-semibold text-white mb-4">Recent Activity</h2>
                     <ul className="space-y-2">
                         {/* Map through recent activities */}
@@ -55,7 +55,7 @@ const CoolDash: React.FC = () => {
                 </div>
 
                 {/* Upcoming Events Widget */}
-                <div className="bg-[#2A2A2A] rounded-xl p-6 mb-8">
+                <div className="bg-tilegrey rounded-xl p-6 mb-8">
                     <h2 className="text-2xl font-semibold text-white mb-4">Upcoming Events</h2>
                     <ul className="space-y-2">
                         {/* Map through upcoming events */}
@@ -66,7 +66,7 @@ const CoolDash: React.FC = () => {
                 </div>
 
                 {/* Personalized Recommendations */}
-                <div className="bg-[#2A2A2A] rounded-xl p-6 mb-8">
+                <div className="bg-tilegrey rounded-xl p-6 mb-8">
                     <h2 className="text-2xl font-semibold text-white mb-4">Recommended for You</h2>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         {/* Example recommendations without Tile component */}
@@ -83,7 +83,7 @@ const CoolDash: React.FC = () => {
                 </div>
 
                 {/* User Stats Section */}
-                <div className="bg-[#2A2A2A] rounded-xl p-6 mb-8">
+                <div className="bg-tilegrey rounded-xl p-6 mb-8">
                     <h2 className="text-2xl font-semibold text-white mb-4">Your Stats</h2>
                     <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                         {[

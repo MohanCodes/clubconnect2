@@ -57,7 +57,7 @@ const CalendarProp: React.FC<CalendarProps> = ({ events = [] }) => {
           <div className="flex flex-col mt-1">
             {dayEvents.map((event, index) => (
               <Link key={index} href={event.link} className="text-xs text-white mt-1">
-                <div className='bg-[#2A2A2A] rounded p-1 inline-block hover:underline break-words w-full'>{event.title}</div>
+                <div className='bg-tilegrey rounded p-1 inline-block hover:underline break-words w-full'>{event.title}</div>
               </Link>
             ))}
           </div>
@@ -127,7 +127,7 @@ const CalendarProp: React.FC<CalendarProps> = ({ events = [] }) => {
                 <Link
                   key={index}
                   href={event.link}
-                  className="text-sm block mt-1 p-1 bg-[#2A2A2A] rounded hover:underline"
+                  className="text-sm block mt-1 p-1 bg-tilegrey rounded hover:underline"
                 >
                   {event.title}
                 </Link>
@@ -141,7 +141,7 @@ const CalendarProp: React.FC<CalendarProps> = ({ events = [] }) => {
   
 
   return (
-    <div className="bg-cblack text-white p-6 rounded-xl shadow-lg max-w-7xl mx-auto">
+    <div className="bg-cblack text-white p-6 rounded-xl shadow-lg max-w-5xl mx-auto">
       <div className="flex justify-around items-center mb-4">
       <button onClick={prevPeriod} className="text-azul hover:text-blue-400 text-xl flex items-center space-x-2">
         <FaAngleLeft size={40}/> 

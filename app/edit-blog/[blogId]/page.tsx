@@ -28,6 +28,7 @@ import { User } from 'firebase/auth';
 import { nanoid } from 'nanoid';
 import Navbar from '@/components/Navbar';
 import LoadingModal from '@/components/LoadingModal';
+import { FaArrowLeft } from 'react-icons/fa';
 
 interface ClubInfo {
   id: string;
@@ -191,21 +192,22 @@ export default function EditBlogPage() {
       <Navbar />
       <main className="container mx-auto px-4 py-12 max-w-6xl">
         <div className="flex flex-col gap-4">
+          <button onClick={() => router.back()} className="text-azul py-2 rounded text-md flex justify-start items-center">
+            <FaArrowLeft className="mr-2" /> 
+            Back
+          </button>
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-4 gap-2">
             <h1 className="text-5xl font-bold text-white">Edit Blog</h1>
             <div className="flex gap-2 mt-2 sm:mt-0">
               <button onClick={handleSave} className="bg-green-600 hover:bg-green-700 px-4 py-2 rounded text-white font-semibold">Save</button>
               <button onClick={() => router.back()} className="bg-gray-600 hover:bg-gray-700 px-4 py-2 rounded text-white">Cancel</button>
-              {clubInfo && clubInfo.id && (
-                <button onClick={() => router.push(`/edit-club/${clubInfo.id}`)} className="bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded text-white font-semibold">Club</button>
-              )}
               {blogId !== 'new' && (
                 <button onClick={handleDelete} className="bg-red-600 hover:bg-red-700 px-4 py-2 rounded text-white">Delete</button>
               )}
             </div>
           </div>
           <input
-            className="w-full py-4 rounded bg-[#18181b] text-white border-none text-3xl font-bold placeholder-gray-500 focus:outline-none mb-4"
+            className="w-full px-3 py-4 rounded bg-[#18181b] text-white border-none text-3xl font-bold placeholder-gray-500 focus:outline-none mb-4"
             value={title}
             onChange={e => setTitle(e.target.value)}
             placeholder="Blog Title"

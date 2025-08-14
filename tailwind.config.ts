@@ -16,6 +16,7 @@ const config: Config = {
   			'azul': '#00A3FF',
   			'grey': '#C7C7C7',
   			'cblack': '#0F0F0F',
+			'tilegrey': '#2A2A2A',
   			background: 'hsl(var(--background))',
   			foreground: 'hsl(var(--foreground))',
   			card: {
