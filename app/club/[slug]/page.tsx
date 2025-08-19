@@ -446,7 +446,7 @@ const ClubPage = () => {
                     <h2 className="text-2xl font-bold text-white mb-2">More Information</h2>
                     <p className="text-grey">
                         For more information, please{' '}
-                        <Link href="mailto:hello@mnclubconnect.com" className="text-azul hover:underline">
+                        <Link href="mailto:mohan@mnclubconnect.com" className="text-azul hover:underline">
                         contact MNClubConnect.
                         </Link>
                     </p>
