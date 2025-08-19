@@ -15,6 +15,7 @@ import { onAuthStateChanged } from 'firebase/auth';
 import { User as FirebaseUser } from 'firebase/auth';
 import SkeletonTile from '@/components/SkeletonTile';
 import { FaArrowDown } from 'react-icons/fa';
+import Link from 'next/link';
 
 interface DisplayClub {
   id: string;
@@ -271,7 +272,7 @@ const Home: React.FC = () => {
               Currently a club platform for students located in the west metro.
             </p>
           </BlurFade>
-          <div className='bf1 sm:block hidden'>
+          <div className='bf1'>
             <BlurFade delay={0.3}>
               <div className="flex justify-center sm:space-y-0 sm:space-x-4 pt-4 flex-col sm:flex-row px-4 sm:px-0">
                 <input
@@ -279,8 +280,14 @@ const Home: React.FC = () => {
                   placeholder="Search for a club:"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="mb-8 px-6 py-3 rounded-full border-none outline-none w-full sm:w-96 text-gray-700 sm:text-lg text-md"
+                  className="mb-8 px-6 py-3 rounded-full border-none outline-none w-full sm:w-96 text-gray-700 sm:text-lg text-md sm:block hidden"
                 />
+                <Link
+                  href="/signup"
+                  className="px-6 py-2.5 rounded-full bg-azul text-white transition duration-300 hover:opacity-70 block sm:hidden"
+                >
+                  Signup
+                </Link>
               </div>
             </BlurFade>
             {/* <div className='flex mb-12'>
