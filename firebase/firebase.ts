@@ -4,12 +4,12 @@ import { getFirestore } from 'firebase/firestore';
 import { getStorage} from 'firebase/storage';
 
 const firebaseConfig = {
-  apiKey: "AIzaSyBH6XzHzmTfO3ARZrdxBy8MytxJvpj0dic",
-  authDomain: "clubconnect-9e4a3.firebaseapp.com",
-  projectId: "clubconnect-9e4a3",
-  storageBucket: "clubconnect-9e4a3.appspot.com",
-  messagingSenderId: "780503007414",
-  appId: "1:780503007414:web:03265a15a36c5411946617"
+  apiKey: process.env.REACT_APP_FIREBASE_API_KEY,
+  authDomain: process.env.REACT_APP_FIREBASE_AUTH_DOMAIN,
+  projectId: process.env.REACT_APP_FIREBASE_PROJECT_ID,
+  storageBucket: process.env.REACT_APP_FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: process.env.REACT_APP_FIREBASE_MESSAGING_SENDER_ID,
+  appId: process.env.REACT_APP_FIREBASE_APP_ID,
 };
 
 // Initialize Firebase
